@@ -580,6 +580,7 @@ function loadData() {
             document.getElementById('fn').innerText = userData.personal.lastName + ' ' + userData.personal.firstName + ' ' + userData.personal.middleName || '';
             document.getElementById('birthDate').innerText = userData.personal.birthDate || '';
             document.getElementById('initial').innerText = userData.personal.lastName[0] + userData.personal.firstName[0] || '';
+            document.getElementById('birthPlace').innerText = userData.personal.birthPlace || '';
         }
 
         // Заполняем поля паспорта
@@ -588,11 +589,6 @@ function loadData() {
             document.getElementById('passportIssued').innerText = userData.passport.issued || '';
             document.getElementById('passportCode').innerText = userData.passport.code || '';
             document.getElementById('passportDate').innerText = userData.passport.date || '';
-        }
-
-        // Заполняем поля адреса
-        if (userData.address) {
-            document.getElementById('birthPlace').innerText = userData.address.birthPlace || '';
         }
 
     }
