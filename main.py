@@ -194,6 +194,7 @@ def submit_form():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
+
 @app.route("/mobile")
 def mobile():
     return render_template("pass_mobile.html")
@@ -202,5 +203,8 @@ def mobile():
 def mobile_details():
     return render_template("pass_mobile_detail.html")
 
+@app.route("/download/app")
+def download_app():
+    return render_template("download_app.html")
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

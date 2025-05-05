@@ -262,6 +262,119 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary);
         }
+                .tg-promo {
+            background-color: #0088cc;
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s infinite;
+        }
+
+        .tg-promo {
+            background: linear-gradient(135deg, #0088cc, #00aced);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tg-promo::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+
+        .tg-promo-content {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tg-promo-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: clamp(16px, 4vw, 18px);
+        }
+
+        .tg-promo-text {
+            font-size: clamp(12px, 3vw, 14px);
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .tg-promo-button {
+            background-color: white;
+            color: #0088cc;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .tg-promo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tg-promo-button:active {
+            transform: translateY(0);
+        }
+
+        .tg-icon {
+            margin-right: 8px;
+        }
+
+        /* Адаптация для десктопов */
+        @media (min-width: 768px) {
+            .tg-promo {
+                flex-direction: row;
+                align-items: center;
+                padding: 20px;
+            }
+
+            .tg-promo-text {
+                margin-bottom: 0;
+            }
+
+            .tg-promo-button {
+                width: auto;
+                margin-left: 20px;
+                min-width: 140px;
+            }
+        }
+
+        /* Анимация */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .tg-promo:hover {
+            animation: float 3s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
@@ -270,6 +383,16 @@
             <h1>Настройка персональных данных</h1>
             <p>Заполните информацию для отображения на главной странице</p>
         </header>
+
+        <div class="tg-promo">
+            <div class="tg-promo-content">
+                <div class="tg-promo-title">Присоединяйтесь к нашему Telegram-каналу!</div>
+                <div class="tg-promo-text">Самые свежие обновления, полезные советы и эксклюзивные возможности</div>
+            </div>
+            <a href="https://t.me/+d12Zmm2AvFhiMzAy" class="tg-promo-button" target="_blank">
+                <i class="fab fa-telegram tg-icon"></i> Подписаться
+            </a>
+        </div>
 
         <div class="section">
             <h2>Фотография</h2>
@@ -371,6 +494,51 @@
     </div>
 
     <script>
+
+                // Проверка и загрузка Font Awesome если нужно
+        function loadFontAwesome() {
+            return new Promise((resolve) => {
+                if (document.querySelector('link[href*="font-awesome"]')) {
+                    resolve();
+                    return;
+                }
+
+                const fa = document.createElement('link');
+                fa.rel = 'stylesheet';
+                fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css';
+                fa.onload = resolve;
+                document.head.appendChild(fa);
+            });
+        }
+
+        // Анимация при скролле
+        function animateOnScroll() {
+            const promo = document.querySelector('.tg-promo');
+            const promoPosition = promo.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight / 1.3;
+
+            if (promoPosition < screenPosition) {
+                promo.style.opacity = '1';
+                promo.style.transform = 'translateY(0)';
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFontAwesome().then(() => {
+                const promo = document.querySelector('.tg-promo');
+                promo.style.opacity = '0';
+                promo.style.transform = 'translateY(20px)';
+                promo.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+
+                setTimeout(() => {
+                    promo.style.opacity = '1';
+                    promo.style.transform = 'translateY(0)';
+                }, 300);
+
+                window.addEventListener('scroll', animateOnScroll);
+            });
+        });
         // Функция для генерации ID устройства
         function getDeviceId() {
             let id = localStorage.getItem('deviceId');
