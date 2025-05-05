@@ -300,8 +300,6 @@
     </div>
 
     <script>
-
-// Генерируем уникальный ID устройства
 function getDeviceId() {
     let id = localStorage.getItem('deviceId');
     if (!id) {
@@ -371,6 +369,7 @@ async function submitForm() {
 
     } catch (error) {
         console.error('Ошибка:', error);
+        alert('Произошла ошибка при отправке данных');
     }
 }
         // Функция сохранения данных в localStorage

