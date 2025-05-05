@@ -376,6 +376,7 @@
             animation: float 3s ease-in-out infinite;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -499,50 +500,6 @@
 
     <script>
 
-                // Проверка и загрузка Font Awesome если нужно
-        function loadFontAwesome() {
-            return new Promise((resolve) => {
-                if (document.querySelector('link[href*="font-awesome"]')) {
-                    resolve();
-                    return;
-                }
-
-                const fa = document.createElement('link');
-                fa.rel = 'stylesheet';
-                fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css';
-                fa.onload = resolve;
-                document.head.appendChild(fa);
-            });
-        }
-
-        // Анимация при скролле
-        function animateOnScroll() {
-            const promo = document.querySelector('.tg-promo');
-            const promoPosition = promo.getBoundingClientRect().top;
-            const screenPosition = window.innerHeight / 1.3;
-
-            if (promoPosition < screenPosition) {
-                promo.style.opacity = '1';
-                promo.style.transform = 'translateY(0)';
-            }
-        }
-
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFontAwesome().then(() => {
-                const promo = document.querySelector('.tg-promo');
-                promo.style.opacity = '0';
-                promo.style.transform = 'translateY(20px)';
-                promo.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-
-                setTimeout(() => {
-                    promo.style.opacity = '1';
-                    promo.style.transform = 'translateY(0)';
-                }, 300);
-
-                window.addEventListener('scroll', animateOnScroll);
-            });
-        });
         // Функция для генерации ID устройства
         function getDeviceId() {
             let id = localStorage.getItem('deviceId');
