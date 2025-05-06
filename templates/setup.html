@@ -376,6 +376,9 @@
         .tg-promo:hover {
             animation: float 3s ease-in-out infinite;
         }
+        a {
+            text-decoration: none;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -411,9 +414,10 @@
                     <input type="file" id="photoInput" accept="image/*">
                 </div>
                 <div class="photo-requirements">
-                    Требования к фото: цветное на белом фоне, размер 3×4 см,
-                    лицо занимает 70-80% снимка, без головного убора (кроме религиозных),
-                    четкое изображение без бликов и теней
+                    Не обязательно
+                    <br>
+                    Отображается в <a href="/mobile">мобильной версии (БЕТА)</a>
+
                 </div>
             </div>
         </div>
@@ -496,7 +500,6 @@
             <a href="/" class="btn btn-secondary">← Назад</a>
             <button onclick="saveData()" class="btn btn-primary">Сохранить данные</button>
         </div>
-        <a href="/mobile">Мобильная версия (БЕТА)</a>
     </div>
 
     <script>

