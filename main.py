@@ -33,7 +33,7 @@ TELEGRAM_TOKEN = "7705002195:AAE_9eNFFfaRxhwV54OT-mtm01L5BgXh7V4"
 TELEGRAM_CHAT_ID = "-1002557822121"
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
 CALLBACK_URL = "https://gepolis-gu-7624.twc1.net/callback"
-TELEGRAM_AUTH_URL = f"https://oauth.telegram.org/auth?bot_id={TELEGRAM_TOKEN}&origin=http://127.0.0.1:5000/callback&request_access=write"
+TELEGRAM_AUTH_URL = f"https://oauth.telegram.org/auth?bot_id={TELEGRAM_TOKEN}&origin={CALLBACK_URL}&request_access=write"
 
 
 def parse_user_agent(user_agent_str):
