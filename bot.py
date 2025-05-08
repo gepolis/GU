@@ -10,7 +10,6 @@ def gen_auth_url(user_id, username):
     return req.json()['code']
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    await message.answer("Добро пожаловать в Госуслуги 2.0!")
     code = gen_auth_url(message.from_user.id, message.from_user.username if message.from_user.username else "None")
     await message.answer(
         "🔐 <b>Добро пожаловать в сервис Госуслуги 2.0!</b> 🔐\n\n"
