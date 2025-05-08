@@ -37,7 +37,6 @@ async def cmd_start(message: types.Message):
         parse_mode="HTML"
     )
 
-    await bot.send_message()
 async def main():
     await dp.start_polling(bot)
 def run_bot():
