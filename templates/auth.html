@@ -200,9 +200,9 @@
                         statusMessage.textContent = 'Авторизация успешна! Перенаправляем...';
 
                         // Перенаправление после успешной авторизации
-                        //setTimeout(() => {
-                        //    window.location.href = data.redirect_url || '/profile';
-                        //}, 1000);
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url || '/';
+                        }, 100);
                     } else {
                         statusMessage.className = 'status-message error';
                         statusMessage.textContent = data.message || 'Ошибка авторизации';
