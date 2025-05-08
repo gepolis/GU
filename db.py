@@ -64,7 +64,7 @@ class AuthUrl(db.Model):
     __tablename__ = 'auth_urls'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    code = db.Column(db.String(255), nullable=False)
+    code = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
     username = db.Column(db.String(255), nullable=False)
     is_active = db.Column(db.Boolean, default=True)

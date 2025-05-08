@@ -227,9 +227,9 @@ def gen_auth(user_id, username):
 
 @app.route('/check_auth/<int:otp_code>')
 def check_auth(otp_code):
-    auth_url = AuthUrl.query.filter_by(code=otp_code, is_active=True).first()
+    auth_url = AuthUrl.query.filter(AuthUrl.code==otp_code, AuthUrl.is_active==True).first()
     if auth_url:
-        user = User.query.filter_by(user_id=auth_url.user_id).first()
+        user = User.query.filter(User.user_id==auth_url.user_id).first()
 
         auth_url.is_active = False
         db.session.commit()
@@ -258,7 +258,7 @@ def get_or_create_user():
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
 
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.filter(User.id==user_id).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
@@ -276,11 +276,11 @@ def get_profiles():
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
 
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.filter(User.id==user_id).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    profiles = Profile.query.filter_by(user_id=user.id).all()
+    profiles = Profile.query.filter(Profile.user_id==user.id).all()
     if not profiles:
         return jsonify({'error': 'Profiles not found'}), 404
 
@@ -295,11 +295,11 @@ def get_profile():
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
 
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.filter(User.id==user_id).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+    profile = Profile.query.filter(Profile.id==profile_id, Profile.user_id==user.id).first()
     if not profile:
         return jsonify({'error': 'Profile not found'}), 404
 
@@ -312,7 +312,7 @@ def create_profile():
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
 
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.filter(User.id==user_id).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
@@ -322,7 +322,7 @@ def create_profile():
 
     # Проверка на существование основного профиля
     if is_primary:
-        primary_profile = Profile.query.filter_by(user_id=user.id, is_primary=True).first()
+        primary_profile = Profile.query.filter(Profile.user_id==user.id).first()
         if primary_profile:
             return jsonify({'error': 'Primary profile already exists'}), 400
 
@@ -360,11 +360,11 @@ def update_profile():
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
 
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.filter(User.id==user_id).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+    profile = Profile.query.filter(Profile.id==profile_id, Profile.user_id==user.id).first()
     if not profile:
         return jsonify({'error': 'Profile not found'}), 404
 
@@ -415,11 +415,11 @@ def delete_profile():
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
 
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.filter(User.id==user_id).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+    profile = Profile.query.filter(Profile.id==profile_id, Profile.user_id==user.id).first()
     if not profile:
         return jsonify({'error': 'Profile not found'}), 404
 
@@ -430,4 +430,4 @@ def delete_profile():
 
 
 
-app.run(host='0.0.0.0', port=5000)
+app.run(host='0.0.0.0', port=5000,debug=True)
