@@ -9,7 +9,6 @@ import requests
 from flask import Flask, render_template, send_from_directory, request, jsonify,session, redirect
 from user_agents import parse
 
-from bot import run_bot
 from db import db, User, AuthUrl, Profile
 
 app = Flask(__name__)
