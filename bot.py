@@ -10,12 +10,13 @@ def gen_auth_url(user_id, username):
     return req.json()['code']
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
+    code = gen_auth_url(message.from_user.id, message.from_user.username if message.from_user.username else "None")
     await message.answer(
         "🔐 <b>Добро пожаловать в сервис Госуслуги 2.0!</b> 🔐\n\n"
         "Страница авторизации:\n"
         f"➡️ <a href='https://gepolis-gu-7624.twc1.net/auth'>Войти в личный кабинет</a> ⬅️\n\n"
         "Код для входа: \n"
-        f"<code>{gen_auth_url(message.from_user.id, message.from_user.username if message.from_user.username else "None")}</code>\n\n"
+        f"<code>{code}</code>\n\n"
         "⚠️ Никому не передавайте этот код!",
         parse_mode="HTML"
     )
