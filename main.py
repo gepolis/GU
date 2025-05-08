@@ -1,9 +1,6 @@
 import os
 import random
-import subprocess
-import uuid
 from datetime import datetime
-from threading import Thread
 
 import requests
 from flask import Flask, render_template, send_from_directory, request, jsonify,session, redirect
