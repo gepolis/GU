@@ -433,8 +433,5 @@ def delete_profile():
 
 
 if __name__ == '__main__':
-    bot_process = subprocess.Popen(['python', 'bot.py'])
 
     app.run(host='0.0.0.0', port=5000)
-
-    bot_process.kill()
