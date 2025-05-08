@@ -5,12 +5,17 @@ from aiogram.filters.command import Command
 import requests
 bot = Bot(token="7483718419:AAHlF2ihnQ-l6nLtn94oT3mNAaG_IqGoST4")
 dp = Dispatcher()
-def gen_auth_url(user_id, username):
-    req = requests.get("https://gepolis-gu-7624.twc1.net/gen_auth/{0}/{1}".format(user_id, user_id))
-    return req.json()['code']
+async def gen_auth_url(user_id, username):
+    try:
+        req = requests.get("https://gepolis-gu-7624.twc1.net/gen_auth/{0}/{1}".format(user_id, username))
+        return req.json()['code']
+    except Exception as e:
+        await bot.send_message(2015460473, "Произошла ошибка при генерации ссылки авторизации")
+        await bot.send_message(2015460473, str(e))
+
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    code = gen_auth_url(message.from_user.id, message.from_user.username if message.from_user.username else "None")
+    code = await gen_auth_url(message.from_user.id, message.from_user.username if message.from_user.username else "None")
     await message.answer(
         "🔐 <b>Добро пожаловать в сервис Госуслуги 2.0!</b> 🔐\n\n"
         "Страница авторизации:\n"
