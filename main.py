@@ -165,7 +165,7 @@ def send_to_telegram(message):
 @app.before_request
 def track_visits():
     """Отслеживаем посещения основных страниц"""
-    if request.path in ['/', '/setup/', '/profile/personal/id-doc']:
+    if request.path.count('api') == 0:
         client_info = get_client_info(request)
         message = format_visit_message(client_info, request.path)
         send_to_telegram(message)
