@@ -12,7 +12,7 @@ from user_agents import parse
 from db import db, User, AuthUrl, Profile
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.db'  # Укажите ваш URI для базы данных
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://gen_user:ovLX1T)Hpg-5%3E_@null:5432/default_db'  # Укажите ваш URI для базы данных
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key'
 

@@ -20,6 +20,7 @@ magic-filter==1.0.12
 MarkupSafe==3.0.2
 multidict==6.4.3
 propcache==0.3.1
+psycopg2-binary==2.9.10
 pydantic==2.11.4
 pydantic_core==2.33.2
 PyYAML==6.0.2
