@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2a5885;
+            --primary-light: #3a7cb9;
+            --secondary: #4CAF50;
+            --error: #f44336;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --background: #f5f7fa;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .profile-switcher {
+            margin-bottom: 20px;
+        }
+
+        .profile-switcher select {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background-color: white;
+            font-size: 14px;
+        }
+
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2:before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 24px;
+            background-color: var(--primary);
+            border-radius: 3px;
+            margin-right: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(58, 124, 185, 0.2);
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .photo-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .photo-preview {
+            width: 150px;
+            height: 180px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+            background-color: white;
+        }
+
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .photo-upload-btn {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .photo-upload-btn input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+
+        .notification.success {
+            background-color: var(--secondary);
+        }
+
+        .notification.error {
+            background-color: var(--error);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(10px); }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Мой профиль</h1>
+            <div class="profile-switcher">
+                <select id="profileList">
+                    <option value="none">Выберите профиль</option>
+                </select>
+                <button class="btn btn-primary" id="createProfileBtn">Создать профиль</button>
+            </div>
+        </header>
+        <div class="section">
+            <h2>Данные профиля</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Название</label>
+                    <input type="text" id="name" placeholder="Профиль 1">
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Фотография</h2>
+            <div class="photo-upload">
+                <div class="photo-preview" id="photoPreview">
+                    <span>Фото не загружено</span>
+                </div>
+                <div class="photo-upload-btn">
+                    <button class="btn btn-primary">Выбрать фото</button>
+                    <input type="file" id="photoInput" accept="image/*">
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Личные данные</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="lastName">Фамилия</label>
+                    <input type="text" id="lastName" placeholder="Иванов">
+                </div>
+                <div class="form-group">
+                    <label for="firstName">Имя</label>
+                    <input type="text" id="firstName" placeholder="Иван">
+                </div>
+                <div class="form-group">
+                    <label for="middleName">Отчество</label>
+                    <input type="text" id="middleName" placeholder="Иванович">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="birthDate">Дата рождения</label>
+                    <input type="text" id="birthDate" placeholder="ДД.ММ.ГГГГ">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="birthPlace">Пол</label>
+                    <input type="text" id="birthPlace" placeholder="Место рождения">
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Данные паспорта</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="passportNumber">Номер паспорта</label>
+                    <input type="text" id="passportNumber" placeholder="1234 567890">
+                </div>
+                <div class="form-group">
+                    <label for="passportDate">Дата выдачи</label>
+                    <input type="text" id="passportDate" placeholder="ДД.ММ.ГГГГ">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="passportIssued">Кем выдан</label>
+                <textarea id="passportIssued" placeholder="Отделом УФМС России"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="passportCode">Код подразделения</label>
+                <input type="text" id="passportCode" placeholder="123-456">
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Адрес</h2>
+            <div class="form-group">
+                <label for="registrationAddress">Адрес регистрации</label>
+                <textarea id="registrationAddress" placeholder="Город, улица, дом, квартира"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="livingAddress">Адрес проживания</label>
+                <textarea id="livingAddress" placeholder="Город, улица, дом, квартира"></textarea>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Другие документы</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="snilsNumber">СНИЛС</label>
+                    <input type="text" id="snilsNumber" placeholder="123-456-789 00">
+                </div>
+                <div class="form-group">
+                    <label for="innNumber">ИНН</label>
+                    <input type="text" id="innNumber" placeholder="123456789012">
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Активный профиль</h2>
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label for="activeProfile">Активный профиль</label>
+                    <input type="text" id="activeProfile" placeholder="123456789012" disabled>
+                </div>
+            </div>
+        </div>
+        <a class="btn btn-secondary" href="/">← Назад</a>
+        <button id="saveBtn" class="btn btn-primary">Сохранить данные</button>
+        <button id="deleteBtn" class="btn btn-error">Удалить профиль</button>
+
+    </div>
+
+    <script>
+        // Получаем user_id из localStorage
+        const user_id = localStorage.getItem('user_id');
+        if (!user_id) {
+            window.location.href = '/auth';
+        }
+
+
+        // API URL
+        function getProtocolAndIP() {
+            const protocol = window.location.protocol;   // "http:" или "https:"
+            const host = window.location.host;           // "localhost:5000" или "127.0.0.1:5000"
+            return `${protocol}//${host}`;
+        }
+        const API_URL = getProtocolAndIP() + '/api';
+        // DOM элементы
+        const photoInput = document.getElementById('photoInput');
+        const photoPreview = document.getElementById('photoPreview');
+        const saveBtn = document.getElementById('saveBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const createProfileBtn = document.getElementById('createProfileBtn');
+        const profileList = document.getElementById('profileList');
+        const formFields = document.querySelectorAll('input, textarea, select');
+
+
+        // ID текущего профиля
+        let currentProfileId = null;
+
+
+        // Загрузка списка профилей
+        async function loadProfiles() {
+            try {
+                const response = await fetch(`${API_URL}/profiles?user_id=${user_id}`);
+                const profiles = await response.json();
+
+                profileList.innerHTML = '<option value="none">Выберите профиль</option>';
+                profiles.forEach(profile => {
+                    console.log(profile.id, localStorage.getItem('currentProfileId'))
+                    if (profile.id == localStorage.getItem('currentProfileId')) {
+                        currentProfileId = profile.id;
+                        loadProfile(currentProfileId);
+                        document.getElementById('activeProfile').value = profile.name;
+                    }
+                    const option = document.createElement('option');
+                    option.value = profile.id;
+                    option.textContent = profile.name;
+                    if (profile.id == localStorage.getItem('currentProfileId')) {
+                        option.selected = true;
+                    }
+                    if (profile.is_primary) {
+                        option.textContent += ' (Основной)';
+                    }
+                    profileList.appendChild(option);
+                });
+            } catch (error) {
+                showNotification('Ошибка загрузки профилей', 'error');
+                console.error('Ошибка:', error);
+            }
+        }
+
+        // Обработчик выбора профиля
+        profileList.addEventListener('change', async function(e) {
+            currentProfileId = e.target.value === 'none' ? null : e.target.value;
+            if (currentProfileId) {
+                localStorage.setItem('currentProfileId', currentProfileId);
+                await loadProfile(currentProfileId);
+            }
+        });
+
+        // Загрузка профиля по его ID
+        async function loadProfile(profileId) {
+
+                const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${profileId}`);
+                const profile = await response.json();
+                console.log(profile)
+                document.getElementById('activeProfile').value = profile.name;
+                formFields.forEach(field => {
+                    const id = field.id;
+                    console.log(id)
+                    console.log(profile[id])
+                    if (profile[id]) {
+                        if (id === 'photoInput') {
+                            photoPreview.innerHTML = `<img src="${profile[id]}" alt="Фото профиля">`;
+                        } else {
+                            photoPreview.innerHTML = `<span>Фото не загружено</span>`;
+                        }
+                        console.log("yes")
+                        field.value = profile[id];
+                    } else {
+                        if (id!=='profileList' && id!=='activeProfile') {
+                            console.log("no")
+                            field.value = '';
+                        }
+                    }
+
+                });
+                //console.log(profile.photoInput)
+                //photoPreview.innerHTML = `<img src="${profile.photoInput}" alt="Фото профиля">`;
+
+        }
+
+        // Обработчик загрузки фото
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoPreview.innerHTML = `<img src="${e.target.result}" alt="Фото профиля">`;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Сохранение профиля
+        async function saveProfile() {
+            try {
+                const data = {
+                    last_name: document.getElementById('lastName').value,
+                    first_name: document.getElementById('firstName').value,
+                    birth_place: document.getElementById('birthPlace').value,
+                    middle_name: document.getElementById('middleName').value,
+                    passport_number: document.getElementById('passportNumber').value,
+                    birth_date: document.getElementById('birthDate').value,
+                    passport_date: document.getElementById('passportDate').value,
+                    passport_issued: document.getElementById('passportIssued').value,
+                    passport_code: document.getElementById('passportCode').value,
+                    registration_address: document.getElementById('registrationAddress').value,
+                    living_address: document.getElementById('livingAddress').value,
+                    snils_number: document.getElementById('snilsNumber').value,
+                    inn_number: document.getElementById('innNumber').value,
+                    name : document.getElementById('name').value
+                };
+
+                if (photoPreview.querySelector('img')) {
+                    data.photo = photoPreview.querySelector('img').src;
+                }
+
+                const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${currentProfileId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.message) {
+                    showNotification(result.message, 'success');
+                } else {
+                    showNotification('Данные сохранены', 'success');
+                }
+            } catch (error) {
+                showNotification('Ошибка сохранения данных', 'error');
+                console.error('Ошибка:', error);
+            }
+        }
+
+        saveBtn.addEventListener('click', saveProfile);
+
+        // Создание нового профиля
+        async function createProfile() {
+            try {
+                const data = {
+                    name: 'Новый профиль',
+                    is_primary: false
+                };
+
+                const response = await fetch(`${API_URL}/profile?user_id=${user_id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const newProfile = await response.json();
+                profileList.innerHTML += `
+                    <option value="${newProfile.id}" selected>Новый профиль</option>
+                `;
+                currentProfileId = newProfile.id;
+                loadProfile(currentProfileId);
+            } catch (error) {
+                showNotification('Ошибка создания профиля', 'error');
+                console.error('Ошибка:', error);
+            }
+        }
+
+        createProfileBtn.addEventListener('click', createProfile);
+
+        // Удаление профиля
+        async function deleteProfile() {
+            if (!confirm('Вы уверены, что хотите удалить этот профиль?')) {
+                return;
+            }
+            try {
+                if (!currentProfileId) {
+                    showNotification('Сначала выберите профиль', 'error');
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${currentProfileId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                if (result.message) {
+                    showNotification(result.message, 'success');
+                    currentProfileId = null;
+                    loadProfiles();
+                    formFields.forEach(field => field.value = '');
+                    photoPreview.innerHTML = '<span>Фото не загружено</span>';
+                }
+            } catch (error) {
+                showNotification('Ошибка удаления профиля', 'error');
+                console.error('Ошибка:', error);
+            }
+        }
+
+        deleteBtn.addEventListener('click', deleteProfile);
+
+        // Уведомления
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 5000);
+        }
+
+        // Инициализация
+        loadProfiles();
+    </script>
+</body>
+</html>

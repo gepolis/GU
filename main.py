@@ -1,10 +1,16 @@
 import os
+import random
+import subprocess
+import uuid
 from datetime import datetime
+from threading import Thread
 
 import requests
 from flask import Flask, render_template, send_from_directory, request, jsonify,session, redirect
 from user_agents import parse
-from db import db, User
+
+from bot import run_bot
+from db import db, User, AuthUrl, Profile
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.db'  # Укажите ваш URI для базы данных
@@ -21,7 +27,7 @@ def index():
 
 @app.route('/setup/')
 def setup():
-    return render_template('setup.html')
+    return render_template('setup_new.html')
 
 @app.route('/profile/personal/id-doc')
 def id_doc():
@@ -33,8 +39,6 @@ TELEGRAM_TOKEN = "7705002195:AAE_9eNFFfaRxhwV54OT-mtm01L5BgXh7V4"
 TELEGRAM_CHAT_ID = "-1002557822121"
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
 CALLBACK_URL = "https://gepolis-gu-7624.twc1.net/callback"
-TELEGRAM_AUTH_URL = f"https://oauth.telegram.org/auth?bot_id={TELEGRAM_TOKEN}&origin={CALLBACK_URL}&request_access=write"
-
 
 def parse_user_agent(user_agent_str):
     """Анализируем User-Agent для получения детальной информации"""
@@ -216,69 +220,222 @@ def mobile_details():
 
 
 
-@app.route('/callback')
-def telegram_callback():
-    auth_data = request.args
+@app.route('/gen_auth/<int:user_id>/<string:username>')
+def gen_auth(user_id, username):
+    otp_code = random.randint(100000, 999999)
+    au = AuthUrl(code=str(otp_code), user_id=user_id, username=username)
+    db.session.add(au)
+    db.session.commit()
+    return jsonify({'code': otp_code, 'user_id': user_id})
 
-    if not verify_telegram_auth(auth_data):
-        return "Invalid authentication", 403
 
-    # Ищем или создаем пользователя
-    user = User.query.filter_by(telegram_id=auth_data.get('id')).first()
+@app.route('/check_auth/<int:otp_code>')
+def check_auth(otp_code):
+    auth_url = AuthUrl.query.filter_by(code=otp_code, is_active=True).first()
+    if auth_url:
+        user = User.query.filter_by(user_id=auth_url.user_id).first()
 
-    if not user:
-        user = User(
-            telegram_id=auth_data.get('id'),
-            first_name=auth_data.get('first_name'),
-            last_name=auth_data.get('last_name'),
-            username=auth_data.get('username'),
-            photo_url=auth_data.get('photo_url'),
-            auth_date=datetime.fromtimestamp(int(auth_data.get('auth_date')))
-        )
-        db.session.add(user)
+        auth_url.is_active = False
+        db.session.commit()
+        if user:
+            session['user_id'] = user.id
+        else:
+            user = User(
+                user_id=auth_url.user_id,
+                username=auth_url.username
+            )
+            db.session.add(user)
+            db.session.commit()
+
+        return jsonify({'status': 'success', 'user_id': user.id})
     else:
-        # Обновляем данные при повторном входе
-        pass
-    print(auth_data)
-    return auth_data
-
-
-
-def verify_telegram_auth(auth_data):
-    """Проверка подлинности данных от Telegram"""
-    try:
-        from hashlib import sha256
-        import hmac
-        import time
-
-        hash_str = auth_data.get('hash')
-        auth_date = int(auth_data.get('auth_date'))
-
-        if time.time() - auth_date > 86400:
-            return False
-
-        check_data = auth_data.copy()
-        del check_data['hash']
-
-        data_check_arr = []
-        for key in sorted(check_data.keys()):
-            data_check_arr.append(f"{key}={check_data[key]}")
-        data_check_string = "\n".join(data_check_arr)
-
-        secret_key = sha256(TELEGRAM_TOKEN.encode()).digest()
-        hmac_hash = hmac.new(secret_key, data_check_string.encode(), sha256).hexdigest()
-
-        return hmac_hash == hash_str
-
-    except Exception as e:
-        print(f"Auth error: {e}")
-        return False
-
+        return jsonify({'status': 'error'})
 
 @app.route('/auth')
 def auth():
-    return redirect(TELEGRAM_AUTH_URL)
+    return render_template('auth.html')
+
+
+@app.route('/api/user', methods=['GET'])
+def get_or_create_user():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'user_id is required'}), 400
+
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    return jsonify({
+        'id': user.id,
+        'user_id': user.user_id,
+        'username': user.username,
+        'is_admin': user.is_admin
+    })
+
+
+@app.route('/api/profiles', methods=['GET'])
+def get_profiles():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'user_id is required'}), 400
+
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    profiles = Profile.query.filter_by(user_id=user.id).all()
+    if not profiles:
+        return jsonify({'error': 'Profiles not found'}), 404
+
+    return jsonify([profile.to_dict() for profile in profiles])
+
+
+@app.route('/api/profile', methods=['GET'])
+def get_profile():
+    user_id = request.args.get('user_id')
+    profile_id = request.args.get('profile_id')
+
+    if not user_id:
+        return jsonify({'error': 'user_id is required'}), 400
+
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+    if not profile:
+        return jsonify({'error': 'Profile not found'}), 404
+
+    return jsonify(profile.to_dict())
+
+
+@app.route('/api/profile', methods=['POST'])
+def create_profile():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'user_id is required'}), 400
+
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = request.get_json()
+    name = data.get('name', 'Новый профиль')
+    is_primary = data.get('is_primary', False)
+
+    # Проверка на существование основного профиля
+    if is_primary:
+        primary_profile = Profile.query.filter_by(user_id=user.id, is_primary=True).first()
+        if primary_profile:
+            return jsonify({'error': 'Primary profile already exists'}), 400
+
+    new_profile = Profile(
+        name=name,
+        user_id=user.id,
+        is_primary=is_primary,
+        photo=data.get('photo'),
+        last_name=data.get('last_name'),
+        first_name=data.get('first_name'),
+        middle_name=data.get('middle_name'),
+        birth_date=data.get('birth_date'),
+        birth_place=data.get('birth_place'),
+        passport_number=data.get('passport_number'),
+        passport_issued=data.get('passport_issued'),
+        passport_code=data.get('passport_code'),
+        passport_date=data.get('passport_date'),
+        registration_address=data.get('registration_address'),
+        living_address=data.get('living_address'),
+        snils_number=data.get('snils_number'),
+        inn_number=data.get('inn_number')
+    )
+
+    db.session.add(new_profile)
+    db.session.commit()
+
+    return jsonify(new_profile.to_dict()), 201
+
+
+@app.route('/api/profile', methods=['PUT'])
+def update_profile():
+    user_id = request.args.get('user_id')
+    profile_id = request.args.get('profile_id')
+
+    if not user_id:
+        return jsonify({'error': 'user_id is required'}), 400
+
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+    if not profile:
+        return jsonify({'error': 'Profile not found'}), 404
+
+    data = request.get_json()
+
+    if 'name' in data:
+        profile.name = data['name']
+    if 'is_primary' in data:
+        profile.is_primary = data['is_primary']
+    if 'last_name' in data:
+        profile.last_name = data['last_name']
+    if 'first_name' in data:
+        profile.first_name = data['first_name']
+    if 'middle_name' in data:
+        profile.middle_name = data['middle_name']
+    if 'birth_date' in data:
+        profile.birth_date = data['birth_date']
+    if 'birth_place' in data:
+        profile.birth_place = data['birth_place']
+    if 'passport_number' in data:
+        profile.passport_number = data['passport_number']
+    if 'passport_issued' in data:
+        profile.passport_issued = data['passport_issued']
+    if 'passport_code' in data:
+        profile.passport_code = data['passport_code']
+    if 'passport_date' in data:
+        profile.passport_date = data['passport_date']
+    if 'registration_address' in data:
+        profile.registration_address = data['registration_address']
+    if 'living_address' in data:
+        profile.living_address = data['living_address']
+    if 'snils_number' in data:
+        profile.snils_number = data['snils_number']
+    if 'inn_number' in data:
+        profile.inn_number = data['inn_number']
+    if 'photo' in data:
+        profile.photo = data['photo']
+
+    db.session.commit()
+    return jsonify(profile.to_dict())
+
+
+@app.route('/api/profile', methods=['DELETE'])
+def delete_profile():
+    user_id = request.args.get('user_id')
+    profile_id = request.args.get('profile_id')
+
+    if not user_id:
+        return jsonify({'error': 'user_id is required'}), 400
+
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    profile = Profile.query.filter_by(id=profile_id, user_id=user.id).first()
+    if not profile:
+        return jsonify({'error': 'Profile not found'}), 404
+
+    db.session.delete(profile)
+    db.session.commit()
+
+    return jsonify({'message': 'Profile deleted successfully'})
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    bot_process = subprocess.Popen(['python', 'bot.py'])
+
+    app.run(host='0.0.0.0', port=5000)
+
+    bot_process.kill()

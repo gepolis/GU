@@ -514,39 +514,83 @@
 
     <script>
         // Функция загрузки данных из localStorage
-function loadData() {
-    const savedData = localStorage.getItem('userData');
-    if (savedData) {
-        const userData = JSON.parse(savedData);
+//function loadData() {
+//    const savedData = localStorage.getItem('userData');
+//    if (savedData) {
+//        const userData = JSON.parse(savedData);
+//
+//        // Заполняем поля персональных данных
+//        if (userData.personal) {
+//            //document.getElementById('lastName').value = userData.personal.lastName || '';
+//            //document.getElementById('firstName').value = userData.personal.firstName || '';
+//            //document.getElementById('middleName').value = userData.personal.middleName || '';
+//            //document.getElementById('birthDate').value = userData.personal.birthDate || '';
+//            document.getElementById('initial').innerText = userData.personal.lastName[0] + userData.personal.firstName[0] || '';
+//        }
+//
+//        // Заполняем поля паспорта
+//        if (userData.passport) {
+//            document.getElementById('passportNumber').innerText = userData.passport.number || '';
+//            document.getElementById('passportIssued').innerText = userData.passport.issued || '';
+//            document.getElementById('passportCode').innerText = userData.passport.code || '';
+//            document.getElementById('passportDate').innerText = userData.passport.date || '';
+//        }
+//
+//        // Заполняем поля адреса
+//        if (userData.address) {
+//            document.getElementById('registrationAddress').innerText = userData.address.registration || '';
+//            document.getElementById('livingAddress').innerText = userData.address.living || '';
+//        }
+//
+//        // Заполняем остальные поля
+//        document.getElementById('snilsNumber').value = userData.snils || '';
+//        document.getElementById('innNumber').value = userData.inn || '';
+//    }
+//}
+//loadData();
+const user_id = localStorage.getItem('user_id');
 
-        // Заполняем поля персональных данных
-        if (userData.personal) {
-            //document.getElementById('lastName').value = userData.personal.lastName || '';
-            //document.getElementById('firstName').value = userData.personal.firstName || '';
-            //document.getElementById('middleName').value = userData.personal.middleName || '';
-            //document.getElementById('birthDate').value = userData.personal.birthDate || '';
-            document.getElementById('initial').innerText = userData.personal.lastName[0] + userData.personal.firstName[0] || '';
-        }
+if (!user_id) {
+window.location.href = '/auth';
+}
 
-        // Заполняем поля паспорта
-        if (userData.passport) {
-            document.getElementById('passportNumber').innerText = userData.passport.number || '';
-            document.getElementById('passportIssued').innerText = userData.passport.issued || '';
-            document.getElementById('passportCode').innerText = userData.passport.code || '';
-            document.getElementById('passportDate').innerText = userData.passport.date || '';
-        }
+function getProtocolAndIP() {
+    const protocol = window.location.protocol;   // "http:" или "https:"
+    const host = window.location.host;           // "localhost:5000" или "127.0.0.1:5000"
+    return `${protocol}//${host}`;
+}
 
-        // Заполняем поля адреса
-        if (userData.address) {
-            document.getElementById('registrationAddress').innerText = userData.address.registration || '';
-            document.getElementById('livingAddress').innerText = userData.address.living || '';
-        }
+const API_URL = getProtocolAndIP() + '/api';
+
+async function loadData() {
+
+        const profileId = localStorage.getItem('currentProfileId');
+        const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${profileId}`);
+        const profile = await response.json();
+        console.log(profile);
+
+        // Заполняем персональные данные
+        document.getElementById('initial').innerText = `${profile.lastName[0]}${profile.firstName[0]}` || '';
+
+        // Заполняем данные паспорта
+        document.getElementById('passportNumber').innerText = profile.passportNumber || '';
+        document.getElementById('passportIssued').innerText = profile.passportIssued || '';
+        document.getElementById('passportCode').innerText = profile.passportCode || '';
+        document.getElementById('passportDate').innerText = profile.passportDate || '';
+
+        // Заполняем данные адреса
+        document.getElementById('registrationAddress').innerText = profile.registrationAddress || '';
+        document.getElementById('livingAddress').innerText = profile.livingAddress || '';
 
         // Заполняем остальные поля
-        document.getElementById('snilsNumber').value = userData.snils || '';
-        document.getElementById('innNumber').value = userData.inn || '';
-    }
+        //document.getElementById('snilsNumber').innerText = profile.snilsNumber || '';
+        //document.getElementById('innNumber').innerText = profile.innNumber || '';
+
+
+
 }
+
 loadData();
+
     </script>
     <script src="https://gu-st.ru/lk-st/polyfills.ab80963c3ddf02af.js" type="module"></script><script src="https://gu-st.ru/lk-st/scripts.1e35d7ab74b8a5a7.js" defer=""></script><script src="https://gu-st.ru/lk-st/main.21aaa6f60b36f954.js" type="module"></script><script src="https://gu-st.ru/lk-profile-st/3.477.1-esiacoreremoteEntry.js"></script></body></html>

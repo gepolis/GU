@@ -570,30 +570,63 @@
 </div>
         <script>
         // Функция загрузки данных из localStorage
-function loadData() {
-    const savedData = localStorage.getItem('userData');
-    if (savedData) {
-        const userData = JSON.parse(savedData);
-
-        // Заполняем поля персональных данных
-        if (userData.personal) {
-            document.getElementById('fn').innerText = userData.personal.lastName + ' ' + userData.personal.firstName + ' ' + userData.personal.middleName || '';
-            document.getElementById('birthDate').innerText = userData.personal.birthDate || '';
-            document.getElementById('initial').innerText = userData.personal.lastName[0] + userData.personal.firstName[0] || '';
-            document.getElementById('birthPlace').innerText = userData.personal.birthPlace || '';
-        }
-
-        // Заполняем поля паспорта
-        if (userData.passport) {
-            document.getElementById('passportNumber').innerText = userData.passport.number || '';
-            document.getElementById('passportIssued').innerText = userData.passport.issued || '';
-            document.getElementById('passportCode').innerText = userData.passport.code || '';
-            document.getElementById('passportDate').innerText = userData.passport.date || '';
-        }
-
-    }
+//function loadData() {
+//    const savedData = localStorage.getItem('userData');
+//    if (savedData) {
+//        const userData = JSON.parse(savedData);
+//
+//        // Заполняем поля персональных данных
+//        if (userData.personal) {
+//            document.getElementById('fn').innerText = userData.personal.lastName + ' ' + userData.personal.firstName + ' ' + userData.personal.middleName || '';
+//            document.getElementById('birthDate').innerText = userData.personal.birthDate || '';
+//            document.getElementById('initial').innerText = userData.personal.lastName[0] + userData.personal.firstName[0] || '';
+//            document.getElementById('birthPlace').innerText = userData.personal.birthPlace || '';
+//        }
+//
+//        // Заполняем поля паспорта
+//        if (userData.passport) {
+//            document.getElementById('passportNumber').innerText = userData.passport.number || '';
+//            document.getElementById('passportIssued').innerText = userData.passport.issued || '';
+//            document.getElementById('passportCode').innerText = userData.passport.code || '';
+//            document.getElementById('passportDate').innerText = userData.passport.date || '';
+//        }
+//
+//    }
+//}
+//loadData();
+const user_id = localStorage.getItem('user_id');
+if (!user_id) {
+    window.location.href = '/auth';
 }
-loadData();
+function getProtocolAndIP() {
+    const protocol = window.location.protocol;   // "http:" или "https:"
+    const host = window.location.host;           // "localhost:5000" или "127.0.0.1:5000"
+    return `${protocol}//${host}`;
+}
+API_URL = getProtocolAndIP() + '/api';
+async function loadProfile(profileId) {
+
+                const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${localStorage.getItem('currentProfileId')}`);
+                const profile = await response.json();
+                console.log(profile)
+                document.getElementById('fn').innerText = profile.lastName + ' ' + profile.firstName + ' ' + profile.middleName || '';
+                document.getElementById('birthDate').innerText = profile.birthDate || '';
+                document.getElementById('initial').innerText = profile.lastName[0] + profile.firstName[0] || '';
+                document.getElementById('birthPlace').innerText = profile.birthPlace || '';
+                document.getElementById('passportNumber').innerText = profile.passportNumber || '';
+                document.getElementById('passportIssued').innerText = profile.passportIssued || '';
+                document.getElementById('passportCode').innerText = profile.passportCode || '';
+                document.getElementById('passportDate').innerText = profile.passportDate || '';
+                document.getElementById('registrationAddress').innerText = profile.registrationAddress || '';
+                document.getElementById('livingAddress').innerText = profile.livingAddress || '';
+                document.getElementById('snilsNumber').innerText = profile.snilsNumber || '';
+                document.getElementById('innNumber').innerText = profile.innNumber || '';
+
+                //console.log(profile.photoInput)
+                //photoPreview.innerHTML = `<img src="${profile.photoInput}" alt="Фото профиля">`;
+
+        }
+        loadProfile(localStorage.getItem('currentProfileId'));
         </script>
 
 <!---->
