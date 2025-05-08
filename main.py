@@ -289,17 +289,9 @@ def get_profiles():
 
 @app.route('/api/profile', methods=['GET'])
 def get_profile():
-    user_id = request.args.get('user_id')
     profile_id = request.args.get('profile_id')
 
-    if not user_id:
-        return jsonify({'error': 'user_id is required'}), 400
-
-    user = User.query.filter(User.id==user_id).first()
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    profile = Profile.query.filter(Profile.id==profile_id, Profile.user_id==user.id).first()
+    profile = Profile.query.filter(Profile.id==profile_id).first()
     if not profile:
         return jsonify({'error': 'Profile not found'}), 404
 
