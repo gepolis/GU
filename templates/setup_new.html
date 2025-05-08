@@ -295,8 +295,8 @@
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="birthPlace">Пол</label>
-                    <input type="text" id="birthPlace" placeholder="Место рождения">
+                    <label for="birthPlace">Место рождения</label>
+                    <input type="text" id="birthPlace" placeholder="РОССИЯ МОСКВА">
                 </div>
             </div>
         </div>
@@ -543,6 +543,7 @@
                 profileList.innerHTML += `
                     <option value="${newProfile.id}" selected>Новый профиль</option>
                 `;
+                localStorage.setItem('currentProfileId', newProfile.id);
                 currentProfileId = newProfile.id;
                 loadProfile(currentProfileId);
             } catch (error) {
