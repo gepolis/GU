@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 import requests
-bot = Bot(token="7265152642:AAFpcGe1PLizHrsaq9ir3Sma22U9MDAnZNA")
+bot = Bot(token="7483718419:AAHlF2ihnQ-l6nLtn94oT3mNAaG_IqGoST4")
 dp = Dispatcher()
 def gen_auth_url(user_id, username):
     req = requests.get("https://gepolis-gu-7624.twc1.net/gen_auth/{0}/{1}".format(user_id, user_id))
