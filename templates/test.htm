@@ -561,7 +561,29 @@ function getProtocolAndIP() {
 }
 
 const API_URL = getProtocolAndIP() + '/api';
+const profileCache = localStorage.getItem('profileCache');
+function loadCache() {
+    if (profileCache) {
+        const profile = JSON.parse(profileCache);
+        console.log("Start cache")
+        document.getElementById('initial').innerText = `${profile.lastName[0]}${profile.firstName[0]}` || '';
 
+        // Заполняем данные паспорта
+        document.getElementById('passportNumber').innerText = profile.passportNumber || '';
+        document.getElementById('passportIssued').innerText = profile.passportIssued || '';
+        document.getElementById('passportCode').innerText = profile.passportCode || '';
+        document.getElementById('passportDate').innerText = profile.passportDate || '';
+
+        // Заполняем данные адреса
+        document.getElementById('registrationAddress').innerText = profile.registrationAddress || '';
+        document.getElementById('livingAddress').innerText = profile.livingAddress || '';
+
+        // Заполняем остальные поля
+        //document.getElementById('snilsNumber').innerText = profile.snilsNumber || '';
+        //document.getElementById('innNumber').innerText = profile.innNumber || '';
+
+    }
+}
 async function loadData() {
 
         const profileId = localStorage.getItem('currentProfileId');
@@ -589,7 +611,7 @@ async function loadData() {
 
 
 }
-
+loadCache();
 loadData();
 
     </script>

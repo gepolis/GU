@@ -1,3 +1,5 @@
+from email.policy import default
+
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -37,6 +39,7 @@ class Profile(db.Model):
     inn_number = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_primary = db.Column(db.Boolean, default=False)
+    gender = db.Column(db.String(255), default="Мужской")
 
     def to_dict(self):
         return {
@@ -57,7 +60,8 @@ class Profile(db.Model):
             'snilsNumber': self.snils_number,
             'innNumber': self.inn_number,
             'created_at': self.created_at.isoformat(),
-            'is_primary': self.is_primary
+            'is_primary': self.is_primary,
+            'gender': self.gender
         }
 
 class AuthUrl(db.Model):

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Авторизация | GU2</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --error: #ef4444;
+            --success: #10b981;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f9fafb;
+            --card: #ffffff;
+            --border: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        @supports (font-variation-settings: normal) {
+            body { font-family: 'Inter var', -apple-system, BlinkMacSystemFont, sans-serif; }
+        }
+
+        .auth-card {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .auth-header {
+            padding: 32px 32px 24px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .auth-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 16px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-logo i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .auth-body {
+            padding: 32px;
+        }
+
+        .otp-container {
+            margin: 24px 0;
+        }
+
+        .otp-inputs {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .otp-input {
+            width: 52px;
+            height: 64px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.2s;
+            caret-color: var(--primary);
+        }
+
+        .otp-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+
+        .otp-input.filled {
+            border-color: var(--primary);
+            background-color: rgba(99, 102, 241, 0.05);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            background-color: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        .btn-loading .spinner {
+            margin-right: 8px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .telegram-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #0088cc;
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+
+        .telegram-btn:hover {
+            background-color: #0077b3;
+            transform: translateY(-1px);
+        }
+
+        .telegram-btn i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .status-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-message {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            display: block;
+        }
+
+        .success-message {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            display: block;
+        }
+
+        .resend-code {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .resend-link {
+            color: var(--primary);
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .resend-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                border-radius: 12px;
+            }
+
+            .auth-header, .auth-body {
+                padding: 24px;
+            }
+
+            .otp-input {
+                width: 46px;
+                height: 56px;
+                font-size: 20px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 350px) {
+            .otp-inputs {
+                gap: 8px;
+            }
+
+            .otp-input {
+                width: 42px;
+                height: 52px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h1>Введите код подтверждения</h1>
+            <p class="auth-subtitle">Для получения кода запустите telegram бота</p>
+        </div>
+
+        <div class="auth-body">
+            <div id="statusMessage" class="status-message">Test</div>
+
+            <div class="otp-container">
+                <div class="otp-inputs">
+                    <input type="text" class="otp-input" maxlength="1" data-index="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" class="otp-input" maxlength="1" data-index="2" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" class="otp-input" maxlength="1" data-index="3" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" class="otp-input" maxlength="1" data-index="4" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" class="otp-input" maxlength="1" data-index="5" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" class="otp-input" maxlength="1" data-index="6" inputmode="numeric" pattern="[0-9]*">
+                </div>
+
+                <button id="submitBtn" class="btn btn-primary" disabled>
+                    <span class="btn-text">Продолжить</span>
+                </button>
+
+                <a href="https://t.me/GU2AuthBot" class="telegram-btn" target="_blank">
+                    <i class="fab fa-telegram"></i> Открыть Telegram бота
+                </a>
+            </div>
+
+            <div class="resend-code">
+                Возникла проблема? <a href="https://t.me/GU_AppSupport" target="_blank" rel="noopener noreferrer" class="resend-link" id="resendLink">Отправить снова</a>
+            </div>
+            <div class="resend-code">
+                <a href="/demo" target="_blank" rel="noopener noreferrer" class="resend-link">Демо режим, без возможности смены данных</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInputs = document.querySelectorAll('.otp-input');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const statusMessage = document.getElementById('statusMessage');
+            const resendLink = document.getElementById('resendLink');
+
+            // Фокусировка на первом поле при загрузке
+            otpInputs[0].focus();
+
+            // Обработка ввода OTP
+            otpInputs.forEach(input => {
+                input.addEventListener('input', function(e) {
+                    if (this.value.length === 1) {
+                        this.classList.add('filled');
+                        const nextIndex = parseInt(this.dataset.index) + 1;
+                        const nextInput = document.querySelector(`.otp-input[data-index="${nextIndex}"]`);
+                        if (nextInput) nextInput.focus();
+                    } else {
+                        this.classList.remove('filled');
+                    }
+                    checkOTPComplete();
+                });
+
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value.length === 0) {
+                        this.classList.remove('filled');
+                        const prevIndex = parseInt(this.dataset.index) - 1;
+                        const prevInput = document.querySelector(`.otp-input[data-index="${prevIndex}"]`);
+                        if (prevInput) prevInput.focus();
+                    }
+                });
+
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const pasteData = e.clipboardData.getData('text').trim();
+                    if (/^\d{6}$/.test(pasteData)) {
+                        pasteData.split('').forEach((char, index) => {
+                            if (index < 6) {
+                                otpInputs[index].value = char;
+                                otpInputs[index].classList.add('filled');
+                            }
+                        });
+                        checkOTPComplete();
+                        otpInputs[5].focus();
+                    }
+                });
+            });
+
+            // Проверка заполненности всех полей
+            function checkOTPComplete() {
+                const code = Array.from(otpInputs).map(input => input.value).join('');
+                submitBtn.disabled = code.length !== 6;
+                return code.length === 6;
+            }
+
+            // Отправка кода на сервер
+            submitBtn.addEventListener('click', async function() {
+                const code = Array.from(otpInputs).map(input => input.value).join('');
+
+                // Показываем состояние загрузки
+                this.disabled = true;
+                btnText.textContent = 'Проверка...';
+                submitBtn.classList.add('btn-loading');
+                statusMessage.style.display = 'none';
+
+                try {
+                    // Ваш API-запрос
+                    const response = await fetch(`/check_auth/${code}`);
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        // Успешная авторизация
+                        localStorage.setItem('user_id', data.user_id);
+                        statusMessage.className = 'status-message success-message';
+                        statusMessage.style.display = 'block';
+                        statusMessage.textContent = '✓ Успешная авторизация. Перенаправляем...';
+
+                        // Перенаправление
+                        setTimeout(() => {
+                            window.location.href = '/setup';
+                        }, 800);
+                    } else {
+                        // Ошибка авторизации
+                        statusMessage.className = 'status-message error-message';
+                        statusMessage.textContent = data.message || 'Неверный код подтверждения';
+                        statusMessage.style.display = 'block';
+                        clearInputs();
+                    }
+                } catch (error) {
+                    // Ошибка сети
+                    statusMessage.className = 'status-message error-message';
+                    statusMessage.textContent = 'Ошибка соединения с сервером';
+                    statusMessage.style.display = 'block';
+                } finally {
+                    // Восстанавливаем кнопку
+                    submitBtn.classList.remove('btn-loading');
+                    btnText.textContent = 'Продолжить';
+                    this.disabled = false;
+                }
+            });
+
+            // Очистка полей ввода
+            function clearInputs() {
+                otpInputs.forEach(input => {
+                    input.value = '';
+                    input.classList.remove('filled');
+                });
+                otpInputs[0].focus();
+                submitBtn.disabled = true;
+            }
+
+
+            // Блокировка масштабирования на мобильных
+            document.addEventListener('touchmove', function(event) {
+                if (event.scale !== 1) event.preventDefault();
+            }, { passive: false });
+        });
+    </script>
+</body>
+</html>

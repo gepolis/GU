@@ -249,7 +249,7 @@ def check_auth(otp_code):
 
 @app.route('/auth')
 def auth():
-    return render_template('auth.html')
+    return render_template('auth_new.html')
 
 
 @app.route('/api/user', methods=['GET'])
@@ -335,7 +335,8 @@ def create_profile():
         registration_address=data.get('registration_address'),
         living_address=data.get('living_address'),
         snils_number=data.get('snils_number'),
-        inn_number=data.get('inn_number')
+        inn_number=data.get('inn_number'),
+        gender=data.get('gender')
     )
 
     db.session.add(new_profile)
@@ -394,6 +395,8 @@ def update_profile():
         profile.inn_number = data['inn_number']
     if 'photo' in data:
         profile.photo = data['photo']
+    if 'gender' in data:
+        profile.gender = data['gender']
 
     db.session.commit()
     return jsonify(profile.to_dict())
@@ -420,6 +423,13 @@ def delete_profile():
 
     return jsonify({'message': 'Profile deleted successfully'})
 
+@app.route('/demo', methods=['GET'])
+def demo():
+    return send_from_directory('templates', 'demo_main.htm')
+
+@app.route('/demo/profile', methods=['GET'])
+def demo_profile():
+    return send_from_directory('templates', 'demo_data.htm')
 
 
 app.run(host='0.0.0.0', port=5000)

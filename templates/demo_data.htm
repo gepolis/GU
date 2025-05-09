@@ -387,7 +387,7 @@
           <div _ngcontent-ng-c1998346217="" class="col-3 col-md-6 col-lg-9 left-wrapper">
             <div _ngcontent-ng-c1998346217="" class="mt-24 mt-md-40">
               <lib-back-button _ngcontent-ng-c1998346217="" _nghost-ng-c954228207="">
-                <a _ngcontent-ng-c954228207="" href="" class="back-button link-plain ng-star-inserted">
+                <a _ngcontent-ng-c954228207="" href="/demo" class="back-button link-plain ng-star-inserted">
                   Назад
                 </a>
               </lib-back-button>
@@ -444,7 +444,7 @@
                         <lk-doc-card-row _ngcontent-ng-c2631518577="" _nghost-ng-c461099212="">
                           <div _ngcontent-ng-c461099212="" class="mt-24 ng-star-inserted">
                             <div _ngcontent-ng-c461099212="" id="name" class="text-plain gray ng-star-inserted">Дата рождения</div>
-                            <div _ngcontent-ng-c461099212="" class="text-plain mt-4 ng-star-inserted" id="birthDate">29.05.1959</div>
+                            <div _ngcontent-ng-c461099212="" class="text-plain mt-4 ng-star-inserted" id="birthDate">00.00.0000</div>
                           </div>
                         </lk-doc-card-row>
                       </div>
@@ -460,7 +460,7 @@
                     <lk-doc-card-row _ngcontent-ng-c2631518577="" _nghost-ng-c461099212="" class="ng-star-inserted">
                       <div _ngcontent-ng-c461099212="" class="mt-24 ng-star-inserted">
                         <div _ngcontent-ng-c461099212="" id="name" class="text-plain gray ng-star-inserted">Место рождения</div>
-                        <div _ngcontent-ng-c461099212="" class="text-plain mt-4 ng-star-inserted" id="birthPlace">горол Ленинск-Кузнецк Кемеровской облать</div>
+                        <div _ngcontent-ng-c461099212="" class="text-plain mt-4 ng-star-inserted" id="birthPlace">Демо обл, г Демо</div>
                       </div>
                     </lk-doc-card-row>
 
@@ -474,7 +474,7 @@
                     <lk-doc-card-row _ngcontent-ng-c1998346217="" _nghost-ng-c461099212="" class="ng-star-inserted">
                       <div _ngcontent-ng-c461099212="" class="mt-24 ng-star-inserted">
                         <div _ngcontent-ng-c461099212="" id="name" class="text-plain gray ng-star-inserted">Выдан</div>
-                        <div _ngcontent-ng-c461099212="" class="text-plain mt-4 ng-star-inserted" id="passportIssued">отдел офмс россии по карачаево-черкесской республике в с. Учкекен</div>
+                        <div _ngcontent-ng-c461099212="" class="text-plain mt-4 ng-star-inserted" id="passportIssued">МВД РОССИИ ПО Г. ДЕМО</div>
                       </div>
                     </lk-doc-card-row>
 
@@ -491,7 +491,7 @@
                       <lk-doc-card-row _ngcontent-ng-c1998346217="" _nghost-ng-c461099212="">
                         <div _ngcontent-ng-c461099212="" class="mt-24 ng-star-inserted">
                           <div _ngcontent-ng-c461099212="" id="name" class="text-plain gray ng-star-inserted">Код подразделения</div>
-                          <div _ngcontent-ng-c461099212="" class="text-plain mt-4 ng-star-inserted" id="passportCode">090-005</div>
+                          <div _ngcontent-ng-c461099212="" class="text-plain mt-4 ng-star-inserted" id="passportCode">000-000</div>
                         </div>
                       </lk-doc-card-row>
                     </div>
@@ -568,64 +568,6 @@
     </div>
   </ng-component>
 </div>
-        <script>
-
-const user_id = localStorage.getItem('user_id');
-const profileCache = localStorage.getItem('profileCache');
-function loadCache() {
-    if (profileCache) {
-        const profile = JSON.parse(profileCache);
-        console.log("Start cache")
-        document.getElementById('fn').innerText = profile.lastName + ' ' + profile.firstName + ' ' + profile.middleName || '';
-        document.getElementById('birthDate').innerText = profile.birthDate || '';
-        document.getElementById('initial').innerText = profile.lastName[0] + profile.firstName[0] || '';
-        document.getElementById('birthPlace').innerText = profile.birthPlace || '';
-        document.getElementById('passportNumber').innerText = profile.passportNumber || '';
-        document.getElementById('passportIssued').innerText = profile.passportIssued || '';
-        document.getElementById('passportCode').innerText = profile.passportCode || '';
-        document.getElementById('passportDate').innerText = profile.passportDate || '';
-        //load gender
-        document.getElementById('gender').innerText = profile.gender || 'Мужской';
-        console.log("End cache")
-    }
-}
-if (!user_id) {
-    window.location.href = '/auth';
-}
-function getProtocolAndIP() {
-    const protocol = window.location.protocol;   // "http:" или "https:"
-    const host = window.location.host;           // "localhost:5000" или "127.0.0.1:5000"
-    return `${protocol}//${host}`;
-}
-API_URL = getProtocolAndIP() + '/api';
-async function loadProfile(profileId) {
-
-                console.log("Fetch data")
-                const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${localStorage.getItem('currentProfileId')}`);
-                const profile = await response.json();
-                console.log("Fetch data end")
-
-                console.log(profile)
-                document.getElementById('fn').innerText = profile.lastName + ' ' + profile.firstName + ' ' + profile.middleName || '';
-                document.getElementById('birthDate').innerText = profile.birthDate || '';
-                document.getElementById('initial').innerText = profile.lastName[0] + profile.firstName[0] || '';
-                document.getElementById('birthPlace').innerText = profile.birthPlace || '';
-                document.getElementById('passportNumber').innerText = profile.passportNumber || '';
-                document.getElementById('passportIssued').innerText = profile.passportIssued || '';
-                document.getElementById('passportCode').innerText = profile.passportCode || '';
-                document.getElementById('passportDate').innerText = profile.passportDate || '';
-                //load gender
-                document.getElementById('gender').innerText = profile.gender || 'Мужской';
-                console.log("END")
-
-                //console.log(profile.photoInput)
-                //photoPreview.innerHTML = `<img src="${profile.photoInput}" alt="Фото профиля">`;
-
-        }
-
-        loadCache();
-        loadProfile(localStorage.getItem('currentProfileId'));
-        </script>
 
 <!---->
 </lib-quiz></div></lk-root><script>if (window.location.href.indexOf('mobile/info') >= 0) {

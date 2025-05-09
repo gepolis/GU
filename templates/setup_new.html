@@ -103,7 +103,7 @@
             font-size: 14px;
         }
 
-        input, textarea {
+        input, textarea,select {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid var(--border);
@@ -113,7 +113,7 @@
             transition: all 0.3s ease;
         }
 
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: var(--primary-light);
             box-shadow: 0 0 0 2px rgba(58, 124, 185, 0.2);
@@ -299,6 +299,15 @@
                     <input type="text" id="birthPlace" placeholder="РОССИЯ МОСКВА">
                 </div>
             </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="gender">Пол</label>
+                    <select id="gender">
+                        <option value="Мужской">Мужской</option>
+                        <option value="Женский">Женский</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <div class="section">
@@ -438,6 +447,7 @@
 
                 const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${profileId}`);
                 const profile = await response.json();
+                localStorage.setItem('profileCache', JSON.stringify(profile));
                 console.log(profile)
                 document.getElementById('activeProfile').value = profile.name;
                 formFields.forEach(field => {
@@ -450,10 +460,13 @@
                         } else {
                             photoPreview.innerHTML = `<span>Фото не загружено</span>`;
                         }
+                        if (id === 'gender') {
+                            document.getElementById('gender').value = profile[id];
+                        }
                         console.log("yes")
                         field.value = profile[id];
                     } else {
-                        if (id!=='profileList' && id!=='activeProfile') {
+                        if (id!=='profileList' && id!=='activeProfile' && id!=='gender') {
                             console.log("no")
                             field.value = '';
                         }
@@ -494,7 +507,8 @@
                     living_address: document.getElementById('livingAddress').value,
                     snils_number: document.getElementById('snilsNumber').value,
                     inn_number: document.getElementById('innNumber').value,
-                    name : document.getElementById('name').value
+                    name : document.getElementById('name').value,
+                    gender: document.getElementById('gender').value
                 };
 
                 if (photoPreview.querySelector('img')) {
