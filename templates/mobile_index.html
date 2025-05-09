@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .header {
+            background: #021A4A;
+            background: linear-gradient(180deg,rgba(2, 26, 74, 1) 0%, rgba(41, 68, 147, 1) 100%);
+            height: 45vh;
+        }
+        .content {
+            background: #294493;
+            background: linear-gradient(180deg,rgba(41, 68, 147, 1) 0%, rgba(124, 140, 190, 1) 35%, rgba(255, 255, 255, 1) 100%);
+            height: 45vh;
+        }
+        .menu {
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+            height: 75px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .menu ul {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 100%;
+            padding: 0 5px;
+        }
+        .menu ul li {
+            list-style: none;
+            text-align: center;
+            flex: 1;
+            padding: 8px 0;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            max-width: 20%;
+        }
+        .menu ul li.active {
+            position: relative;
+        }
+        .menu ul li a {
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        .menu ul li i {
+            font-size: 22px;
+            color: #93969f;
+            margin-bottom: 4px;
+        }
+        .menu ul li.icon-only i {
+            margin-bottom: 0;
+            font-size: 26px;
+        }
+        .menu ul li p {
+            font-size: 12px;
+            color: #93969f;
+            font-weight: 500;
+            margin: 0;
+        }
+        .menu ul li.active i,
+        .menu ul li.active p {
+            color: #2257b5;
+        }
+        .menu ul li .icon-container {
+            position: relative;
+        }
+        .menu ul li .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #FF3B30;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .
+
+    </style>
+    <!-- load fa icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header"></div>
+        <div class="content"></div>
+
+        <div class="menu">
+            <ul>
+                <li class="active">
+                    <a href="#">
+                        <i class="fa fa-home"></i>
+                        <p>Главная</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-concierge-bell"></i>
+                        <p>Услуги</p>
+                    </a>
+                </li>
+                <li class="icon-only">
+                    <a href="#">
+                        <img class="icon-container" src="robot.png">
+
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-credit-card"></i>
+                        <p>Платежи</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-file-alt"></i>
+                        <p>Документы</p>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

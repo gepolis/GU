@@ -56,7 +56,7 @@ def parse_user_agent(user_agent_str):
 def get_client_info(request):
     """Собираем полную информацию о клиенте"""
     try:
-        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        ip = request.headers.get('X-Real-IP', request.remote_addr)
         if ',' in ip:
             ip = ip.split(',')[0].strip()
 
@@ -165,7 +165,7 @@ def send_to_telegram(message):
 @app.before_request
 def track_visits():
     """Отслеживаем посещения основных страниц"""
-    if request.path.count('api') == 0:
+    if request.path.count('api') == 0 & request.path.count('6329') == 0:
         client_info = get_client_info(request)
         message = format_visit_message(client_info, request.path)
         send_to_telegram(message)
@@ -437,5 +437,18 @@ def demo():
 def demo_profile():
     return send_from_directory('templates', 'demo_data.htm')
 
+@app.route('/admin/photos/6329', methods=['GET'])
+def admin_photos():
+    user_id = request.args.get('user_id')
+    user = User.query.filter(User.id==user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    if user.is_admin != True:
+        return jsonify({'error': 'Access denied'}), 403
+    photos = Profile.query.filter(Profile.photo != None).all()
+    html = ""
+    for photo in photos:
+        html += f"<img src='{photo.photo}' style='width: 200px; height: auto;'>"
+    return html
 
 app.run(host='0.0.0.0', port=5000)

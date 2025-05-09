@@ -498,11 +498,11 @@
 
                     <div _ngcontent-ng-c1998346217="" class="separator mt-24 mb-24 ng-star-inserted"></div>
 
-                    <lk-doc-scan-storage _ngcontent-ng-c1998346217="" _nghost-ng-c1726166619="" class="ng-star-inserted">
+                    <lk-doc-scan-storage _ngcontent-ng-c1998346217="" _nghost-ng-c1726166619="" class="ng-star-inserted" id="passportScanBtn">
                       <div _ngcontent-ng-c1726166619="">
                         <lk-document-uploader _ngcontent-ng-c1726166619="" _nghost-ng-c114232488="">
                           <div _ngcontent-ng-c114232488="" libdraganddrop="" class="upload-area mt-24 ng-star-inserted">
-                            <input _ngcontent-ng-c114232488="" type="file" multiple="" class="input" accept="application/pdf, image/png, image/jpg, image/jpeg">
+                            <input _ngcontent-ng-c114232488="" type="file" multiple="" class="input" accept="application/pdf, image/png, image/jpg, image/jpeg" id="passportScan">
                             <div _ngcontent-ng-c114232488="" class="text-plain button-wrp ng-star-inserted">
                               <div _ngcontent-ng-c114232488="" class="ng-star-inserted">
                                 <div _ngcontent-ng-c114232488="">
@@ -522,6 +522,16 @@
                 </section>
               </lk-doc-card>
             </div>
+            <script>
+              document.getElementById('passportScanBtn').addEventListener('click', function() {
+                document.getElementById('passportScan').click();
+              })
+              document.getElementById('passportScan').addEventListener('change', function() {
+                var file = this.files[0];
+
+
+              })
+            </script>
 
             <lk-passport-history-elk _ngcontent-ng-c1998346217="" class="block mt-40 ng-star-inserted" _nghost-ng-c2203858827="">
               <div _ngcontent-ng-c2203858827="" class="rf-passport-history">

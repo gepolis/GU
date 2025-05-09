@@ -4,19 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль пользователя</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #2a5885;
-            --primary-light: #3a7cb9;
-            --secondary: #4CAF50;
-            --error: #f44336;
-            --text: #333;
-            --text-light: #666;
-            --border: #e0e0e0;
-            --background: #f5f7fa;
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --primary-hover: #4338ca;
+            --text: #111827;
+            --text-light: #6b7280;
+            --text-lighter: #9ca3af;
+            --border: #e5e7eb;
+            --background: #f9fafb;
             --card-bg: #ffffff;
+            --radius: 8px;
+            --shadow: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.02);
+            --transition: all 0.15s ease;
         }
 
         * {
@@ -26,116 +30,74 @@
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
-            line-height: 1.6;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
             color: var(--text);
             background-color: var(--background);
-            padding: 20px;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 24px;
         }
 
         header {
-            text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
 
         h1 {
-            color: var(--primary);
-            font-weight: 500;
-            margin-bottom: 10px;
-            font-size: 28px;
+            font-weight: 600;
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: var(--text);
         }
 
-        .profile-switcher {
-            margin-bottom: 20px;
+        .profile-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        .profile-switcher select {
-            padding: 10px;
-            border-radius: 4px;
+        select {
+            padding: 10px 12px;
+            border-radius: var(--radius);
             border: 1px solid var(--border);
             background-color: white;
             font-size: 14px;
+            min-width: 200px;
+            transition: var(--transition);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
         }
 
-        .section {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 1px solid var(--border);
-        }
-
-        h2 {
-            color: var(--primary);
-            font-weight: 500;
-            margin-bottom: 20px;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        h2:before {
-            content: "";
-            display: inline-block;
-            width: 6px;
-            height: 24px;
-            background-color: var(--primary);
-            border-radius: 3px;
-            margin-right: 12px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text-light);
-            font-size: 14px;
-        }
-
-        input, textarea,select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        input:focus, textarea:focus, select:focus {
+        select:focus {
             outline: none;
-            border-color: var(--primary-light);
-            box-shadow: 0 0 0 2px rgba(58, 124, 185, 0.2);
-        }
-
-        textarea {
-            min-height: 80px;
-            resize: vertical;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             text-decoration: none;
             border: none;
+            gap: 8px;
+            white-space: nowrap;
         }
 
         .btn-primary {
@@ -144,12 +106,98 @@
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-light);
+            background-color: var(--primary-hover);
+        }
+
+        .btn-danger {
+            background-color: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--border);
+        }
+
+        .btn-danger:hover {
+            color: #dc2626;
+            border-color: #fecaca;
+            background-color: #fef2f2;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: #f9fafb;
+        }
+
+        .section {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2 i {
+            color: var(--primary);
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-lighter);
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+            line-height: 1.5;
         }
 
         .form-row {
             display: flex;
-            gap: 20px;
+            gap: 16px;
         }
 
         .form-row .form-group {
@@ -159,28 +207,35 @@
         .photo-upload {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 20px;
         }
 
         .photo-preview {
-            width: 150px;
-            height: 180px;
-            border: 2px dashed var(--border);
-            border-radius: 8px;
+            width: 120px;
+            height: 160px;
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             position: relative;
-            background-color: white;
+            background-color: var(--background);
         }
 
         .photo-preview img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-preview span {
+            color: var(--text-lighter);
+            font-size: 13px;
+            text-align: center;
+            padding: 0 10px;
         }
 
         .photo-upload-btn {
@@ -199,26 +254,37 @@
             cursor: pointer;
         }
 
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
         .notification {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
             z-index: 1000;
             animation: fadeIn 0.3s ease;
             color: white;
             display: flex;
             align-items: center;
-        }
-
-        .notification.success {
-            background-color: var(--secondary);
+            gap: 8px;
+            max-width: 320px;
+            font-size: 14px;
+            background-color: var(--primary);
         }
 
         .notification.error {
-            background-color: var(--error);
+            background-color: #ef4444;
+        }
+
+        .notification i {
+            font-size: 16px;
         }
 
         @keyframes fadeIn {
@@ -230,147 +296,240 @@
             to { opacity: 0; transform: translateY(10px); }
         }
 
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--text-light);
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px dashed var(--border);
+            margin-top: 20px;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: var(--border);
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .empty-state p {
+            margin-bottom: 24px;
+            max-width: 400px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-loading .loader {
+            display: inline-block;
+            margin-left: 8px;
+        }
+
         @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
             .form-row {
                 flex-direction: column;
                 gap: 0;
             }
+
+            .profile-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            select, .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .actions {
+                flex-direction: column;
+            }
+
+            .actions .btn {
+                width: 100%;
+            }
+        }
+        a {
+            text-decoration: none;
+            color: #3366ff;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Мой профиль</h1>
-            <div class="profile-switcher">
+            <h1><a href="/"><i class="fas fa-arrow-left"></i></a> Мой профиль</h1>
+            <div class="profile-controls">
                 <select id="profileList">
                     <option value="none">Выберите профиль</option>
                 </select>
-                <button class="btn btn-primary" id="createProfileBtn">Создать профиль</button>
+                <button class="btn btn-primary" id="createProfileBtn">
+                    <i class="fas fa-plus"></i> Новый профиль
+                </button>
             </div>
         </header>
-        <div class="section">
-            <h2>Данные профиля</h2>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="name">Название</label>
-                    <input type="text" id="name" placeholder="Профиль 1">
-                </div>
-            </div>
-        </div>
-        <div class="section">
-            <h2>Фотография</h2>
-            <div class="photo-upload">
-                <div class="photo-preview" id="photoPreview">
-                    <span>Фото не загружено</span>
-                </div>
-                <div class="photo-upload-btn">
-                    <button class="btn btn-primary">Выбрать фото</button>
-                    <input type="file" id="photoInput" accept="image/*">
-                </div>
-            </div>
-        </div>
 
-        <div class="section">
-            <h2>Личные данные</h2>
-            <div class="form-row">
+        <div id="form-container" style="display: none;">
+            <div class="section">
+                <h2><i class="fas fa-id-card"></i>Данные профиля</h2>
                 <div class="form-group">
-                    <label for="lastName">Фамилия</label>
-                    <input type="text" id="lastName" placeholder="Иванов">
-                </div>
-                <div class="form-group">
-                    <label for="firstName">Имя</label>
-                    <input type="text" id="firstName" placeholder="Иван">
-                </div>
-                <div class="form-group">
-                    <label for="middleName">Отчество</label>
-                    <input type="text" id="middleName" placeholder="Иванович">
+                    <label for="name">Название профиля</label>
+                    <input type="text" id="name" placeholder="Например: Основной профиль">
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="birthDate">Дата рождения</label>
-                    <input type="text" id="birthDate" placeholder="ДД.ММ.ГГГГ">
+
+            <div class="section">
+                <h2><i class="fas fa-camera"></i>Фотография</h2>
+                <div class="photo-upload">
+                    <div class="photo-preview" id="photoPreview">
+                        <span>Фото не загружено</span>
+                    </div>
+                    <div class="photo-upload-btn">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-upload"></i> Загрузить фото
+                        </button>
+                        <input type="file" id="photoInput" accept="image/*">
+                    </div>
                 </div>
             </div>
-            <div class="form-row">
+
+            <div class="section">
+                <h2><i class="fas fa-user"></i>Личные данные</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="lastName">Фамилия</label>
+                        <input type="text" id="lastName" placeholder="Иванов">
+                    </div>
+                    <div class="form-group">
+                        <label for="firstName">Имя</label>
+                        <input type="text" id="firstName" placeholder="Иван">
+                    </div>
+                    <div class="form-group">
+                        <label for="middleName">Отчество</label>
+                        <input type="text" id="middleName" placeholder="Иванович">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="birthDate">Дата рождения</label>
+                        <input type="text" id="birthDate" placeholder="ДД.ММ.ГГГГ">
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Пол</label>
+                        <select id="gender">
+                            <option value="Мужской">Мужской</option>
+                            <option value="Женский">Женский</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label for="birthPlace">Место рождения</label>
-                    <input type="text" id="birthPlace" placeholder="РОССИЯ МОСКВА">
+                    <input type="text" id="birthPlace" placeholder="СТРАНА ГОРОД">
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="gender">Пол</label>
-                    <select id="gender">
-                        <option value="Мужской">Мужской</option>
-                        <option value="Женский">Женский</option>
-                    </select>
+
+            <div class="section">
+                <h2><i class="fas fa-passport"></i>Паспортные данные</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="passportNumber">Номер паспорта</label>
+                        <input type="text" id="passportNumber" placeholder="1234 567890">
+                    </div>
+                    <div class="form-group">
+                        <label for="passportDate">Дата выдачи</label>
+                        <input type="text" id="passportDate" placeholder="ДД.ММ.ГГГГ">
+                    </div>
                 </div>
+                <div class="form-group">
+                    <label for="passportIssued">Кем выдан</label>
+                    <textarea id="passportIssued" placeholder="Отделом УФМС России"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="passportCode">Код подразделения</label>
+                        <input type="text" id="passportCode" placeholder="123-456">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-home"></i>Адрес</h2>
+                <div class="form-group">
+                    <label for="registrationAddress">Адрес регистрации</label>
+                    <textarea id="registrationAddress" placeholder="Город, улица, дом, квартира"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="livingAddress">Адрес проживания</label>
+                    <textarea id="livingAddress" placeholder="Город, улица, дом, квартира"></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-file-alt"></i>Другие документы</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="snilsNumber">СНИЛС</label>
+                        <input type="text" id="snilsNumber" placeholder="123-456-789 00">
+                    </div>
+                    <div class="form-group">
+                        <label for="innNumber">ИНН</label>
+                        <input type="text" id="innNumber" placeholder="123456789012">
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a href="/" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+                <button id="saveBtn" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button id="deleteBtn" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Удалить
+                </button>
             </div>
         </div>
 
-        <div class="section">
-            <h2>Данные паспорта</h2>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="passportNumber">Номер паспорта</label>
-                    <input type="text" id="passportNumber" placeholder="1234 567890">
-                </div>
-                <div class="form-group">
-                    <label for="passportDate">Дата выдачи</label>
-                    <input type="text" id="passportDate" placeholder="ДД.ММ.ГГГГ">
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="passportIssued">Кем выдан</label>
-                <textarea id="passportIssued" placeholder="Отделом УФМС России"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="passportCode">Код подразделения</label>
-                <input type="text" id="passportCode" placeholder="123-456">
-            </div>
+        <div id="empty-state" class="empty-state">
+            <i class="fas fa-user-plus"></i>
+            <h3>Нет активного профиля</h3>
+            <p>Выберите существующий профиль из списка или создайте новый для хранения ваших данных</p>
+            <button id="createProfileBtn2" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Создать профиль
+            </button>
         </div>
-
-        <div class="section">
-            <h2>Адрес</h2>
-            <div class="form-group">
-                <label for="registrationAddress">Адрес регистрации</label>
-                <textarea id="registrationAddress" placeholder="Город, улица, дом, квартира"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="livingAddress">Адрес проживания</label>
-                <textarea id="livingAddress" placeholder="Город, улица, дом, квартира"></textarea>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Другие документы</h2>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="snilsNumber">СНИЛС</label>
-                    <input type="text" id="snilsNumber" placeholder="123-456-789 00">
-                </div>
-                <div class="form-group">
-                    <label for="innNumber">ИНН</label>
-                    <input type="text" id="innNumber" placeholder="123456789012">
-                </div>
-            </div>
-        </div>
-        <div class="section">
-            <h2>Активный профиль</h2>
-            <div class="form-row">
-
-                <div class="form-group">
-                    <label for="activeProfile">Активный профиль</label>
-                    <input type="text" id="activeProfile" placeholder="123456789012" disabled>
-                </div>
-            </div>
-        </div>
-        <a class="btn btn-secondary" href="/">← Назад</a>
-        <button id="saveBtn" class="btn btn-primary">Сохранить данные</button>
-        <button id="deleteBtn" class="btn btn-error">Удалить профиль</button>
-
     </div>
 
     <script>
@@ -380,27 +539,62 @@
             window.location.href = '/auth';
         }
 
-
         // API URL
         function getProtocolAndIP() {
-            const protocol = window.location.protocol;   // "http:" или "https:"
-            const host = window.location.host;           // "localhost:5000" или "127.0.0.1:5000"
+            const protocol = window.location.protocol;
+            const host = window.location.host;
             return `${protocol}//${host}`;
         }
         const API_URL = getProtocolAndIP() + '/api';
+
         // DOM элементы
         const photoInput = document.getElementById('photoInput');
         const photoPreview = document.getElementById('photoPreview');
         const saveBtn = document.getElementById('saveBtn');
         const deleteBtn = document.getElementById('deleteBtn');
         const createProfileBtn = document.getElementById('createProfileBtn');
+        const createProfileBtn2 = document.getElementById('createProfileBtn2');
         const profileList = document.getElementById('profileList');
+        const formContainer = document.getElementById('form-container');
+        const emptyState = document.getElementById('empty-state');
         const formFields = document.querySelectorAll('input, textarea, select');
-
 
         // ID текущего профиля
         let currentProfileId = null;
+        let isLoading = false;
 
+        // Форматирование данных
+        function formatPassportNumber(value) {
+            if (!value) return '';
+            const cleaned = value.replace(/\D/g, '');
+            const match = cleaned.match(/^(\d{0,4})(\d{0,6})$/);
+            if (!match) return value;
+            return `${match[1]}${match[2] ? ' ' + match[2] : ''}`;
+        }
+
+        function formatPassportCode(value) {
+            if (!value) return '';
+            const cleaned = value.replace(/\D/g, '');
+            const match = cleaned.match(/^(\d{0,3})(\d{0,3})$/);
+            if (!match) return value;
+            return `${match[1]}${match[2] ? '-' + match[2] : ''}`;
+        }
+
+        function formatSnilsNumber(value) {
+            if (!value) return '';
+            const cleaned = value.replace(/\D/g, '');
+            const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2})$/);
+            if (!match) return value;
+            return `${match[1]}${match[2] ? '-' + match[2] : ''}${match[3] ? '-' + match[3] : ''}${match[4] ? ' ' + match[4] : ''}`;
+        }
+
+        function formatDate(value) {
+            if (!value) return '';
+            const cleaned = value.replace(/\D/g, '');
+            const match = cleaned.match(/^(\d{0,2})(\d{0,2})(\d{0,4})$/);
+            if (!match) return value;
+            return `${match[1]}${match[2] ? '.' + match[2] : ''}${match[3] ? '.' + match[3] : ''}`;
+        }
 
         // Загрузка списка профилей
         async function loadProfiles() {
@@ -410,21 +604,24 @@
 
                 profileList.innerHTML = '<option value="none">Выберите профиль</option>';
                 profiles.forEach(profile => {
-                    console.log(profile.id, localStorage.getItem('currentProfileId'))
                     if (profile.id == localStorage.getItem('currentProfileId')) {
+                        formContainer.style.display = 'block';
+                        emptyState.style.display = 'none';
                         currentProfileId = profile.id;
                         loadProfile(currentProfileId);
-                        document.getElementById('activeProfile').value = profile.name;
                     }
+
                     const option = document.createElement('option');
                     option.value = profile.id;
                     option.textContent = profile.name;
+
                     if (profile.id == localStorage.getItem('currentProfileId')) {
                         option.selected = true;
                     }
                     if (profile.is_primary) {
                         option.textContent += ' (Основной)';
                     }
+
                     profileList.appendChild(option);
                 });
             } catch (error) {
@@ -436,52 +633,61 @@
         // Обработчик выбора профиля
         profileList.addEventListener('change', async function(e) {
             currentProfileId = e.target.value === 'none' ? null : e.target.value;
+
             if (currentProfileId) {
                 localStorage.setItem('currentProfileId', currentProfileId);
+                formContainer.style.display = 'block';
+                emptyState.style.display = 'none';
                 await loadProfile(currentProfileId);
+            } else {
+                formContainer.style.display = 'none';
+                emptyState.style.display = 'flex';
             }
         });
 
         // Загрузка профиля по его ID
         async function loadProfile(profileId) {
-
+            try {
                 const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${profileId}`);
                 const profile = await response.json();
+
                 localStorage.setItem('profileCache', JSON.stringify(profile));
-                console.log(profile)
-                document.getElementById('activeProfile').value = profile.name;
+
                 formFields.forEach(field => {
                     const id = field.id;
-                    console.log(id)
-                    console.log(profile[id])
                     if (profile[id]) {
                         if (id === 'photoInput') {
                             photoPreview.innerHTML = `<img src="${profile[id]}" alt="Фото профиля">`;
-                        } else {
-                            photoPreview.innerHTML = `<span>Фото не загружено</span>`;
-                        }
-                        if (id === 'gender') {
+                        } else if (id === 'gender') {
                             document.getElementById('gender').value = profile[id];
+                        } else {
+                            field.value = profile[id];
                         }
-                        console.log("yes")
-                        field.value = profile[id];
-                    } else {
-                        if (id!=='profileList' && id!=='activeProfile' && id!=='gender') {
-                            console.log("no")
-                            field.value = '';
-                        }
+                    } else if (id !== 'profileList' && id !== 'activeProfile' && id !== 'gender') {
+                        field.value = '';
                     }
-
                 });
-                //console.log(profile.photoInput)
-                //photoPreview.innerHTML = `<img src="${profile.photoInput}" alt="Фото профиля">`;
 
+                if (profile.photo) {
+                    photoPreview.innerHTML = `<img src="${profile.photo}" alt="Фото профиля">`;
+                } else {
+                    photoPreview.innerHTML = '<span>Фото не загружено</span>';
+                }
+            } catch (error) {
+                showNotification('Ошибка загрузки профиля', 'error');
+                console.error('Ошибка:', error);
+            }
         }
 
         // Обработчик загрузки фото
         photoInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                showNotification('Файл слишком большой (макс. 2MB)', 'error');
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -492,54 +698,74 @@
 
         // Сохранение профиля
         async function saveProfile() {
-            try {
-                const data = {
-                    last_name: document.getElementById('lastName').value,
-                    first_name: document.getElementById('firstName').value,
-                    birth_place: document.getElementById('birthPlace').value,
-                    middle_name: document.getElementById('middleName').value,
-                    passport_number: document.getElementById('passportNumber').value,
-                    birth_date: document.getElementById('birthDate').value,
-                    passport_date: document.getElementById('passportDate').value,
-                    passport_issued: document.getElementById('passportIssued').value,
-                    passport_code: document.getElementById('passportCode').value,
-                    registration_address: document.getElementById('registrationAddress').value,
-                    living_address: document.getElementById('livingAddress').value,
-                    snils_number: document.getElementById('snilsNumber').value,
-                    inn_number: document.getElementById('innNumber').value,
-                    name : document.getElementById('name').value,
-                    gender: document.getElementById('gender').value
-                };
+    if (isLoading) return;
 
-                if (photoPreview.querySelector('img')) {
-                    data.photo = photoPreview.querySelector('img').src;
-                }
+    try {
+        isLoading = true;
+        saveBtn.innerHTML = `<i class="fas fa-save"></i> Сохранение <span class="loader"></span>`;
+        saveBtn.classList.add('btn-loading');
 
-                const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${currentProfileId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
+        const data = {
+            last_name: document.getElementById('lastName').value,
+            first_name: document.getElementById('firstName').value,
+            birth_place: document.getElementById('birthPlace').value,
+            middle_name: document.getElementById('middleName').value,
+            passport_number: document.getElementById('passportNumber').value, // оставляем с пробелом "1234 567890"
+            birth_date: document.getElementById('birthDate').value,
+            passport_date: document.getElementById('passportDate').value,
+            passport_issued: document.getElementById('passportIssued').value,
+            passport_code: document.getElementById('passportCode').value, // оставляем с дефисом "123-456"
+            registration_address: document.getElementById('registrationAddress').value,
+            living_address: document.getElementById('livingAddress').value,
+            snils_number: document.getElementById('snilsNumber').value, // оставляем с дефисами и пробелом "123-456-789 00"
+            inn_number: document.getElementById('innNumber').value,
+            name: document.getElementById('name').value,
+            gender: document.getElementById('gender').value
+        };
 
-                const result = await response.json();
-                if (result.message) {
-                    showNotification(result.message, 'success');
-                } else {
-                    showNotification('Данные сохранены', 'success');
-                }
-            } catch (error) {
-                showNotification('Ошибка сохранения данных', 'error');
-                console.error('Ошибка:', error);
-            }
+        if (!data.name) {
+            showNotification('Введите название профиля', 'error');
+            return;
         }
+
+        if (photoPreview.querySelector('img')) {
+            data.photo = photoPreview.querySelector('img').src;
+        }
+
+        const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${currentProfileId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        showNotification('Профиль успешно сохранён', 'success');
+        loadProfiles();
+    } catch (error) {
+        showNotification('Ошибка сохранения профиля', 'error');
+        console.error('Ошибка:', error);
+    } finally {
+        isLoading = false;
+        saveBtn.innerHTML = `<i class="fas fa-save"></i> Сохранить`;
+        saveBtn.classList.remove('btn-loading');
+    }
+}
 
         saveBtn.addEventListener('click', saveProfile);
 
         // Создание нового профиля
         async function createProfile() {
+            if (isLoading) return;
+
             try {
+                isLoading = true;
+                createProfileBtn.innerHTML = `<i class="fas fa-plus"></i> Создание <span class="loader"></span>`;
+                createProfileBtn2.innerHTML = `<i class="fas fa-plus"></i> Создание <span class="loader"></span>`;
+                createProfileBtn.classList.add('btn-loading');
+                createProfileBtn2.classList.add('btn-loading');
+
                 const data = {
                     name: 'Новый профиль',
                     is_primary: false
@@ -554,46 +780,73 @@
                 });
 
                 const newProfile = await response.json();
-                profileList.innerHTML += `
-                    <option value="${newProfile.id}" selected>Новый профиль</option>
-                `;
+
+                const option = document.createElement('option');
+                option.value = newProfile.id;
+                option.textContent = newProfile.name;
+                option.selected = true;
+                profileList.appendChild(option);
+
                 localStorage.setItem('currentProfileId', newProfile.id);
                 currentProfileId = newProfile.id;
+                formContainer.style.display = 'block';
+                emptyState.style.display = 'none';
                 loadProfile(currentProfileId);
+
+                showNotification('Профиль успешно создан', 'success');
             } catch (error) {
                 showNotification('Ошибка создания профиля', 'error');
                 console.error('Ошибка:', error);
+            } finally {
+                isLoading = false;
+                createProfileBtn.innerHTML = `<i class="fas fa-plus"></i> Новый профиль`;
+                createProfileBtn2.innerHTML = `<i class="fas fa-plus"></i> Создать профиль`;
+                createProfileBtn.classList.remove('btn-loading');
+                createProfileBtn2.classList.remove('btn-loading');
             }
         }
 
         createProfileBtn.addEventListener('click', createProfile);
+        createProfileBtn2.addEventListener('click', createProfile);
 
         // Удаление профиля
         async function deleteProfile() {
-            if (!confirm('Вы уверены, что хотите удалить этот профиль?')) {
+            if (!currentProfileId) {
+                showNotification('Сначала выберите профиль', 'error');
                 return;
             }
+
+            if (!confirm('Вы уверены, что хотите удалить этот профиль? Все данные будут потеряны.')) {
+                return;
+            }
+
             try {
-                if (!currentProfileId) {
-                    showNotification('Сначала выберите профиль', 'error');
-                    return;
-                }
+                isLoading = true;
+                deleteBtn.innerHTML = `<i class="fas fa-trash"></i> Удаление <span class="loader"></span>`;
+                deleteBtn.classList.add('btn-loading');
 
                 const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${currentProfileId}`, {
                     method: 'DELETE'
                 });
 
                 const result = await response.json();
-                if (result.message) {
-                    showNotification(result.message, 'success');
-                    currentProfileId = null;
-                    loadProfiles();
-                    formFields.forEach(field => field.value = '');
-                    photoPreview.innerHTML = '<span>Фото не загружено</span>';
-                }
+                showNotification('Профиль успешно удалён', 'success');
+
+                currentProfileId = null;
+                localStorage.removeItem('currentProfileId');
+                formContainer.style.display = 'none';
+                emptyState.style.display = 'flex';
+                formFields.forEach(field => field.value = '');
+                photoPreview.innerHTML = '<span>Фото не загружено</span>';
+
+                loadProfiles();
             } catch (error) {
                 showNotification('Ошибка удаления профиля', 'error');
                 console.error('Ошибка:', error);
+            } finally {
+                isLoading = false;
+                deleteBtn.innerHTML = `<i class="fas fa-trash"></i> Удалить`;
+                deleteBtn.classList.remove('btn-loading');
             }
         }
 
@@ -603,17 +856,59 @@
         function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
-            notification.textContent = message;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}"></i>
+                <span>${message}</span>
+            `;
 
             document.body.appendChild(notification);
 
             setTimeout(() => {
-                document.body.removeChild(notification);
+                notification.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
             }, 5000);
         }
 
         // Инициализация
-        loadProfiles();
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfiles();
+
+            if (localStorage.getItem('currentProfileId')) {
+                formContainer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                formContainer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        });
+
+        // Форматирование ввода данных
+        document.getElementById('passportNumber')?.addEventListener('input', function(e) {
+            this.value = formatPassportNumber(this.value);
+        });
+
+        document.getElementById('passportCode')?.addEventListener('input', function(e) {
+            this.value = formatPassportCode(this.value);
+        });
+
+        document.getElementById('snilsNumber')?.addEventListener('input', function(e) {
+            this.value = formatSnilsNumber(this.value);
+        });
+
+        document.getElementById('birthDate')?.addEventListener('input', function(e) {
+            this.value = formatDate(this.value);
+        });
+
+        document.getElementById('passportDate')?.addEventListener('input', function(e) {
+            this.value = formatDate(this.value);
+        });
+
+        // Ограничение ввода для числовых полей
+        document.getElementById('innNumber')?.addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').slice(0, 12);
+        });
     </script>
 </body>
 </html>
