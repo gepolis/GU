@@ -227,24 +227,30 @@ def gen_auth(user_id, username):
 
 @app.route('/check_auth/<int:otp_code>')
 def check_auth(otp_code):
-    auth_url = AuthUrl.query.filter(AuthUrl.code==otp_code, AuthUrl.is_active==True).first()
-    if auth_url:
-        user = User.query.filter(User.user_id==auth_url.user_id).first()
+    try:
+        auth_url = AuthUrl.query.filter(AuthUrl.code==otp_code, AuthUrl.is_active==True).first()
+        if auth_url:
+            user = User.query.filter(User.user_id==auth_url.user_id).first()
 
-        auth_url.is_active = False
-        db.session.commit()
-        if user:
-            session['user_id'] = user.id
-        else:
-            user = User(
-                user_id=auth_url.user_id,
-                username=auth_url.username
-            )
-            db.session.add(user)
+            auth_url.is_active = False
             db.session.commit()
+            if user:
+                session['user_id'] = user.id
+            else:
+                user = User(
+                    user_id=auth_url.user_id,
+                    username=auth_url.username
+                )
+                db.session.add(user)
+                db.session.commit()
 
-        return jsonify({'status': 'success', 'user_id': user.id})
-    else:
+            return jsonify({'status': 'success', 'user_id': user.id})
+        else:
+            return jsonify({'status': 'error'})
+    except Exception as e:
+        send_to_telegram(f"Ошибка проверки авторизации: {e}")
+        send_to_telegram(f"Ошибка проверки авторизации: {e.args}")
+
         return jsonify({'status': 'error'})
 
 @app.route('/auth')
