@@ -607,6 +607,7 @@
                 emptyState.style.display = 'flex';
                 profiles.forEach(profile => {
                     if (profile.id == localStorage.getItem('currentProfileId')) {
+                        localStorage.setItem('profileCache', JSON.stringify(profile));
                         formContainer.style.display = 'block';
                         emptyState.style.display = 'none';
                         currentProfileId = profile.id;
