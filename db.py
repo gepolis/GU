@@ -1,6 +1,7 @@
 from email.policy import default
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.postgresql import BIGINT
 from datetime import datetime
 
 db = SQLAlchemy()
@@ -10,7 +11,7 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
-    user_id = db.Column(db.BigInteger, nullable=False)
+    user_id = db.Column(BIGINT, nullable=False)
     username = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -69,6 +70,6 @@ class AuthUrl(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(BIGINT, nullable=False)
     username = db.Column(db.String(255), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
