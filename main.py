@@ -484,4 +484,4 @@ def send_static(path):
     return send_from_directory('static', path)
 
 
-app.run(host='0.0.0.0', port=5000, debug=True)
+app.run(host='0.0.0.0', port=5000)
