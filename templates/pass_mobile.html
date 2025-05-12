@@ -84,7 +84,7 @@
             text-align: center;
 
             font-family: 'Times New Roman', serif !important;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 300;
         }
 
@@ -95,8 +95,8 @@
         }
 
         .passport-photo {
-    width: 120px;
-    height: 155px;
+    width: 130px;
+    height: 180px;
     background-color: #eee;
     border: 1px solid #ddd;
     display: flex;
@@ -119,7 +119,7 @@
         }
 
         .passport-number {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #8d172f;
             margin-bottom: 8px;
@@ -141,8 +141,9 @@
         }
 
         .detail-label {
-            font-size: 12px;
+            font-size: 14px;
             color: #666;
+            line-height: 1.2;
         }
 
         .detail-value {
@@ -198,13 +199,13 @@
             color: #3366ff;
             text-decoration: none;
             font-size: 14px;
-        }
-        .passport-link {
-        font-weight: 600;
-        color: #357CD8;
+            font-weight: 600;
         }
         a {
         text-decoration: none;
+        }
+        .passport-number i {
+            color: #8d172f;
         }
 .passport-left-column {
     display: flex;
@@ -217,8 +218,6 @@
 }
 
 .passport-emblem {
-    margin-top: 10px;
-    width: 100%;
     display: flex;
     justify-content: flex-start;
     padding-left: 0; /* Убираем внутренний отступ слева */
@@ -227,7 +226,7 @@
 
 .passport-emblem img {
     width: 120px; /* Полная ширина колонки */
-    height: auto;
+    height: calc(100% - 26px);
     object-fit: contain;
     margin-left: 0; /* Убираем отступ слева у изображения */
     padding-left: 0; /* Убираем внутренний отступ */
@@ -242,6 +241,12 @@
     padding-left: 0; /* Добавьте это, если нужно убрать отступ слева у всего контента */
     margin-left: 0; /* Добавьте это, если нужно убрать внешний отступ */
 }
+        .copy-icon {
+            color: #3366ff;
+            width: auto;
+            height: 16px;
+            margin-left: 4px;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -271,7 +276,7 @@
     </div>
 
                 <div class="passport-data">
-                    <div class="passport-number" id ="passportNumber">45 24 555555</div>
+                    <div class="passport-number" id ="passportNumber">45 24 555555 <i class="fas fa-copy"></i></div>
 
                     <div class="details-row">
                         <div class="detail-column">
@@ -314,6 +319,7 @@
                     </div>
 
                     <div class="full-width">
+                        <br>
                         <a href="/mobile/details" class="passport-link">Детали документа</a>
                     </div>
                 </div>
@@ -349,7 +355,7 @@ function loadCache() {
         document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + profile.middleName || '').toUpperCase();
         document.getElementById('birthDate').innerText = profile.birthDate || '';
         document.getElementById('birthPlace').innerText = profile.birthPlace || '';
-        document.getElementById('passportNumber').innerText = profile.passportNumber || '';
+        document.getElementById('passportNumber').innerHTML = profile.passportNumber+" <img src='static/copy.jpg' class='copy-icon'>" || '';
         document.getElementById('passportIssued').innerText = profile.passportIssued || '';
         document.getElementById('passportCode').innerText = profile.passportCode || '';
         document.getElementById('passportDate').innerText = profile.passportDate || '';
@@ -379,7 +385,7 @@ async function loadProfile(profileId) {
                 document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + profile.middleName || '').toUpperCase();
                 document.getElementById('birthDate').innerText = profile.birthDate || '';
                 document.getElementById('birthPlace').innerText = profile.birthPlace || '';
-                document.getElementById('passportNumber').innerText = profile.passportNumber || '';
+                document.getElementById('passportNumber').innerHTML = profile.passportNumber+" <img src='static/copy.jpg' class='copy-icon'>" || '';
                 document.getElementById('passportIssued').innerText = profile.passportIssued || '';
                 document.getElementById('passportCode').innerText = profile.passportCode || '';
                 document.getElementById('passportDate').innerText = profile.passportDate || '';
@@ -427,6 +433,11 @@ async function sharePassport() {
         alert('Данные паспорта скопированы в буфер обмена');
     }
 }
+
+document.getElementById('passportNumber').addEventListener('click', function() {
+    let number = document.getElementById('passportNumber').innerText;
+    navigator.clipboard.writeText(number);
+});
 
         loadCache();
         loadProfile(localStorage.getItem('currentProfileId'));
