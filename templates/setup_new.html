@@ -391,6 +391,9 @@
         <header>
             <h1><a href="/"><i class="fas fa-arrow-left"></i></a> Мой профиль</h1>
             <div class="profile-controls">
+                <a class="btn btn-primary" href="/mobile">
+                    <i class="fas fa-mobile"></i> Мобильная версия
+                </a>
                 <select id="profileList">
                     <option value="none">Выберите профиль</option>
                 </select>
@@ -671,8 +674,8 @@
                     }
                 });
 
-                if (profile.photo) {
-                    photoPreview.innerHTML = `<img src="${profile.photo}" alt="Фото профиля">`;
+                if (profile.photoInput) {
+                    photoPreview.innerHTML = `<img src="${profile.photoInput}" alt="Фото профиля">`;
                 } else {
                     photoPreview.innerHTML = '<span>Фото не загружено</span>';
                 }

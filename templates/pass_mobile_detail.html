@@ -18,6 +18,10 @@
             line-height: 1.5;
             padding: 16px;
         }
+        .dark-mode {
+            background-color: #000;
+        }
+
 
         .header {
             display: flex;
@@ -25,6 +29,14 @@
             justify-content: space-between;
             margin-bottom: 24px;
         }
+        .dark-mode .header {
+            color: #F2F2FA;
+        }
+        i {
+            color: #898697;
+            font-weight: 400;
+        }
+
 
         .back-button {
             font-size: 28px; /* Increased size */
@@ -50,6 +62,10 @@
             margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
+        .dark-mode .card {
+            background-color: #292931;
+            color: #F2F2FA;
+        }
 
         .info-item {
             margin-bottom: 20px; /* Increased margin */
@@ -60,6 +76,9 @@
             font-size: 16px; /* Increased size */
             margin-bottom: 4px;
         }
+        .dark-mode .info-label {
+            color: #9BA1AF;
+        }
 
         .info-value {
             font-weight: 500;
@@ -69,8 +88,11 @@
         .section-title {
             font-size: 20px; /* Increased size */
             font-weight: 500;
-            margin: 24px 0 16px;
+            margin: 0 0 16px;
             color: #333;
+        }
+        .dark-mode .section-title {
+            color: #EAEAF2;
         }
 
         .add-file-card {
@@ -107,7 +129,9 @@
 </head>
 <body>
     <div class="header">
-        <div class="back-button">←</div>
+        <a class="back-button" href="/mobile">
+            <i class="fa fa-arrow-left fa-xs"></i>
+        </a>
         <div class="title">Паспорт РФ</div>
         <div class="menu-button">
             <i class="fas fa-ellipsis-v"></i>
@@ -117,17 +141,17 @@
     <div class="card">
         <div class="info-item">
             <div class="info-label">ФИО</div>
-            <div class="info-value" id="fullName">Аксенова Марина Николаевна</div>
+            <div class="info-value" id="fn">Иванов Иван Иванович</div>
         </div>
         
         <div class="info-item">
             <div class="info-label">Пол</div>
-            <div class="info-value">Мужской</div>
+            <div class="info-value" id="gender">Мужской</div>
         </div>
         
         <div class="info-item">
             <div class="info-label">Дата рождения</div>
-            <div class="info-value" id="birthDate">06.01.1977</div>
+            <div class="info-value" id="birthDate">06.01.2022</div>
         </div>
         
         <div class="info-item">
@@ -137,22 +161,22 @@
         
         <div class="info-item">
             <div class="info-label">Серия и номер</div>
-            <div class="info-value" id="passportNumber">4523 040520</div>
+            <div class="info-value" id="passportNumber">1234 567890</div>
         </div>
         
         <div class="info-item">
             <div class="info-label">Дата выдачи</div>
-            <div class="info-value" id="issueDate">31.08.2022</div>
+            <div class="info-value" id="passportDate">31.08.2022</div>
         </div>
         
         <div class="info-item">
             <div class="info-label">Код подразделения</div>
-            <div class="info-value" id="code">770-077</div>
+            <div class="info-value" id="passportCode">012-345</div>
         </div>
         
         <div class="info-item">
             <div class="info-label">Кем выдан</div>
-            <div class="info-value" id="issuedBy">ГУ МВД РОССИИ ПО Г.МОСКВЕ</div>
+            <div class="info-value" id="passportIssued">ГУ МВД РОССИИ ПО Г.МОСКВЕ</div>
         </div>
     </div>
     
@@ -167,45 +191,76 @@
     </div>
 
     <script>
-function loadData() {
-            const savedData = localStorage.getItem('userData');
-            const photo = localStorage.getItem('userPhoto');
+function toggleDarkMode() {
+            const currentHour = new Date().getHours();
+            const body = document.body;
 
-            if (savedData) {
-                const userData = JSON.parse(savedData);
-
-                // Заполняем поля персональных данных
-                if (userData.personal) {
-                    document.getElementById('fullName').innerText = userData.personal.lastName + ' ' + userData.personal.firstName + ' ' + userData.personal.middleName || '';
-                    document.getElementById('birthDate').innerText = userData.personal.birthDate || '';
-                    document.getElementById('passportNumber').innerText = userData.passport.number || '';
-                    document.getElementById('issuedBy').innerText = userData.passport.issued || '';
-                    document.getElementById('issueDate').innerText = userData.passport.date || '';
-                    document.getElementById('code').innerText = userData.passport.code || '';
-                }
-
-
-
+            if (currentHour >= 18 || currentHour < 6) {
+                body.classList.add('dark-mode');
+            } else {
+                body.classList.remove('dark-mode');
             }
         }
 
+        // Вызов функции при загрузке страницы
+toggleDarkMode();
+// Опционально: можно установить таймер для проверки каждые 30 минут
+setInterval(toggleDarkMode, 15 * 60 * 1000); // каждые 30 минут
+const user_id = localStorage.getItem('user_id');
+const profileCache = localStorage.getItem('profileCache');
+function loadCache() {
+    if (profileCache) {
+        const profile = JSON.parse(profileCache);
+        console.log("Start cache")
+        document.getElementById('fn').innerHTML = profile.lastName + ' ' + profile.firstName + ' ' + profile.middleName || '';
+        document.getElementById('birthDate').innerText = profile.birthDate || '';
+        document.getElementById('birthPlace').innerText = profile.birthPlace || '';
+        document.getElementById('passportNumber').innerText = profile.passportNumber || '';
+        document.getElementById('passportIssued').innerText = profile.passportIssued || '';
+        document.getElementById('passportCode').innerText = profile.passportCode || '';
+        document.getElementById('passportDate').innerText = profile.passportDate || '';
+        document.getElementById('photoPreview').src = profile.photoInput || (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+        document.getElementById('gender').innerText = profile.gender.toUpperCase() || 'МУЖСКОЙ';
+        console.log("End cache")
+    }
+}
+if (!user_id) {
+    window.location.href = '/auth';
+}
+function getProtocolAndIP() {
+    const protocol = window.location.protocol;   // "http:" или "https:"
+    const host = window.location.host;           // "localhost:5000" или "127.0.0.1:5000"
+    return `${protocol}//${host}`;
+}
+API_URL = getProtocolAndIP() + '/api';
+async function loadProfile(profileId) {
 
-loadData();
-        // Обработчик для блока добавления файла
-        document.querySelector('.add-file-card').addEventListener('click', function() {
-            alert('Функция добавления файла');
-            // Реальная реализация загрузки файлов
-        });
-        
-        // Обработчик для кнопки "Назад"
-        document.querySelector('.back-button').addEventListener('click', function() {
-            window.history.back();
-        });
-        
-        // Обработчик для кнопки меню
-        document.querySelector('.menu-button').addEventListener('click', function() {
-            alert('Открыто меню');
-        });
+                console.log("Fetch data")
+                const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${localStorage.getItem('currentProfileId')}`);
+                const profile = await response.json();
+                localStorage.setItem('profileCache', JSON.stringify(profile));
+                console.log("Fetch data end")
+
+                console.log(profile)
+                document.getElementById('fn').innerHTML = profile.lastName + ' ' + profile.firstName + ' ' + profile.middleName || '';
+                document.getElementById('birthDate').innerText = profile.birthDate || '';
+                document.getElementById('birthPlace').innerText = profile.birthPlace || '';
+                document.getElementById('passportNumber').innerText = profile.passportNumber || '';
+                document.getElementById('passportIssued').innerText = profile.passportIssued || '';
+                document.getElementById('passportCode').innerText = profile.passportCode || '';
+                document.getElementById('passportDate').innerText = profile.passportDate || '';
+                //load gender
+                document.getElementById('gender').innerText = profile.gender.toUpperCase() || 'МУЖСКОЙ';
+                document.getElementById('photoPreview').src = profile.photoInput || (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+                console.log("END")
+
+                //console.log(profile.photoInput)
+                //photoPreview.innerHTML = `<img src="${profile.photoInput}" alt="Фото профиля">`;
+
+        }
+
+        loadCache();
+        loadProfile(localStorage.getItem('currentProfileId'));
     </script>
 </body>
 </html></title>

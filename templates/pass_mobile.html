@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Госуслуги - Паспорт РФ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -16,6 +19,9 @@
             background-color: #f5f5f7;
             color: #333;
             line-height: 1.5;
+        }
+        .dark-mode {
+            background-color: #000;
         }
 
         .container {
@@ -30,6 +36,10 @@
             padding: 12px 0;
             margin-bottom: 16px;
         }
+        .dark-mode .header {
+            color: #FFF2F5;
+        }
+
 
         .header-left {
             display: flex;
@@ -40,6 +50,11 @@
             margin-right: 16px;
             font-size: 24px;
             color: #000;
+        }
+
+        .dark-mode i {
+            color: #898697;
+            font-weight: 700;
         }
 
         .title {
@@ -53,34 +68,6 @@
             height: 24px;
         }
 
-        .share-circle {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background-color: #3366ff;
-            border-radius: 50%;
-        }
-
-        .circle1 {
-            top: 0;
-            left: 9px;
-        }
-
-        .circle2 {
-            top: 9px;
-            left: 0;
-        }
-
-        .circle3 {
-            top: 9px;
-            right: 0;
-        }
-
-        .circle4 {
-            bottom: 0;
-            left: 9px;
-        }
-
         .passport-card {
             background-color: white;
             border-radius: 16px;
@@ -90,15 +77,15 @@
             position: relative;
         }
 
-        .passport-header {
+        body .passport-header {
             background-color: #9b1327;
             color: white;
             padding: 12px 16px;
             text-align: center;
-            font-weight: 500;
-            font-family: "Times New Roman", Times, serif;
+
+            font-family: 'Times New Roman', serif !important;
             font-size: 18px;
-            font-weight: 500;
+            font-weight: 300;
         }
 
         .passport-content {
@@ -108,18 +95,17 @@
         }
 
         .passport-photo {
-            width: 120px;
-            height: 155px;
-            background-color: #eee;
-            border: 1px solid #ddd;
-            margin-right: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border-radius: 14px;
-            flex-shrink: 0;
-        }
+    width: 120px;
+    height: 155px;
+    background-color: #eee;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 14px;
+    margin-left: 16px;
+}
 
         .passport-photo img {
             width: 100%;
@@ -128,6 +114,7 @@
         }
 
         .passport-data {
+            margin-left: 16px;
             flex: 1;
         }
 
@@ -156,13 +143,13 @@
         .detail-label {
             font-size: 12px;
             color: #666;
-            margin-bottom: 4px;
         }
 
         .detail-value {
             font-size: 14px;
-            font-weight: 500;
+
         }
+
 
         .full-width {
             width: 100%;
@@ -214,11 +201,47 @@
         }
         .passport-link {
         font-weight: 600;
-        color: #3058b0;
+        color: #357CD8;
         }
         a {
         text-decoration: none;
         }
+.passport-left-column {
+    display: flex;
+    flex-direction: column;
+    margin-right: 16px;
+    flex-shrink: 0;
+    width: 120px;
+    padding-left: 0; /* Убираем внутренний отступ слева */
+    margin-left: 0; /* Убираем внешний отступ слева */
+}
+
+.passport-emblem {
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 0; /* Убираем внутренний отступ слева */
+    margin-left: 0; /* Убираем внешний отступ слева */
+}
+
+.passport-emblem img {
+    width: 120px; /* Полная ширина колонки */
+    height: auto;
+    object-fit: contain;
+    margin-left: 0; /* Убираем отступ слева у изображения */
+    padding-left: 0; /* Убираем внутренний отступ */
+    align-self: flex-start;
+}
+
+/* Убедитесь, что у passport-content нет лишних отступов */
+.passport-content {
+    padding: 16px;
+    background-color: #f5e7e7;
+    display: flex;
+    padding-left: 0; /* Добавьте это, если нужно убрать отступ слева у всего контента */
+    margin-left: 0; /* Добавьте это, если нужно убрать внешний отступ */
+}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -226,21 +249,26 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <a class="back-button" href="/">←</a>
+                <a class="back-button" href="/"><i class="fas fa-arrow-left fa-xs" style="width: 20px; height: 20px;"></i></a>
                 <div class="title">Паспорт РФ</div>
             </div>
-            <div class="share-button">
+            <div class="share-button" onclick="sharePassport()">
                 <i class="fas fa-share"></i>
             </div>
         </div>
 
         <div class="passport-card">
-            <div class="passport-header">РОССИЙСКАЯ ФЕДЕРАЦИЯ</div>
+            <div class="passport-header"><b>РОССИЙСКАЯ ФЕДЕРАЦИЯ</b></div>
 
             <div class="passport-content">
-                <div class="passport-photo">
-                    <img src="photo.png" alt="Фото владельца" id="photoPreview">
-                </div>
+                <div class="passport-left-column">
+        <div class="passport-photo">
+            <img src="photo.png" alt="Фото владельца" id="photoPreview">
+        </div>
+        <div class="passport-emblem">
+            <img src="static/emblem.jpg" alt="Герб России">
+        </div>
+    </div>
 
                 <div class="passport-data">
                     <div class="passport-number" id ="passportNumber">45 24 555555</div>
@@ -248,31 +276,31 @@
                     <div class="details-row">
                         <div class="detail-column">
                             <div class="detail-label">Кем выдан</div>
-                            <div class="detail-value" id ="issuedBy">ГУ МВД РОССИИ ПО Г. МОСКВА</div>
+                            <div class="detail-value" id ="passportIssued">ГУ МВД РОССИИ ПО Г. МОСКВА</div>
                         </div>
                     </div>
 
                     <div class="details-row">
                         <div class="detail-column">
                             <div class="detail-label">Дата выдачи</div>
-                            <div class="detail-value" id ="issueDate">15.04.2023</div>
+                            <div class="detail-value" id ="passportDate">15.04.2023</div>
                         </div>
                         <div class="detail-column">
                             <div class="detail-label">Код подразделения</div>
-                            <div class="detail-value" id ="code">770-077</div>
+                            <div class="detail-value" id ="passportCode">770-077</div>
                         </div>
                     </div>
 
                     <div class="full-width">
                         <div class="detail-label">ФИО</div>
-                        <div class="detail-value" id ="fullName">ИВАНОВ ИВАН ИВАНОВИЧ</div>
+                        <div class="detail-value" id ="fn">ИВАНОВ ИВАН ИВАНОВИЧ</div>
                     </div>
 
 
                     <div class="details-row">
                         <div class="detail-column">
                             <div class="detail-label">Пол</div>
-                            <div class="detail-value">МУЖ</div>
+                            <div class="detail-value" id ="gender">МУЖ</div>
                         </div>
                         <div class="detail-column">
                             <div class="detail-label">Дата рождения</div>
@@ -282,7 +310,7 @@
 
                     <div class="full-width">
                         <div class="detail-label">Место рождения</div>
-                        <div class="detail-value">РОССИЯ МОСКВА</div>
+                        <div class="detail-value" id ="birthPlace">РОССИЯ МОСКВА</div>
                     </div>
 
                     <div class="full-width">
@@ -297,34 +325,111 @@
     </div>
 
     <script>
-        function loadData() {
-            const savedData = localStorage.getItem('userData');
-            const photo = localStorage.getItem('userPhoto');
+function toggleDarkMode() {
+            const currentHour = new Date().getHours();
+            const body = document.body;
 
-            if (savedData) {
-                const userData = JSON.parse(savedData);
-
-                // Заполняем поля персональных данных
-                if (userData.personal) {
-                    document.getElementById('fullName').innerText = userData.personal.lastName + ' ' + userData.personal.firstName + ' ' + userData.personal.middleName || '';
-                    document.getElementById('birthDate').innerText = userData.personal.birthDate || '';
-                    document.getElementById('passportNumber').innerText = userData.passport.number || '';
-                    document.getElementById('issuedBy').innerText = userData.passport.issued || '';
-                    document.getElementById('issueDate').innerText = userData.passport.date || '';
-                    document.getElementById('code').innerText = userData.passport.code || '';
-                }
-
-
-
-            }
-            console.log(photo);
-            if (photo) {
-                document.getElementById('photoPreview').src = photo;
+            if (currentHour >= 18 || currentHour < 6) {
+                body.classList.add('dark-mode');
+            } else {
+                body.classList.remove('dark-mode');
             }
         }
 
+        // Вызов функции при загрузке страницы
+toggleDarkMode();
+// Опционально: можно установить таймер для проверки каждые 30 минут
+setInterval(toggleDarkMode, 15 * 60 * 1000); // каждые 30 минут
+const user_id = localStorage.getItem('user_id');
+const profileCache = localStorage.getItem('profileCache');
+function loadCache() {
+    if (profileCache) {
+        const profile = JSON.parse(profileCache);
+        console.log("Start cache")
+        document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + profile.middleName || '').toUpperCase();
+        document.getElementById('birthDate').innerText = profile.birthDate || '';
+        document.getElementById('birthPlace').innerText = profile.birthPlace || '';
+        document.getElementById('passportNumber').innerText = profile.passportNumber || '';
+        document.getElementById('passportIssued').innerText = profile.passportIssued || '';
+        document.getElementById('passportCode').innerText = profile.passportCode || '';
+        document.getElementById('passportDate').innerText = profile.passportDate || '';
+        document.getElementById('photoPreview').src = profile.photoInput || (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+        document.getElementById('gender').innerText = profile.gender.toUpperCase() || 'МУЖСКОЙ';
+        console.log("End cache")
+    }
+}
+if (!user_id) {
+    window.location.href = '/auth';
+}
+function getProtocolAndIP() {
+    const protocol = window.location.protocol;   // "http:" или "https:"
+    const host = window.location.host;           // "localhost:5000" или "127.0.0.1:5000"
+    return `${protocol}//${host}`;
+}
+API_URL = getProtocolAndIP() + '/api';
+async function loadProfile(profileId) {
 
-loadData();
+                console.log("Fetch data")
+                const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${localStorage.getItem('currentProfileId')}`);
+                const profile = await response.json();
+                localStorage.setItem('profileCache', JSON.stringify(profile));
+                console.log("Fetch data end")
+
+                console.log(profile)
+                document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + profile.middleName || '').toUpperCase();
+                document.getElementById('birthDate').innerText = profile.birthDate || '';
+                document.getElementById('birthPlace').innerText = profile.birthPlace || '';
+                document.getElementById('passportNumber').innerText = profile.passportNumber || '';
+                document.getElementById('passportIssued').innerText = profile.passportIssued || '';
+                document.getElementById('passportCode').innerText = profile.passportCode || '';
+                document.getElementById('passportDate').innerText = profile.passportDate || '';
+                //load gender
+                document.getElementById('gender').innerText = profile.gender.toUpperCase() || 'МУЖСКОЙ';
+                document.getElementById('photoPreview').src = profile.photoInput || (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+                console.log("END")
+
+                //console.log(profile.photoInput)
+                //photoPreview.innerHTML = `<img src="${profile.photoInput}" alt="Фото профиля">`;
+
+        }
+async function sharePassport() {
+    const profile = JSON.parse(localStorage.getItem('profileCache') || '{}');
+
+    // Формируем текст для分享
+    const shareText = `Паспорт РФ\n\n` +
+                     `ФИО: ${profile.lastName} ${profile.firstName} ${profile.middleName || ''}\n` +
+                     `Номер: ${profile.passportNumber}\n` +
+                     `Дата выдачи: ${profile.passportDate}\n` +
+                     `Кем выдан: ${profile.passportIssued}`;
+
+    try {
+        // Пытаемся использовать Web Share API если доступен
+        if (navigator.share) {
+            await navigator.share({
+                title: 'Данные паспорта РФ',
+                text: shareText,
+                // url: window.location.href, // можно добавить ссылку
+            });
+        } else {
+            // Fallback для браузеров без Web Share API
+            await navigator.clipboard.writeText(shareText);
+            alert('Данные паспорта скопированы в буфер обмена');
+        }
+    } catch (err) {
+        console.error('Ошибка при попытке поделиться:', err);
+        // Дополнительный fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = shareText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('Данные паспорта скопированы в буфер обмена');
+    }
+}
+
+        loadCache();
+        loadProfile(localStorage.getItem('currentProfileId'));
     </script>
 </body>
 </html>

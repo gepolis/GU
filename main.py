@@ -1,3 +1,4 @@
+import hashlib
 import os
 import random
 from datetime import datetime
@@ -451,4 +452,36 @@ def admin_photos():
         html += f"<img src='{photo.photo}' style='width: 200px; height: auto;'>"
     return html
 
-app.run(host='0.0.0.0', port=5000)
+
+@app.route('/migDomin', methods=['GET'])
+def migDomin():
+    user_id = request.args.get('user_id')
+    current_active = request.args.get('cap')
+    user = User.query.filter(User.id==user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    data = f"{user_id}-{current_active}"
+    hash = hashlib.md5(data.encode('utf-8')).hexdigest()
+    return redirect(f'https://gosuslugi.ru.com/miDominAuth?cap={current_active}&user_id={user_id}&hash={hash}')
+
+@app.route('/miDominAuth', methods=['GET'])
+def migDominAuth():
+    user_id = request.args.get('user_id')
+    current_active = request.args.get('cap')
+    user = User.query.filter(User.id==user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    data = f"{user_id}-{current_active}"
+    hash = hashlib.md5(data.encode('utf-8')).hexdigest()
+    if hash == request.args.get('hash'):
+        return render_template("migrate_data.html", user_id=user_id, current_active=current_active)
+    else:
+        return jsonify({'error': 'Hash not valid'}), 403
+
+
+@app.route('/static/&lt;path:path&gt;')
+def send_static(path):
+    return send_from_directory('static', path)
+
+
+app.run(host='0.0.0.0', port=5000, debug=True)
