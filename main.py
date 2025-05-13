@@ -208,7 +208,7 @@ def submit_form():
 
 @app.route("/mobile")
 def mobile():
-    return render_template("pass_mobile.html")
+    return render_template("pass.html")
 
 @app.route("/mobile/details")
 def mobile_details():
