@@ -51,7 +51,7 @@
             color: #000;
         }
 
-        .dark-mode i {
+        i {
             color: #898697;
             font-weight: 700;
         }
@@ -88,7 +88,10 @@
         }
 
         .passport-content {
-            padding: 16px;
+            padding-left: 0px;
+            padding-right: 16px;
+            padding-top: 16px;
+            padding-bottom: 16px;
             background-color: #f5e7e7;
             display: flex;
         }
@@ -175,7 +178,7 @@
             color: #3366ff;
             text-decoration: none;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 500;
         }
         a {
             text-decoration: none;
@@ -235,12 +238,12 @@
         }
 
         .info-item {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .info-label {
             color: #666;
-            font-size: 16px;
+            font-size: 14px;
             margin-bottom: 4px;
         }
         .dark-mode .info-label {
@@ -249,7 +252,7 @@
 
         .info-value {
             font-weight: 500;
-            font-size: 18px;
+            font-size: 16px;
         }
 
         .section-title {
@@ -263,7 +266,7 @@
         }
 
         .add-file-card {
-            border: 2px dashed #3366ff;
+            border: 1px dashed #3366ff;
             border-radius: 12px;
             padding: 16px;
             display: flex;
@@ -290,11 +293,31 @@
         .clip-icon {
             margin-right: 8px;
             font-size: 20px;
+            color: #3366ff;
         }
 
         .menu-button {
             color: #3366ff;
         }
+.btn {
+    background-color: #3366ff;
+    color: #fff;
+    border: none;
+    padding: 23px 20px; /* Увеличил вертикальные отступы */
+    border-radius: 12px;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center; /* Выравнивание текста по центру */
+    display: inline-block; /* Для правильного применения text-align */
+    box-sizing: border-box; /* Чтобы padding не влиял на общую ширину */
+    line-height: normal; /* Нормальный межстрочный интервал */
+}
+
+.btn:hover {
+    background-color: #2952cc;
+}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -307,7 +330,7 @@
                 <div class="title">Паспорт РФ</div>
             </div>
             <div class="share-button" onclick="sharePassport()">
-                <i class="fas fa-share"></i>
+                <i class="fas fa-share-alt"></i>
             </div>
         </div>
 
@@ -367,7 +390,6 @@
                     </div>
 
                     <div class="full-width">
-                        <br>
                         <a href="#" class="passport-link" onclick="showDetailView()">Детали документа</a>
                     </div>
                 </div>
@@ -378,11 +400,11 @@
     <!-- Детальный вид паспорта -->
     <div id="detail-view" class="detail-view">
         <div class="header">
-            <a class="back-button" href="#" onclick="showMainView()">
-                <i class="fa fa-arrow-left fa-xs"></i>
-            </a>
-            <div class="title">Паспорт РФ</div>
-            <div class="menu-button">
+            <div class="header-left">
+                <a class="back-button" onclick="showMainView()"><i class="fas fa-arrow-left fa-xs" style="width: 20px; height: 20px;"></i></a>
+                <div class="title">Паспорт РФ</div>
+            </div>
+            <div class="share-button" onclick="sharePassport()">
                 <i class="fas fa-ellipsis-v"></i>
             </div>
         </div>
@@ -433,25 +455,34 @@
             <div class="section-title">Фото, сканы или pdf</div>
             <div class="add-file-card">
                 <div class="add-file-content">
-                    <i class="fas fa-paperclip clip-icon"></i>
                     <span>Добавить</span>
                 </div>
             </div>
+        </div>
+
+        <!-- share btn -->
+        <div class="btn btn-primary" onclick="sharePassport()">
+            Поделиться
         </div>
     </div>
 
     <script>
         // Функции для переключения между видами
         function showMainView() {
-            document.getElementById('main-view').style.display = 'block';
-            document.getElementById('detail-view').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('main-view').style.display = 'block';
+                document.getElementById('detail-view').style.display = 'none';
+            }, 150);
         }
 
         function showDetailView() {
-            document.getElementById('main-view').style.display = 'none';
-            document.getElementById('detail-view').style.display = 'block';
-            // Обновляем данные в детальном виде при переходе
-            updateDetailView();
+            setTimeout(() => {
+                document.getElementById('main-view').style.display = 'none';
+                document.getElementById('detail-view').style.display = 'block';
+                // Обновляем данные в детальном виде при переходе
+                updateDetailView();
+            }, 150);
+
         }
 
         function updateDetailView() {
@@ -545,13 +576,21 @@
 
         async function sharePassport() {
             const profile = JSON.parse(localStorage.getItem('profileCache') || '{}');
+            console.log("copy");
 
             // Формируем текст для分享
-            const shareText = `Паспорт РФ\n\n` +
-                            `ФИО: ${profile.lastName} ${profile.firstName} ${profile.middleName || ''}\n` +
-                            `Номер: ${profile.passportNumber}\n` +
+            const shareText = `Паспорт РФ\n` +
+                            `Фамилия: ${profile.lastName}\n` +
+                            `Имя: ${profile.firstName}\n` +
+                            `Отчество: ${profile.middleName}\n` +
+                            `Дата рождения: ${profile.birthDate}\n` +
+                            `Место рождения: ${profile.birthPlace}\n` +
+                            `Серия: ${profile.passportNumber.split(' ')[0]}\n` +
+                            `Номер: ${profile.passportNumber.split(' ')[1]}\n` +
+                            `Кем выдан: ${profile.passportIssued}\n` +
                             `Дата выдачи: ${profile.passportDate}\n` +
-                            `Кем выдан: ${profile.passportIssued}`;
+                            `Код подразделения: ${profile.passportCode}\n` +
+                            `Отправлено из приложения «Госуслуги»`;
 
             try {
                 // Пытаемся использовать Web Share API если доступен
@@ -563,7 +602,6 @@
                 } else {
                     // Fallback для браузеров без Web Share API
                     await navigator.clipboard.writeText(shareText);
-                    alert('Данные паспорта скопированы в буфер обмена');
                 }
             } catch (err) {
                 console.error('Ошибка при попытке поделиться:', err);
@@ -574,7 +612,6 @@
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                alert('Данные паспорта скопированы в буфер обмена');
             }
         }
 
