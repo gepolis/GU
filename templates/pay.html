@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Премиум подписка</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6d28d9;
+            --primary-light: #8b5cf6;
+            --primary-hover: #5b21b6;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --text-lighter: #9ca3af;
+            --border: #e5e7eb;
+            --background: #f9fafb;
+            --card-bg: #ffffff;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.02);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --plus: #7c3aed;
+            --highlight: rgba(167, 139, 250, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            color: var(--text);
+            background-color: var(--background);
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 700;
+            font-size: 32px;
+            margin-bottom: 12px;
+            color: var(--text);
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            border: none;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(109, 40, 217, 0.3), 0 2px 4px -1px rgba(109, 40, 217, 0.1);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(109, 40, 217, 0.3), 0 4px 6px -2px rgba(109, 40, 217, 0.1);
+        }
+
+        .btn-plus {
+            background-color: var(--plus);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.3), 0 2px 4px -1px rgba(124, 58, 237, 0.1);
+        }
+
+        .btn-plus:hover {
+            background-color: #6d28d9;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.3), 0 4px 6px -2px rgba(124, 58, 237, 0.1);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: #f9fafb;
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            background: white;
+            padding: 6px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            max-width: 360px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toggle-bg {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: calc(50% - 6px);
+            height: calc(100% - 12px);
+            background-color: var(--highlight);
+            border-radius: 8px;
+            transition: var(--transition);
+            z-index: 0;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px 16px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+        }
+
+        .toggle-btn.active {
+            color: var(--primary);
+        }
+
+        .plans-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .plan-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 32px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .plan-card.popular {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 1px var(--primary-light), var(--shadow-lg);
+        }
+
+        .plan-card.plus {
+            border-color: var(--plus);
+            box-shadow: 0 0 0 1px var(--plus), var(--shadow-lg);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: 16px;
+            right: -30px;
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 32px;
+            font-size: 12px;
+            font-weight: 600;
+            transform: rotate(45deg);
+            transform-origin: center;
+            width: 120px;
+            text-align: center;
+        }
+
+        .plus-badge {
+            position: absolute;
+            top: 16px;
+            right: -30px;
+            background-color: var(--plus);
+            color: white;
+            padding: 4px 32px;
+            font-size: 12px;
+            font-weight: 600;
+            transform: rotate(45deg);
+            transform-origin: center;
+            width: 120px;
+            text-align: center;
+        }
+
+        .plan-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plan-name i {
+            font-size: 20px;
+            color: var(--primary-light);
+        }
+
+        .plus-plan .plan-name i {
+            color: var(--plus);
+        }
+
+        .plan-price-container {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .plan-price {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            color: var(--text);
+            display: flex;
+            align-items: flex-start;
+            line-height: 1;
+        }
+
+        .plan-price .currency {
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 6px;
+            margin-right: 4px;
+        }
+
+        .plan-period {
+            font-size: 16px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .savings-badge {
+            background-color: #f0fdf4;
+            color: var(--success);
+            padding: 6px 10px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .plan-features {
+            margin: 24px 0;
+            flex-grow: 1;
+        }
+
+        .plan-features li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            font-size: 15px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .plan-features li i {
+            margin-right: 12px;
+            color: var(--primary);
+            font-size: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .plus-features li i {
+            color: var(--plus);
+        }
+
+        .plan-actions {
+            margin-top: auto;
+        }
+
+        .current-plan {
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            padding: 16px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .current-plan i {
+            color: var(--success);
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .current-plan-content {
+            flex-grow: 1;
+        }
+
+        .current-plan-text {
+            font-size: 15px;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .current-plan-name {
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .current-plan-expiry {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-light);
+            font-size: 14px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .plans-container {
+                grid-template-columns: 1fr;
+            }
+
+            .plan-card {
+                padding: 24px;
+            }
+
+            .plan-price {
+                font-size: 36px;
+            }
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="fade-in">
+            <h1><a href="/setup"><i class="fas fa-arrow-left"></i></a> Выберите свою подписку</h1>
+            <p class="subtitle">Откройте полный доступ ко всем возможностям сервиса с нашей премиум подпиской</p>
+        </header>
+
+        <div id="currentPlanInfo" class="current-plan fade-in delay-1" style="display: none;">
+            <i class="fas fa-crown"></i>
+            <div class="current-plan-content">
+                <div class="current-plan-text">Ваш текущий тариф: <span class="current-plan-name" id="currentPlanName"></span></div>
+                <div class="current-plan-expiry">Истекает <span id="planExpiryDate"></span></div>
+            </div>
+        </div>
+
+        <div class="toggle-container fade-in delay-1">
+            <div class="toggle-bg" id="toggleBg"></div>
+            <button class="toggle-btn active" id="monthlyToggle">Ежемесячно</button>
+            <button class="toggle-btn" id="yearlyToggle">Ежегодно <span class="savings-badge"><i class="fas fa-bolt"></i> -20%</span></button>
+        </div>
+
+        <div class="plans-container">
+            <div class="plan-card fade-in delay-2">
+                <div class="plan-name"><i class="fas fa-user"></i> Базовый</div>
+                <div class="plan-price-container">
+                    <div class="plan-price"><span class="currency">₽</span>0</div>
+                    <div class="plan-period" id="basicPeriod">/месяц</div>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check-circle"></i> Основные функции сервиса</li>
+                    <li><i class="fas fa-check-circle"></i> До 3 профилей</li>
+                    <li><i class="fas fa-check-circle"></i> Ограниченная поддержка</li>
+                    <li><i class="fas fa-check-circle"></i> Плашка "Фейк" в профиле</li>
+                </ul>
+            </div>
+
+            <div class="plan-card plus plus-plan fade-in delay-2">
+                <div class="plan-name"><i class="fas fa-bolt"></i> Plus</div>
+                <div class="plan-price-container">
+                    <div class="plan-price" id="plusPrice"><span class="currency">₽</span>199</div>
+                    <div class="plan-period" id="plusPeriod">/месяц</div>
+                    <div class="savings-badge" id="plusSavings" style="display: none;"><i class="fas fa-piggy-bank"></i> Экономия 240 ₽</div>
+                </div>
+                <ul class="plan-features plus-features">
+                    <li><i class="fas fa-check-circle"></i> <strong>Скрытие плашки "Фейк"</strong></li>
+                    <li><i class="fas fa-check-circle"></i> Добавление фото профиля</li>
+                    <li><i class="fas fa-check-circle"></i> До 5 профилей</li>
+                    <li><i class="fas fa-check-circle"></i> Базовые настройки приватности</li>
+                    <li><i class="fas fa-check-circle"></i> Улучшенная поддержка</li>
+                </ul>
+                <div class="plan-actions">
+                    <button class="btn btn-plus" id="plusBtn">Попробовать Plus</button>
+                </div>
+            </div>
+
+            <div class="plan-card popular fade-in delay-3">
+                <div class="popular-badge">Премиум</div>
+                <div class="plan-name"><i class="fas fa-crown"></i> Premium</div>
+                <div class="plan-price-container">
+                    <div class="plan-price" id="premiumPrice"><span class="currency">₽</span>499</div>
+                    <div class="plan-period" id="premiumPeriod">/месяц</div>
+                    <div class="savings-badge" id="premiumSavings" style="display: none;"><i class="fas fa-piggy-bank"></i> Экономия 1 200 ₽</div>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check-circle"></i> <strong>Все возможности Plus</strong></li>
+                    <li><i class="fas fa-check-circle"></i> До 15 профилей</li>
+                    <li><i class="fas fa-check-circle"></i> Расширенные настройки</li>
+                    <li><i class="fas fa-check-circle"></i> Эксклюзивные функции</li>
+                </ul>
+                <div class="plan-actions">
+                    <button class="btn btn-primary" id="premiumBtn">Выбрать Premium</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note fade-in delay-3">
+            <p>Совершая оплату, вы соглашаетесь с <a href="#">пользовательским соглашением</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Получаем user_id из localStorage
+        const user_id = localStorage.getItem('user_id');
+        if (!user_id) {
+            window.location.href = '/auth';
+        }
+
+        // Текущий период оплаты (monthly/yearly)
+        let billingPeriod = 'monthly';
+
+        // Цены для разных периодов
+        const prices = {
+            plus: {
+                monthly: 199,
+                yearly: 1990 // 199 * 10 месяцев (скидка ~20%)
+            },
+            premium: {
+                monthly: 499,
+                yearly: 4790 // 499 * 10 месяцев (скидка ~20%)
+            }
+        };
+
+        // DOM элементы
+        const monthlyToggle = document.getElementById('monthlyToggle');
+        const yearlyToggle = document.getElementById('yearlyToggle');
+        const toggleBg = document.getElementById('toggleBg');
+        const plusPrice = document.getElementById('plusPrice');
+        const plusPeriod = document.getElementById('plusPeriod');
+        const plusSavings = document.getElementById('plusSavings');
+        const premiumPrice = document.getElementById('premiumPrice');
+        const premiumPeriod = document.getElementById('premiumPeriod');
+        const premiumSavings = document.getElementById('premiumSavings');
+        const plusBtn = document.getElementById('plusBtn');
+        const premiumBtn = document.getElementById('premiumBtn');
+
+        // Переключение между месячной и годовой оплатой
+        monthlyToggle.addEventListener('click', () => {
+            if (billingPeriod !== 'monthly') {
+                billingPeriod = 'monthly';
+                monthlyToggle.classList.add('active');
+                yearlyToggle.classList.remove('active');
+                toggleBg.style.transform = 'translateX(0)';
+                updatePrices();
+            }
+        });
+
+        yearlyToggle.addEventListener('click', () => {
+            if (billingPeriod !== 'yearly') {
+                billingPeriod = 'yearly';
+                yearlyToggle.classList.add('active');
+                monthlyToggle.classList.remove('active');
+                toggleBg.style.transform = 'translateX(100%)';
+                updatePrices();
+            }
+        });
+
+        // Обновление цен в зависимости от периода
+        function updatePrices() {
+            if (billingPeriod === 'monthly') {
+                // Plus план
+                plusPrice.innerHTML = '<span class="currency">₽</span>199';
+                plusPeriod.textContent = '/месяц';
+                plusSavings.style.display = 'none';
+
+                // Premium план
+                premiumPrice.innerHTML = '<span class="currency">₽</span>499';
+                premiumPeriod.textContent = '/месяц';
+                premiumSavings.style.display = 'none';
+
+                // Кнопки
+                plusBtn.textContent = 'Попробовать Plus';
+                premiumBtn.textContent = 'Выбрать Premium';
+            } else {
+                // Plus план
+                plusPrice.innerHTML = '<span class="currency">₽</span>1,990';
+                plusPeriod.textContent = '/год';
+                plusSavings.style.display = 'inline-block';
+
+                // Premium план
+                premiumPrice.innerHTML = '<span class="currency">₽</span>4,790';
+                premiumPeriod.textContent = '/год';
+                premiumSavings.style.display = 'inline-block';
+
+                // Кнопки
+                plusBtn.textContent = 'Годовая подписка Plus';
+                premiumBtn.textContent = 'Годовая подписка Premium';
+            }
+        }
+
+        // Обработчики выбора тарифов
+        plusBtn.addEventListener('click', () => {
+            selectPlan(billingPeriod === 'monthly' ? 'plus_monthly' : 'plus_yearly');
+        });
+
+        premiumBtn.addEventListener('click', () => {
+            selectPlan(billingPeriod === 'monthly' ? 'premium_monthly' : 'premium_yearly');
+        });
+
+        // API URL
+        function getProtocolAndIP() {
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            return `${protocol}//${host}`;
+        }
+        const API_URL = getProtocolAndIP() + '/api';
+
+        // Загрузка информации о текущей подписке
+        async function loadSubscriptionInfo() {
+            try {
+                const response = await fetch(`${API_URL}/subscription?user_id=${user_id}`);
+                const data = await response.json();
+
+                if (data.plan && data.plan !== 'N') {
+                    document.getElementById('currentPlanInfo').style.display = 'flex';
+                    document.getElementById('currentPlanName').textContent = getPlanName(data.plan);
+                    document.getElementById('planExpiryDate').textContent = formatDate(data.expires_at);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки информации о подписке:', error);
+            }
+        }
+
+        // Форматирование даты
+function formatDate(unixTimestamp) {
+    if (!unixTimestamp) return '';
+
+    // Получаем временную зону пользователя из браузера
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    // Форматируем дату с учетом временной зоны
+    return new Date(unixTimestamp * 1000).toLocaleString('ru-RU', {
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: userTimeZone
+    });
+}
+
+
+        // Получение названия плана
+        function getPlanName(planId) {
+            switch(planId) {
+                case 'plus': return 'Plus';
+                case 'premium': return 'Premium';
+                default: return 'Бесплатный';
+            }
+        }
+
+        // Выбор плана
+        function selectPlan(planId) {
+            // В реальном приложении здесь была бы переадресация на страницу оплаты
+            // или открытие модального окна с оплатой
+            console.log(planId);
+            window.location.href = '/pay/confirm?plan=' + planId;
+        }
+
+
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSubscriptionInfo();
+
+            // Анимация переключателя
+            setTimeout(() => {
+                toggleBg.style.opacity = '1';
+            }, 300);
+        });
+    </script>
+</body>
+</html>

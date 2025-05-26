@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оплата подписки</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6d28d9;
+            --primary-light: #8b5cf6;
+            --primary-hover: #5b21b6;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --text-lighter: #9ca3af;
+            --border: #e5e7eb;
+            --background: #f9fafb;
+            --card-bg: #ffffff;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.02);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --plus: #7c3aed;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            color: var(--text);
+            background-color: var(--background);
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 24px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo h1 {
+            font-weight: 700;
+            font-size: 32px;
+            margin-bottom: 12px;
+            color: var(--text);
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .payment-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 32px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: 16px;
+            right: -30px;
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 32px;
+            font-size: 12px;
+            font-weight: 600;
+            transform: rotate(45deg);
+            transform-origin: center;
+            width: 120px;
+            text-align: center;
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .payment-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .payment-header p {
+            color: var(--text-light);
+            font-size: 16px;
+        }
+
+        .plan-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .plan-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .plan-name i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        .plan-name.plus i {
+            color: var(--plus);
+        }
+
+        .plan-price {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .plan-features {
+            margin: 24px 0;
+        }
+
+        .plan-features li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 15px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .plan-features li i {
+            margin-right: 12px;
+            color: var(--primary);
+            font-size: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .plus-features li i {
+            color: var(--plus);
+        }
+
+        .total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-top: 1px solid var(--border);
+            margin-top: 16px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            border: none;
+            gap: 8px;
+            width: 100%;
+            margin-top: 16px;
+        }
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(109, 40, 217, 0.3), 0 2px 4px -1px rgba(109, 40, 217, 0.1);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(109, 40, 217, 0.3), 0 4px 6px -2px rgba(109, 40, 217, 0.1);
+        }
+
+        .btn-plus {
+            background-color: var(--plus);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.3), 0 2px 4px -1px rgba(124, 58, 237, 0.1);
+        }
+
+        .btn-plus:hover {
+            background-color: #6d28d9;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.3), 0 4px 6px -2px rgba(124, 58, 237, 0.1);
+        }
+
+        .terms {
+            display: flex;
+            align-items: flex-start;
+            margin: 24px 0;
+        }
+
+        .terms-checkbox {
+            margin-right: 12px;
+            margin-top: 4px;
+        }
+
+        .terms-text {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .terms-text a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .terms-text a:hover {
+            text-decoration: underline;
+        }
+
+        .payment-method {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .payment-method p {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .payment-icon {
+            font-size: 32px;
+            color: var(--primary);
+        }
+
+        .back-link {
+            text-align: center;
+            padding-top: 24px;
+        }
+
+        .back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .payment-card {
+                padding: 24px;
+            }
+
+            .popular-badge {
+                right: -34px;
+                font-size: 11px;
+                padding: 2px 28px;
+                width: 110px;
+            }
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>Оплата подписки</h1>
+        </div>
+
+        <div class="payment-card" id="paymentCard">
+            <div id="popularBadge" class="popular-badge" style="display: none;">Популярный</div>
+
+            <div class="payment-header">
+                <h2 id="planTitle">Premium подписка</h2>
+                <p id="planPeriod">Ежемесячная оплата</p>
+            </div>
+
+            <div class="plan-details">
+                <div class="plan-name" id="planName"><i class="fas fa-crown"></i> Premium</div>
+                <div class="plan-price" id="planPrice">499 ₽</div>
+            </div>
+
+            <ul class="plan-features" id="planFeatures">
+                <li><i class="fas fa-check-circle"></i> <strong>Все возможности Plus</strong></li>
+                <li><i class="fas fa-check-circle"></i> До 15 профилей</li>
+                <li><i class="fas fa-check-circle"></i> Расширенные настройки</li>
+                <li><i class="fas fa-check-circle"></i> Эксклюзивные функции</li>
+            </ul>
+
+            <div class="total">
+                <span>Итого к оплате:</span>
+                <span id="totalPrice">499 ₽</span>
+            </div>
+
+            <div class="terms">
+                <input type="checkbox" id="termsCheckbox" class="terms-checkbox" checked>
+                <label for="termsCheckbox" class="terms-text">
+                    Я согласен с <a href="#" target="_blank">условиями предоставления услуг</a> и <a href="#" target="_blank">политикой конфиденциальности</a>
+                </label>
+            </div>
+
+            <button class="btn" id="payButton">
+                <i class="fas fa-lock"></i> Оплатить подписку
+            </button>
+            <p class="error-message" id="errorMessage" style="display: none;">Вы не можите оплатить подписку уровня ниже Вашей</p>
+        </div>
+
+<!--        <div class="payment-method">-->
+<!--            <p>Способ оплаты:</p>-->
+<!--            <div class="payment-icon">-->
+<!--                <i class="fas fa-credit-card"></i>-->
+<!--            </div>-->
+<!--        </div>-->
+
+        <div class="back-link">
+            <a href="/premium"><i class="fas fa-arrow-left"></i> Вернуться к выбору подписки</a>
+        </div>
+    </div>
+
+    <script>
+        // Получаем параметры из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const planType = urlParams.get('plan') || 'premium_monthly';
+        const user_id = localStorage.getItem('user_id');
+
+        if (!user_id) {
+            window.location.href = '/auth';
+        }
+
+        // Данные о планах
+        const plans = {
+            'plus_monthly': {
+                name: 'Plus',
+                title: 'Plus подписка',
+                price: '199 ₽',
+                period: 'Ежемесячная оплата',
+                features: [
+                    '<strong>Скрытие плашки "Фейк"</strong>',
+                    'Добавление фото профиля',
+                    'До 5 профилей',
+                    'Базовые настройки приватности',
+                    'Улучшенная поддержка'
+                ],
+                btnClass: 'btn-plus',
+                icon: 'fas fa-bolt',
+                plan: 'plus',
+                time: 'month',
+                popular: false
+            },
+            'plus_yearly': {
+                name: 'Plus',
+                title: 'Plus подписка',
+                price: '1 990 ₽',
+                period: 'Годовая оплата (экономия 240 ₽)',
+                features: [
+                    '<strong>Скрытие плашки "Фейк"</strong>',
+                    'Добавление фото профиля',
+                    'До 5 профилей',
+                    'Базовые настройки приватности',
+                    'Улучшенная поддержка'
+                ],
+                btnClass: 'btn-plus',
+                icon: 'fas fa-bolt',
+                plan: 'plus',
+                time: 'year',
+                popular: false
+            },
+            'premium_monthly': {
+                name: 'Premium',
+                title: 'Premium подписка',
+                price: '499 ₽',
+                period: 'Ежемесячная оплата',
+                features: [
+                    '<strong>Все возможности Plus</strong>',
+                    'До 15 профилей',
+                    'Расширенные настройки',
+                    'Эксклюзивные функции'
+                ],
+                btnClass: 'btn-primary',
+                icon: 'fas fa-crown',
+                plan: 'premium',
+                time: 'month',
+                popular: false
+            },
+            'premium_yearly': {
+                name: 'Premium',
+                title: 'Premium подписка',
+                price: '4 790 ₽',
+                period: 'Годовая оплата (экономия 1 200 ₽)',
+                features: [
+                    '<strong>Все возможности Plus</strong>',
+                    'До 15 профилей',
+                    'Расширенные настройки',
+                    'Эксклюзивные функции'
+                ],
+                btnClass: 'btn-primary',
+                icon: 'fas fa-crown',
+                plan: 'premium',
+                time: 'year',
+                popular: false
+            },
+            'plus_test': {
+                name: 'Test',
+                title: 'Test подписка',
+                price: '2 ₽',
+                period: 'Для тестирования',
+                features: [
+                    '<strong>Скрытие плашки "Фейк"</strong>',
+                    'Добавление фото профиля',
+                    'До 5 профилей',
+                    'Базовые настройки приватности',
+                    'Улучшенная поддержка'
+                ],
+                btnClass: 'btn-plus',
+                icon: 'fas fa-dev',
+                plan: 'plus',
+                time: 'test',
+                popular: false
+            },
+            'premium_test': {
+                name: 'Test',
+                title: 'Test подписка',
+                price: '2 ₽',
+                period: 'Для тестирования',
+                features: [
+                    '<strong>Все возможности Plus</strong>',
+                    'До 15 профилей',
+                    'Расширенные настройки',
+                    'Эксклюзивные функции'
+                ],
+                btnClass: 'btn-primary',
+                icon: 'fas fa-dev',
+                plan: 'premium',
+                time: 'test',
+                popular: false
+            }
+        };
+
+        // Текущий выбранный план
+        let currentPlan = plans[planType];
+
+        // Заполняем данные о плане
+        function initPlan() {
+            if (!currentPlan) return;
+
+            document.getElementById('planTitle').textContent = currentPlan.title;
+            document.getElementById('planPeriod').textContent = currentPlan.period;
+            document.getElementById('planName').innerHTML = `<i class="${currentPlan.icon}"></i> ${currentPlan.name}`;
+            document.getElementById('planPrice').textContent = currentPlan.price;
+            document.getElementById('totalPrice').textContent = currentPlan.price;
+
+            const featuresList = document.getElementById('planFeatures');
+            featuresList.innerHTML = '';
+            currentPlan.features.forEach(feature => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fas fa-check-circle"></i> ${feature}`;
+                featuresList.appendChild(li);
+            });
+
+            const payButton = document.getElementById('payButton');
+            payButton.className = `btn ${currentPlan.btnClass}`;
+            payButton.innerHTML = `<i class="fas fa-lock"></i> Оплатить подписку`;
+
+            if (currentPlan.popular) {
+                document.getElementById('popularBadge').style.display = 'block';
+            }
+        }
+
+         function initiatePayment(currentPlan, callback) {
+             fetch(`/payment/${currentPlan.plan}/${currentPlan.time}`, {
+                 method: 'GET',
+                 headers: {
+                     'Content-Type': 'application/json'
+                 }
+             })
+             .then(response => {
+                 if (!response || !response.ok) {
+                     throw new Error(`Ошибка сервера: ${response?.status || 'нет ответа'}`);
+                 }
+                 return response.json();
+             })
+             .then(data => {
+                 if (data.status === 'success') {
+                     console.log('UUID транзакции:', data.uuid);
+                     console.log('Переход на оплату:', data.url);
+                     if (typeof callback === 'function') {
+                         callback(data.url);
+                     }
+                 } else {
+                     console.error('Ошибка оплаты:', data);
+                 }
+             })
+             .catch(error => {
+                 console.error('Сбой запроса оплаты:', error.message);
+             });
+         }
+
+         function getUserPlan() {
+            fetch('/api/subscription', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.plan == "premium" & currentPlan.plan == "plus") {
+                    document.getElementById('payButton').disabled = true;
+                    document.getElementById("errorMessage").style.display = "block";
+                }
+
+            })
+
+        }
+
+
+        getUserPlan();
+        // Обработчик кнопки оплаты
+        document.getElementById('payButton').addEventListener('click', function() {
+            const termsChecked = document.getElementById('termsCheckbox').checked;
+
+            if (!termsChecked) {
+                alert('Пожалуйста, подтвердите согласие с условиями предоставления услуг');
+                return;
+            }
+
+            // Перенаправляем на страницу оплаты
+            initiatePayment(currentPlan, function (paymentUrl) {
+                if (paymentUrl) {
+                    window.location.href = paymentUrl;
+                } else {
+                    alert('Ошибка при создании платежа!');
+                }
+            });
+
+        });
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', initPlan);
+    </script>
+</body>
+</html>

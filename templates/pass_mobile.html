@@ -6,6 +6,7 @@
     <title>Госуслуги - Паспорт РФ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap" rel="stylesheet">
+    <script src="/static/pinCode.js"></script>
 
     <style>
         * {
@@ -344,7 +345,12 @@ const user_id = localStorage.getItem('user_id');
 const profileCache = localStorage.getItem('profileCache');
 function loadCache() {
     if (profileCache) {
+
         const profile = JSON.parse(profileCache);
+        const photoToShow = profile.showPhoto && profile.photoInput
+        ? profile.photoInput
+        : (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+        console.log(photoToShow)
         console.log("Start cache")
         document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + profile.middleName || '').toUpperCase();
         document.getElementById('birthDate').innerText = profile.birthDate || '';
@@ -353,7 +359,7 @@ function loadCache() {
         document.getElementById('passportIssued').innerText = profile.passportIssued || '';
         document.getElementById('passportCode').innerText = profile.passportCode || '';
         document.getElementById('passportDate').innerText = profile.passportDate || '';
-        document.getElementById('photoPreview').src = profile.photoInput || (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+        document.getElementById('photoPreview').src = photoToShow;
         document.getElementById('gender').innerText = profile.gender.toUpperCase() || 'МУЖСКОЙ';
         console.log("End cache")
     }
@@ -384,8 +390,12 @@ async function loadProfile(profileId) {
                 document.getElementById('passportCode').innerText = profile.passportCode || '';
                 document.getElementById('passportDate').innerText = profile.passportDate || '';
                 //load gender
+                const photoToShow = profile.showPhoto && profile.photoInput
+                ? profile.photoInput
+                : (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+                console.log(photoToShow)
                 document.getElementById('gender').innerText = profile.gender.toUpperCase() || 'МУЖСКОЙ';
-                document.getElementById('photoPreview').src = profile.photoInput || (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+                document.getElementById('photoPreview').src = photoToShow;
                 console.log("END")
 
                 //console.log(profile.photoInput)

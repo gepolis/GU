@@ -233,6 +233,42 @@
             text-decoration: underline;
         }
 
+        .disclaimer {
+            font-size: 12px;
+            color: var(--text-light);
+            text-align: center;
+            margin-top: 16px;
+            padding: 12px;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 8px;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: center;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        .terms-checkbox input {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+        }
+
+        .terms-text {
+            color: var(--text-light);
+        }
+
+        .terms-link {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .terms-link:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 480px) {
             .auth-card {
                 border-radius: 12px;
@@ -273,7 +309,7 @@
                 <i class="fas fa-lock"></i>
             </div>
             <h1>Введите код подтверждения</h1>
-            <p class="auth-subtitle">Для получения кода запустите telegram бота</p>
+            <p class="auth-subtitle">Для получения кода запустите Telegram бота</p>
         </div>
 
         <div class="auth-body">
@@ -289,6 +325,13 @@
                     <input type="text" class="otp-input" maxlength="1" data-index="6" inputmode="numeric" pattern="[0-9]*">
                 </div>
 
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="termsCheckbox" required>
+                    <label for="termsCheckbox" class="terms-text">
+                        Я согласен с <a href="/user-agreement" class="terms-link" target="_blank">Пользовательским соглашением</a>
+                    </label>
+                </div>
+
                 <button id="submitBtn" class="btn btn-primary" disabled>
                     <span class="btn-text">Продолжить</span>
                 </button>
@@ -298,8 +341,12 @@
                 </a>
             </div>
 
+            <div class="disclaimer">
+                Данный проект создан исключительно в развлекательных целях и не предоставляет реальных услуг
+            </div>
+
             <div class="resend-code">
-                Возникла проблема? <a href="https://t.me/GU_AppSupport" target="_blank" rel="noopener noreferrer" class="resend-link" id="resendLink">Отправить снова</a>
+                Возникла проблема? <a href="https://t.me/GU_AppSupport" target="_blank" rel="noopener noreferrer" class="resend-link" id="resendLink">Напишите нам</a>
             </div>
             <div class="resend-code">
                 <a href="/demo" target="_blank" rel="noopener noreferrer" class="resend-link">Демо режим, без возможности смены данных</a>
@@ -314,6 +361,7 @@
             const btnText = submitBtn.querySelector('.btn-text');
             const statusMessage = document.getElementById('statusMessage');
             const resendLink = document.getElementById('resendLink');
+            const termsCheckbox = document.getElementById('termsCheckbox');
 
             // Фокусировка на первом поле при загрузке
             otpInputs[0].focus();
@@ -357,15 +405,26 @@
                 });
             });
 
-            // Проверка заполненности всех полей
+            // Проверка заполненности всех полей и согласия с условиями
             function checkOTPComplete() {
                 const code = Array.from(otpInputs).map(input => input.value).join('');
-                submitBtn.disabled = code.length !== 6;
-                return code.length === 6;
+                const isTermsAccepted = termsCheckbox.checked;
+                submitBtn.disabled = code.length !== 6 || !isTermsAccepted;
+                return code.length === 6 && isTermsAccepted;
             }
+
+            // Проверка при изменении чекбокса
+            termsCheckbox.addEventListener('change', checkOTPComplete);
 
             // Отправка кода на сервер
             submitBtn.addEventListener('click', async function() {
+                if (!termsCheckbox.checked) {
+                    statusMessage.className = 'status-message error-message';
+                    statusMessage.textContent = 'Необходимо принять пользовательское соглашение';
+                    statusMessage.style.display = 'block';
+                    return;
+                }
+
                 const code = Array.from(otpInputs).map(input => input.value).join('');
 
                 // Показываем состояние загрузки
@@ -406,7 +465,7 @@
                     // Восстанавливаем кнопку
                     submitBtn.classList.remove('btn-loading');
                     btnText.textContent = 'Продолжить';
-                    this.disabled = false;
+                    this.disabled = !checkOTPComplete();
                 }
             });
 
@@ -419,7 +478,6 @@
                 otpInputs[0].focus();
                 submitBtn.disabled = true;
             }
-
 
             // Блокировка масштабирования на мобильных
             document.addEventListener('touchmove', function(event) {

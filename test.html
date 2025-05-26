@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Энергетики</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .brand-selection, .flavor-selection {
+            margin: 20px 0;
+        }
+
+        select {
+            padding: 10px;
+            font-size: 1.1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .energy-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 10px;
+        }
+
+        .card-body h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .card-body label {
+            font-size: 1em;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .card-body input[type="checkbox"] {
+            transform: scale(1.5);
+        }
+
+        .statistics {
+            margin-top: 30px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Выберите свой любимый энергетик!</h1>
+
+        <div class="brand-selection">
+            <label for="brand">Выберите бренд:</label>
+            <select id="brand">
+                <option value="Monster">Monster</option>
+                <option value="Adrenaline">Adrenaline</option>
+                <option value="RedBull">RedBull</option>
+                <option value="Garilla">Garilla</option>
+                <option value="Flask">Flask</option>
+                <option value="LitEnergy">LitEnergy</option>
+                <option value="Volt">Volt</option>
+            </select>
+        </div>
+
+        <div class="flavor-selection" id="flavor-selection">
+            <!-- Вкусы будут подгружаться сюда -->
+        </div>
+
+        <div id="energy-cards" class="energy-cards"></div>
+
+        <div id="statistics" class="statistics">
+            <h2>Статистика:</h2>
+            <p>Выбранных энергетиков: <span id="selected-count">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        const brands = {
+            Monster: [
+                {
+                    name: "Monster Energy",
+                    flavors: [
+                        { name: "Оригинальный", image: "https://www.monsterenergy.com/sites/default/files/Monster-Energy-Magnum-Can.jpg" },
+                        { name: "Ultra", image: "https://www.monsterenergy.com/sites/default/files/MonsterUltra.jpg" }
+                    ]
+                }
+            ],
+            Adrenaline: [
+                {
+                    name: "Adrenaline Rush",
+                    flavors: [
+                        { name: "Оригинальный", image: "https://images.adrenalinerush.com.au/wp-content/uploads/2018/11/Adrenaline-Rush-Original.jpg" }
+                    ]
+                }
+            ],
+            RedBull: [
+                {
+                    name: "RedBull Original",
+                    flavors: [
+                        { name: "Оригинальный", image: "https://upload.wikimedia.org/wikipedia/commons/8/89/Red_Bull_Logo_2019.svg" },
+                        { name: "Sugarfree", image: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Red_Bull_Logo_2021.svg" }
+                    ]
+                }
+            ],
+            Garilla: [
+                {
+                    name: "Garilla Energy",
+                    flavors: [
+                        { name: "Оригинальный", image: "https://via.placeholder.com/200?text=Garilla" }
+                    ]
+                }
+            ],
+            Flask: [
+                {
+                    name: "Flask Energy",
+                    flavors: [
+                        { name: "Оригинальный", image: "https://via.placeholder.com/200?text=Flask" }
+                    ]
+                }
+            ],
+            LitEnergy: [
+                {
+                    name: "LitEnergy Citrus",
+                    flavors: [
+                        { name: "Цитрус", image: "https://via.placeholder.com/200?text=LitEnergy" }
+                    ]
+                }
+            ],
+            Volt: [
+                {
+                    name: "Volt Energy",
+                    flavors: [
+                        { name: "Оригинальный", image: "https://via.placeholder.com/200?text=Volt" }
+                    ]
+                }
+            ]
+        };
+
+        const brandSelect = document.getElementById("brand");
+        const energyCards = document.getElementById("energy-cards");
+        const selectedCountElem = document.getElementById("selected-count");
+        const flavorSelection = document.getElementById("flavor-selection");
+
+        function loadFlavorSelection(brand) {
+            const selectedBrand = brands[brand];
+            flavorSelection.innerHTML = "";
+
+            if (selectedBrand && selectedBrand.length > 0) {
+                const flavors = selectedBrand[0].flavors;
+                const flavorSelect = document.createElement("select");
+                flavorSelect.id = "flavor";
+
+                flavors.forEach(flavor => {
+                    const option = document.createElement("option");
+                    option.value = flavor.name;
+                    option.textContent = flavor.name;
+                    flavorSelect.appendChild(option);
+                });
+
+                flavorSelection.appendChild(flavorSelect);
+            }
+
+            loadEnergyCards(brand);
+        }
+
+        function loadEnergyCards(brand) {
+            const selectedBrand = brands[brand];
+            energyCards.innerHTML = "";
+
+            if (selectedBrand && selectedBrand.length > 0) {
+                const flavors = selectedBrand[0].flavors;
+
+                flavors.forEach(flavor => {
+                    const card = document.createElement("div");
+                    card.classList.add("card");
+
+                    card.innerHTML = `
+                        <img src="${flavor.image}" alt="${flavor.name}">
+                        <div class="card-body">
+                            <h3>${flavor.name}</h3>
+                            <label for="${flavor.name}-checkbox">Мне нравится</label>
+                            <input type="checkbox" id="${flavor.name}-checkbox" data-name="${flavor.name}">
+                        </div>
+                    `;
+
+                    energyCards.appendChild(card);
+                });
+            }
+
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const selectedEnergys = JSON.parse(localStorage.getItem("selectedEnergys")) || [];
+            selectedCountElem.textContent = selectedEnergys.length;
+        }
+
+        brandSelect.addEventListener("change", function() {
+            loadFlavorSelection(this.value);
+        });
+
+        energyCards.addEventListener("change", function(e) {
+            if (e.target.type === "checkbox") {
+                const selectedEnergys = JSON.parse(localStorage.getItem("selectedEnergys")) || [];
+                const energyName = e.target.dataset.name;
+
+                if (e.target.checked) {
+                    selectedEnergys.push(energyName);
+                } else {
+                    const index = selectedEnergys.indexOf(energyName);
+                    if (index !== -1) selectedEnergys.splice(index, 1);
+                }
+
+                localStorage.setItem("selectedEnergys", JSON.stringify(selectedEnergys));
+                updateSelectedCount();
+            }
+        });
+
+        // Initial load
+        loadFlavorSelection(brandSelect.value);
+    </script>
+</body>
+</html>

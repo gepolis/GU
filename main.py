@@ -1,33 +1,60 @@
 import hashlib
 import os
 import random
+import time
 from datetime import datetime
+from pprint import pprint
 
 import requests
-from flask import Flask, render_template, send_from_directory, request, jsonify,session, redirect
+from flask import Flask, render_template, send_from_directory, request, jsonify, session, redirect, send_file
+from sqlalchemy import false
 from user_agents import parse
 
-from db import db, User, AuthUrl, Profile
+from db import db, User, AuthUrl, Profile, Payment, Promocode, UserPromocode, ConsentLog, FakeMessageClose
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://gen_user:ovLX1T)Hpg-5%3E_@94.198.216.178:5432/default_db'  # Укажите ваш URI для базы данных
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key'
-
+app.secret_key = 'GU_GEPOLIS_GUAPPSUPPORT_ADMIN_SECRET_KEY_2'  # Обязательно!
 db.init_app(app)
+LAST_UA_DATE = "26-05-2025"
 
 with app.app_context():
     db.create_all()  # Создает таблицы в базе данных
+
+
 @app.route('/')
 def index():
+    if not session.get('user_id'):
+        return redirect('/auth')
     return send_from_directory('templates', 'test.htm')
-
+def log_user_consent(req,user_id=None, comment="-"):
+    client_data = get_client_info(req)
+    if not user_id:
+        user_id = session.get('user_id')
+    if not user_id:
+        return
+    log = ConsentLog(
+        user_id=user_id,
+        ip=client_data['network']['ip'],
+        user_agent=client_data['network']['user_agent'],
+        browser=client_data['device']['browser'],
+        system=client_data['device']['os'],
+        device=client_data['device']['device'],
+        comment_action=comment
+    )
+    db.session.add(log)
+    db.session.commit()
 @app.route('/setup/')
 def setup():
+    if not session.get('user_id'):
+        return redirect('/auth')
     return render_template('setup_new.html')
 
 @app.route('/profile/personal/id-doc')
 def id_doc():
+    if not session.get('user_id'):
+        return redirect('/auth')
     return send_from_directory('templates', 'pass_data.htm')
 
 
@@ -209,6 +236,8 @@ def submit_form():
 
 @app.route("/mobile")
 def mobile():
+    if not session.get('user_id'):
+        return redirect('/auth')
     return render_template("pass.html")
 
 @app.route("/mobile/details")
@@ -246,6 +275,8 @@ def check_auth(otp_code):
                 db.session.add(user)
                 db.session.commit()
 
+            log_user_consent(request, user_id=user.id, comment="Авторизация")
+
             return jsonify({'status': 'success', 'user_id': user.id})
         else:
             return jsonify({'status': 'error'})
@@ -262,7 +293,7 @@ def auth():
 
 @app.route('/api/user', methods=['GET'])
 def get_or_create_user():
-    user_id = request.args.get('user_id')
+    user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
 
@@ -280,20 +311,27 @@ def get_or_create_user():
 
 @app.route('/api/profiles', methods=['GET'])
 def get_profiles():
-    user_id = request.args.get('user_id')
+    start = int(time.time())
+    user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
+    print("f", int(time.time()) - start)
+    # Используем только нужные поля — это мгновенно
+    profiles = (
+        db.session.query(Profile.id, Profile.name)
+        .filter(Profile.user_id == user_id)
+        .limit(100)  # Ограничение — на случай большого объема
+        .all()
+    )
+    print("q", int(time.time()) - start)
 
-    user = User.query.filter(User.id==user_id).first()
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    profiles = Profile.query.filter(Profile.user_id==user.id).all()
     if not profiles:
         return jsonify({'error': 'Profiles not found'}), 404
 
-    return jsonify([profile.to_dict() for profile in profiles])
-
+    # Преобразуем напрямую в словарь
+    return jsonify([
+        {'id': p.id, 'name': p.name} for p in profiles
+    ])
 
 @app.route('/api/profile', methods=['GET'])
 def get_profile():
@@ -308,7 +346,7 @@ def get_profile():
 
 @app.route('/api/profile', methods=['POST'])
 def create_profile():
-    user_id = request.args.get('user_id')
+    user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'user_id is required'}), 400
 
@@ -355,7 +393,7 @@ def create_profile():
 
 @app.route('/api/profile', methods=['PUT'])
 def update_profile():
-    user_id = request.args.get('user_id')
+    user_id = session.get('user_id')
     profile_id = request.args.get('profile_id')
 
     if not user_id:
@@ -412,7 +450,7 @@ def update_profile():
 
 @app.route('/api/profile', methods=['DELETE'])
 def delete_profile():
-    user_id = request.args.get('user_id')
+    user_id = session.get('user_id')
     profile_id = request.args.get('profile_id')
 
     if not user_id:
@@ -441,7 +479,7 @@ def demo_profile():
 
 @app.route('/admin/photos/6329', methods=['GET'])
 def admin_photos():
-    user_id = request.args.get('user_id')
+    user_id = session.get('user_id')
     user = User.query.filter(User.id==user_id).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -456,7 +494,7 @@ def admin_photos():
 
 @app.route('/migDomin', methods=['GET'])
 def migDomin():
-    user_id = request.args.get('user_id')
+    user_id = session.get('user_id')
     current_active = request.args.get('cap')
     user = User.query.filter(User.id==user_id).first()
     if not user:
@@ -467,7 +505,7 @@ def migDomin():
 
 @app.route('/miDominAuth', methods=['GET'])
 def migDominAuth():
-    user_id = request.args.get('user_id')
+    user_id = session.get('user_id')
     current_active = request.args.get('cap')
     user = User.query.filter(User.id==user_id).first()
     if not user:
@@ -479,10 +517,326 @@ def migDominAuth():
     else:
         return jsonify({'error': 'Hash not valid'}), 403
 
+@app.route('/admin/json/users', methods=['POST'])
+def admin_json_users():
+    users = User.query.all()
+    return jsonify([{'id': user.id, 'username': user.username, 'user_id': user.user_id, 'is_admin': user.is_admin} for user in users])
 
 @app.route('/static/&lt;path:path&gt;')
 def send_static(path):
     return send_from_directory('static', path)
+
+@app.route('/api/verify-pin', methods=['POST'])
+def verify_pin():
+    pin = request.json.get('pin')
+    if pin == '1234':
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False})
+
+@app.route("/premium")
+def premium():
+    return render_template("pay.html")
+
+@app.route("/api/subscription", methods=["GET"])
+def get_subscription():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'user_id is required'}), 400
+
+    user = User.query.filter(User.id==user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    if user.subscription_expiration is None or user.subscription_type is None:
+        user.subscription_type = "N"
+        user.subscription_expiration = 0
+        db.session.commit()
+
+    if user.subscription_expiration < int(time.time()):
+        user.subscription_type = "N"
+        user.subscription_expiration = 0
+        db.session.commit()
+
+    return jsonify({
+        'user_id': user.user_id,
+        'username': user.username,
+        'plan': user.subscription_type,
+        'expires_at': user.subscription_expiration,
+        'free_closes': user.free_closes
+    })
+
+@app.route("/pinCode")
+def pinCode():
+    return render_template("code.html")
+import uuid
+
+from yoomoney import Quickpay, Client
+YOOMONEY_TOKEN = "4100118081125029.B5C5190A0515584D546589668EC04D03BC6680B00269B70913A64220E6657D73ED166EE15820FC4DAA5A15A0A3800E17A9C872A52D07A2D2D43ABDE200C217FE881563B8DC1CC3BE7484958B3FF0EE10B6E5763DDEE322D9D6F45825DA8BA923AE111928DBFE686683BF6C10DC1D4326C0640258434C8D2C89BF885A319CD650"
+WALLET_NUMBER = "4100118081125029"  # Номер кошелька (без точки)
+@app.route("/payment/<plan>/<t>")
+def payment(plan, t):
+    from datetime import datetime
+
+    start_time = time.time()
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Unauthorized: user_id is required'}), 401
+
+    log_user_consent(request,user_id,"Покупка подписки {} {}".format(plan, t))
+
+    PLANS = {
+        "plus": {"year": 1999, "month": 199, "test": 2},
+        "premium": {"year": 4999, "month": 199, "test": 2}
+    }
+
+    TIMES = {
+        "year": 365 * 86400,
+        "month": 30 * 86400,
+        "test": 3600
+    }
+
+    if plan not in PLANS or t not in PLANS[plan] or t not in TIMES:
+        return jsonify({'error': 'Invalid plan or time'}), 400
+
+    price = PLANS[plan][t]
+    duration_seconds = TIMES[t]
+    payment_uuid = str(uuid.uuid4())
+
+    # Сохраняем платеж
+    pay = Payment(
+        user_id=user_id,
+        amount=price,
+        plan=plan,
+        time=duration_seconds,
+        status="pending",
+        uuid=payment_uuid
+    )
+    db.session.add(pay)
+    db.session.commit()
+
+    print("Saved DB:", time.time() - start_time)
+
+    # Асинхронно или позже вызывай Quickpay (например, Celery или thread)
+    return jsonify({
+        "url": "/payment/url/" + payment_uuid,
+        "status": "success"
+    })
+
+@app.route("/payment/url/<uuid>")
+def get_payment_url(uuid):
+    pay = Payment.query.filter_by(uuid=uuid).first()
+    if not pay:
+        return jsonify({'error': 'Payment not found'}), 404
+
+    quickpay = Quickpay(
+        receiver=WALLET_NUMBER,
+        quickpay_form="shop",
+        targets="Sponsor this project",
+        paymentType="SB",
+        sum=pay.amount,
+        label=uuid,
+        successURL="http://127.0.0.1:5000/pay/" + uuid
+    )
+
+    return redirect(quickpay.redirected_url)
+
+
+@app.route("/pay/<uuid>")
+def pay(uuid):
+    client = Client(YOOMONEY_TOKEN)
+    history = client.operation_history(label=uuid)
+    print("List of operations:")
+    print("Next page starts with: ", history.next_record)
+    for operation in history.operations:
+        print(operation.status)
+        if operation.status == 'success':
+            pay = Payment.query.filter(Payment.uuid==uuid).first()
+            gave = True
+            print(pay)
+            print(pay.status)
+            if pay and pay.status != "success":
+                pay.status = "success"
+                gave = False
+                db.session.commit()
+            print(gave)
+            user = User.query.filter(User.id==pay.user_id).first()
+
+            if user:
+                if not gave:
+                    user.subscription_type = pay.plan
+                    print(user.subscription_expiration != 0)
+                    print(user.subscription_expiration > int(time.time()))
+                    if (user.subscription_expiration != 0 and
+                       user.subscription_expiration > int(time.time())):
+                        print("Subscription add time")
+                        user.subscription_expiration += pay.time
+                    else:
+                        print("Subscription set time")
+                        user.subscription_expiration = int(time.time()) + pay.time
+                    db.session.commit()
+                return redirect("/premium")
+            return {"status": "success"}
+        return {"status": "pending"}
+    return {"status": "error"}
+
+# ------- PROMOCODE ----------
+@app.route("/api/promocode/<code>")
+def promocode(code):
+
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"status": "error", "message": "Не указан user_id"}), 400
+
+    promocode = Promocode.query.filter(Promocode.code == code).first()
+    if not promocode:
+        return jsonify({"status": "error", "message": "Промокод не найден"}), 400
+
+    if promocode.current_uses >= promocode.max_uses:
+        return jsonify({"status": "error", "message": "Промокод превысил лимит использований"}), 400
+
+    if not promocode.is_active:
+        return jsonify({"status": "error", "message": "Промокод не активен"}), 400
+
+    user = User.query.filter(User.id == user_id).first()
+    if not user:
+        return jsonify({"status": "error", "message": "Пользователь не найден"}), 400
+
+    if UserPromocode.query.filter_by(promocode_id=promocode.id, user_id=user_id).first():
+        return jsonify({"status": "error", "message": "Вы уже использовали этот промокод"}), 400
+
+    now = int(time.time())
+
+    # 🎁 Промокод на бесплатные закрытия
+    if promocode.promo_type == "free_closes":
+        user.free_closes += promocode.value
+
+        promocode.current_uses += 1
+        db.session.add(UserPromocode(user_id=user_id, promocode_id=promocode.id))
+        db.session.commit()
+
+        return jsonify({
+            "status": "success",
+            "message": f"Вы получили {promocode.value} бесплатных закрытий"
+        }), 200
+
+    # 🔑 Промокод на подписку
+    elif promocode.promo_type in ["plus", "premium"]:
+        current_type = user.subscription_type or "N"
+        current_exp = user.subscription_expiration or 0
+        new_type = promocode.promo_type
+        new_duration = promocode.value
+
+        # Приоритеты: N < plus < premium
+        priority = {"N": 0, "plus": 1, "premium": 2}
+        user_priority = priority.get(current_type, 0)
+        promo_priority = priority.get(new_type, 0)
+
+        if user_priority > promo_priority and current_exp > now:
+            return jsonify({
+                "status": "error",
+                "message": f"У вас уже есть активная подписка более высокого уровня ({current_type})"
+            }), 400
+
+        if current_exp > now and current_type == new_type:
+            user.subscription_expiration = current_exp + new_duration
+        else:
+            user.subscription_expiration = now + new_duration
+
+        user.subscription_type = new_type
+
+        promocode.current_uses += 1
+        db.session.add(UserPromocode(user_id=user_id, promocode_id=promocode.id))
+        db.session.commit()
+
+        return jsonify({
+            "status": "success",
+            "message": f"Вы получили подписку {new_type}"
+        }), 200
+
+    return jsonify({"status": "error", "message": "Неверный тип промокода"}), 400
+
+@app.route("/pay/confirm")
+def pay_confirm():
+    return render_template("pay_confirm.html")
+
+@app.route("/api/consept")
+def consent():
+    user_id = session.get('user_id')
+    if user_id:
+        log_user_consent(request,user_id,"Согласие на обработку персональных данных")
+    return {"status": "success"}
+
+@app.route("/user-agreement")
+def user_agreement():
+    return send_file(
+        f'static/user-agreement-{LAST_UA_DATE}.pdf',
+        mimetype='application/pdf',
+        as_attachment=False,  # True for download
+        download_name=f'user-agreement-{LAST_UA_DATE}.pdf'  # For Flask 2.0+
+    )
+
+@app.route("/api/close/fake")
+def close_fake():
+    user_id = session.get('user_id')
+    print(user_id, "user_id")
+
+    if user_id:
+        user = User.query.filter(User.id==user_id).first()
+        if user:
+            can_close = False
+            if user.subscription_type == "plus" or user.subscription_type == "premium":
+                can_close = True
+                print(user.subscription_type)
+            elif user.free_closes > 0:
+                user.free_closes -= 1
+                db.session.commit()
+                can_close = True
+                print(user.free_closes)
+            print(can_close)
+
+            if can_close:
+                client_data = get_client_info(request)
+                if not client_data:
+                    return jsonify({"status": "error", "message": "Ошибка, попробуйте позже"}), 400
+                now = int(time.time())
+                entry = FakeMessageClose.query.filter(
+                    (FakeMessageClose.user_id == user_id) &
+                    (FakeMessageClose.closed_to > int(time.time()))
+                ).first()
+
+                if entry:
+                    return jsonify({"status": "success", "message": "You have already closed today"}), 200
+                fk = FakeMessageClose(
+                    user_id=user_id,
+                    ip=client_data['network']['ip'],
+                    user_agent=client_data['network']['user_agent'],
+                    browser=client_data['device']['browser'],
+                    system=client_data['device']['os'],
+                    device=client_data['device']['device']
+                )
+                db.session.add(fk)
+                db.session.commit()
+                return jsonify({"status": "success"}), 200
+            else:
+                return jsonify({"status": "error", "message": "У вас закончились бесплатные скрытия. Приобретите <a href='/premium'>подписку</a> или активируйте промокод"}), 400
+
+    return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+@app.route("/api/close/check")
+def close_check():
+    user_id = session.get('user_id')
+    if user_id:
+        user = User.query.filter(User.id==user_id).first()
+        if (user.subscription_type == "plus" or user.subscription_type == "premium") and user.subscription_expiration > int(time.time()):
+            return jsonify({"status": "success"}), 200
+        entry = FakeMessageClose.query.filter(
+            (FakeMessageClose.user_id == user_id) &
+            (FakeMessageClose.closed_to > int(time.time()))
+        ).first()
+        if entry:
+            return jsonify({"status": "success"}), 200
+
+    return jsonify({"status": "error"}), 400
 
 
 app.run(host='0.0.0.0', port=5000)

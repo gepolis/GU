@@ -6,6 +6,7 @@
     <title>Госуслуги - Паспорт РФ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap" rel="stylesheet">
+    <script src="/static/pinCode.js"></script>
     <style>
         * {
             margin: 0;
@@ -318,6 +319,143 @@
 .btn:hover {
     background-color: #2952cc;
 }
+                .notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffebee 100%);
+  border-left: 5px solid #ff5252;
+  border-radius: 12px;
+  padding: 20px 24px 20px 18px;
+  max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+}
+
+.notification.success {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-left-color: #4caf50;
+  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+}
+
+.notification-content {
+  flex-grow: 1;
+  margin-left: 14px;
+  color: #d32f2f;
+  font-size: 15px;
+  line-height: 1.6;
+  order: 1;
+  user-select: text;
+}
+
+.notification.success .notification-content {
+  color: #2e7d32;
+}
+
+.notification-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 17px;
+  color: #c62828;
+  user-select: none;
+}
+
+.notification.success .notification-title {
+  color: #1b5e20;
+}
+
+.notification-icon {
+  color: #ef5350;
+  font-size: 22px;
+  min-width: 28px;
+  order: 0;
+  user-select: none;
+}
+
+.notification.success .notification-icon {
+  color: #4caf50;
+}
+
+.notification-close {
+  cursor: pointer;
+  color: #b71c1c;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-left: 18px;
+  order: 2;
+  transition: background-color 0.25s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.notification-close:hover {
+  background-color: rgba(239, 83, 80, 0.15);
+  transform: scale(1.15);
+}
+
+.notification-close:active {
+  background-color: rgba(239, 83, 80, 0.25);
+  transform: scale(1.05);
+}
+
+.notification.success .notification-close {
+  color: #1b5e20;
+}
+
+.notification.success .notification-close:hover {
+  background-color: rgba(76, 175, 80, 0.15);
+}
+
+.notification.success .notification-close:active {
+  background-color: rgba(76, 175, 80, 0.25);
+}
+
+#confirmAgreement {
+  margin-top: 14px;
+  background-color: #4caf50;
+  border: none;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(76, 175, 80, 0.4);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+  align-self: flex-start;
+}
+
+#confirmAgreement:hover {
+  background-color: #388e3c;
+  box-shadow: 0 5px 14px rgba(56, 142, 60, 0.6);
+}
+
+#confirmAgreement:active {
+  background-color: #2e7d32;
+  box-shadow: 0 2px 6px rgba(46, 125, 50, 0.7);
+}
+
+.notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -465,7 +603,35 @@
             Поделиться
         </div>
     </div>
+    <div id="fakeNotification" class="notification" style="display:none;">
+  <div class="notification-icon">⚠️</div>
+  <div class="notification-content">
+    <div class="notification-title">Важное уведомление</div>
+    <div>Это фейковый сайт является шуточным проектом и не является официальным документом, удостоверяющим личность.</div>
+    <div class="message-text" style="margin-top: 8px; font-size: 13px; color: #b71c1c;"></div>
+  </div>
+  <button class="notification-close" id="closeNotification" aria-label="Закрыть уведомление">&times;</button>
+</div>
 
+<div id="successNotification" class="notification success" style="display:none;">
+  <div class="notification-icon">✓</div>
+  <div class="notification-content">
+    <div class="notification-title">ФЕЙК </div>
+    <div>Пожалуйста, подтвердите согласие с <a href="/user-agreement">пользовательским соглашением</a> для скрытия уведомления</div>
+    <div class="message-text" style="margin-top: 8px; font-size: 13px; color: #1b5e20;"></div>
+    <button id="confirmAgreement" style="
+      margin-top: 12px;
+      background-color: #4caf50;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    ">Согласен</button>
+  </div>
+</div>
     <script>
         // Функции для переключения между видами
         function showMainView() {
@@ -503,40 +669,6 @@
         toggleDarkMode();
         // Опционально: можно установить таймер для проверки каждые 30 минут
         setInterval(toggleDarkMode, 15 * 60 * 1000); // каждые 30 минут
-
-        const user_id = localStorage.getItem('user_id');
-        const profileCache = localStorage.getItem('profileCache');
-
-        function loadCache() {
-            if (profileCache) {
-                const profile = JSON.parse(profileCache);
-                console.log("Start cache");
-                document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + profile.middleName || '').toUpperCase();
-                document.getElementById('fn-detail').innerText = profile.lastName + ' ' + profile.firstName + ' ' + (profile.middleName || '');
-                document.getElementById('birthDate').innerText = profile.birthDate || '';
-                document.getElementById('birthDate-detail').innerText = profile.birthDate || '';
-                document.getElementById('birthPlace').innerText = profile.birthPlace || '';
-                document.getElementById('birthPlace-detail').innerText = profile.birthPlace || '';
-                document.getElementById('passportNumber').innerHTML = profile.passportNumber + " <img src='static/copy.jpg' class='copy-icon'>" || '';
-                document.getElementById('passportNumber-detail').innerText = profile.passportNumber || '';
-                document.getElementById('passportIssued').innerText = profile.passportIssued || '';
-                document.getElementById('passportIssued-detail').innerText = profile.passportIssued || '';
-                document.getElementById('passportCode').innerText = profile.passportCode || '';
-                document.getElementById('passportCode-detail').innerText = profile.passportCode || '';
-                document.getElementById('passportDate').innerText = profile.passportDate || '';
-                document.getElementById('passportDate-detail').innerText = profile.passportDate || '';
-                document.getElementById('photoPreview').src = profile.photoInput || (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
-                const gender = profile.gender.toUpperCase() || 'МУЖСКОЙ';
-                document.getElementById('gender').innerText = gender === 'МУЖСКОЙ' ? 'МУЖ' : 'ЖЕН';
-                document.getElementById('gender-detail').innerText = gender === 'МУЖСКОЙ' ? 'Мужской' : 'Женский';
-                console.log("End cache");
-            }
-        }
-
-        if (!user_id) {
-            window.location.href = '/auth';
-        }
-
         function getProtocolAndIP() {
             const protocol = window.location.protocol;   // "http:" или "https:"
             const host = window.location.host;           // "localhost:5000" или "127.0.0.1:5000"
@@ -544,6 +676,182 @@
         }
 
         const API_URL = getProtocolAndIP() + '/api';
+        const user_id = localStorage.getItem('user_id');
+        const profileCache = localStorage.getItem('profileCache');
+
+const LOCAL_STORAGE_KEY = 'fakeNotificationStatus';
+const ONE_HOUR_MS = 60 * 60 * 1000;
+
+const fakeNotification = document.getElementById('fakeNotification');
+const successNotification = document.getElementById('successNotification');
+
+let userConfirmed = false;
+
+function showNotification(elementId) {
+  const notification = document.getElementById(elementId);
+  notification.style.display = 'flex';
+  // Небольшая задержка для анимации
+  setTimeout(() => notification.classList.add('show'), 10);
+}
+
+function hideNotification(elementId) {
+  const notification = document.getElementById(elementId);
+  notification.classList.remove('show', 'pulse');
+  setTimeout(() => {
+    notification.style.display = 'none';
+  }, 400); // время анимации исчезновения
+}
+
+function setMessage(notificationElement, text, isError = true) {
+  const messageElem = notificationElement.querySelector('.notification-content .message-text');
+  if (!messageElem) return;
+  messageElem.innerHTML= text || '';
+  if (isError) {
+    messageElem.style.color = notificationElement.classList.contains('success') ? '#1b5e20' : '#b71c1c';
+  } else {
+    // Можно цвет для успешных сообщений, если нужно
+    messageElem.style.color = '#2e7d32';
+  }
+}
+
+function processStatusData(data) {
+  if (data.status !== 'success') {
+    setMessage(fakeNotification, data.message || '');
+    showNotification('fakeNotification');
+    fakeNotification.classList.add('pulse');
+  } else {
+    setMessage(fakeNotification, '');
+    hideNotification('fakeNotification');
+  }
+}
+
+function getLocalStatus() {
+  try {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored);
+    if (Date.now() - parsed.timestamp < ONE_HOUR_MS) {
+      return parsed.data;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function saveLocalStatus(data) {
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+    timestamp: Date.now(),
+    data
+  }));
+}
+
+async function fetchStatusFromServer() {
+  try {
+    const response = await fetch(`${API_URL}/close/check`);
+    const data = await response.json();
+    saveLocalStatus(data);
+    processStatusData(data);
+  } catch (error) {
+    console.error('Error checking fake status:', error);
+  }
+}
+
+function checkFakeStatus() {
+  const localData = getLocalStatus();
+  if (localData) {
+    processStatusData(localData);
+  }
+  fetchStatusFromServer();
+}
+
+async function fakeClose() {
+
+  try {
+    const response = await fetch(`${API_URL}/close/fake`, { method: 'GET' });
+    const data = await response.json();
+
+    if (data.status === 'success') {
+      userConfirmed = true;
+      hideNotification('fakeNotification');
+      hideNotification('successNotification');
+      setMessage(successNotification, '');
+      setMessage(fakeNotification, '');
+    } else {
+      // При ошибке показываем первое уведомление с сообщением ошибки
+      showNotification('fakeNotification');
+      setMessage(successNotification, '');
+      hideNotification('successNotification');
+      setMessage(fakeNotification, data.message || 'Ошибка подтверждения.');
+
+      fakeNotification.classList.add('pulse');
+    }
+  } catch (error) {
+    // Ошибка сети: показываем первое уведомление с сообщением
+    setMessage(successNotification, '');
+    hideNotification('successNotification');
+    setMessage(fakeNotification, 'Ошибка сети, попробуйте позже.');
+    showNotification('fakeNotification');
+    fakeNotification.classList.add('pulse');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  checkFakeStatus();
+
+  document.getElementById('closeNotification').addEventListener('click', () => {
+    hideNotification('fakeNotification');
+    showNotification('successNotification');
+  });
+
+  document.getElementById('confirmAgreement').addEventListener('click', fakeClose);
+
+  document.getElementById('closeSuccessNotification').addEventListener('click', () => {
+    if (userConfirmed) {
+      hideNotification('successNotification');
+    }
+  });
+});
+
+        function loadCache() {
+            if (profileCache) {
+                try {
+                    const profile = JSON.parse(profileCache);
+                    console.log("Start cache");
+                    const photoToShow = profile.showPhoto && profile.photoInput
+                    ? profile.photoInput
+                    : (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+                    console.log(photoToShow)
+                    document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + profile.middleName || '').toUpperCase();
+                    document.getElementById('fn-detail').innerText = profile.lastName + ' ' + profile.firstName + ' ' + (profile.middleName || '');
+                    document.getElementById('birthDate').innerText = profile.birthDate || '';
+                    document.getElementById('birthDate-detail').innerText = profile.birthDate || '';
+                    document.getElementById('birthPlace').innerText = profile.birthPlace || '';
+                    document.getElementById('birthPlace-detail').innerText = profile.birthPlace || '';
+                    document.getElementById('passportNumber').innerHTML = profile.passportNumber + " <img src='static/copy.jpg' class='copy-icon'>" || '';
+                    document.getElementById('passportNumber-detail').innerText = profile.passportNumber || '';
+                    document.getElementById('passportIssued').innerText = profile.passportIssued || '';
+                    document.getElementById('passportIssued-detail').innerText = profile.passportIssued || '';
+                    document.getElementById('passportCode').innerText = profile.passportCode || '';
+                    document.getElementById('passportCode-detail').innerText = profile.passportCode || '';
+                    document.getElementById('passportDate').innerText = profile.passportDate || '';
+                    document.getElementById('passportDate-detail').innerText = profile.passportDate || '';
+                    document.getElementById('photoPreview').src = photoToShow;
+                    const gender = profile.gender.toUpperCase() || 'МУЖСКОЙ';
+                    document.getElementById('gender').innerText = gender === 'МУЖСКОЙ' ? 'МУЖ' : 'ЖЕН';
+                    document.getElementById('gender-detail').innerText = gender === 'МУЖСКОЙ' ? 'Мужской' : 'Женский';
+                    console.log("End cache");
+                } catch (error) {
+                    console.error('Error parsing profile cache:', error);
+                }
+            }
+        }
+
+        if (!user_id) {
+            window.location.href = '/auth';
+        }
+
 
         async function loadProfile(profileId) {
             console.log("Fetch data");
@@ -553,6 +861,10 @@
             console.log("Fetch data end");
 
             console.log(profile);
+            const photoToShow = profile.showPhoto && profile.photoInput
+                ? profile.photoInput
+                : (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+                console.log(photoToShow)
             document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + profile.middleName || '').toUpperCase();
             document.getElementById('fn-detail').innerText = profile.lastName + ' ' + profile.firstName + ' ' + (profile.middleName || '');
             document.getElementById('birthDate').innerText = profile.birthDate || '';
@@ -570,7 +882,7 @@
             const gender = profile.gender.toUpperCase() || 'МУЖСКОЙ';
             document.getElementById('gender').innerText = gender === 'МУЖСКОЙ' ? 'МУЖ' : 'ЖЕН';
             document.getElementById('gender-detail').innerText = gender === 'МУЖСКОЙ' ? 'Мужской' : 'Женский';
-            document.getElementById('photoPreview').src = profile.photoInput || (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
+            document.getElementById('photoPreview').src = photoToShow;
             console.log("END");
         }
 

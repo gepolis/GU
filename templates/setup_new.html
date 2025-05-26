@@ -45,7 +45,7 @@
         }
 
         header {
-            margin-bottom: 32px;
+            margin-bottom: 16px;
         }
 
         h1 {
@@ -351,6 +351,174 @@
             margin-left: 8px;
         }
 
+        /* Вкладки */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-light);
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Стили для вкладки безопасности */
+        .security-section {
+            margin-bottom: 24px;
+        }
+
+        .promo-section {
+            margin-top: 32px;
+        }
+
+        .promo-input-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .promo-input-group input {
+            flex: 1;
+        }
+
+        /* Стили для PIN-кода */
+        .pin-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .pin-control {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .pin-status {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .pin-status.active {
+            color: var(--primary);
+        }
+
+        /* Модальное окно для PIN-кода */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            width: 100%;
+            max-width: 400px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .pin-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .pin-input input {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            font-size: 18px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .pin-input input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Реклама премиума */
+        .premium-banner {
+            background-color: #fff8e6;
+            border: 1px solid #ffeeba;
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .premium-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .premium-icon {
+            color: #ffc107;
+            font-size: 24px;
+        }
+
+        .premium-text h4 {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .premium-text p {
+            font-size: 14px;
+            color: var(--text-light);
+            margin: 0;
+        }
+
+        .premium-btn {
+            white-space: nowrap;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 16px;
@@ -369,6 +537,15 @@
             select, .btn {
                 width: 100%;
             }
+
+            .premium-banner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .promo-input-group {
+                flex-direction: column;
+            }
         }
 
         @media (max-width: 480px) {
@@ -379,6 +556,22 @@
             .actions .btn {
                 width: 100%;
             }
+
+            .modal-content {
+                padding: 16px;
+                margin: 0 16px;
+            }
+
+            .pin-input input {
+                width: 35px;
+                height: 35px;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 8px;
+            }
         }
         a {
             text-decoration: none;
@@ -387,9 +580,49 @@
     </style>
 </head>
 <body>
+    <!-- Модальное окно для PIN-кода -->
+    <div class="modal" id="pinModal">
+        <div class="modal-content">
+            <div class="modal-title" id="pinModalTitle">Установить PIN-код</div>
+            <div class="pin-input" id="pinInput">
+                <input type="password" maxlength="1" pattern="[0-9]">
+                <input type="password" maxlength="1" pattern="[0-9]">
+                <input type="password" maxlength="1" pattern="[0-9]">
+                <input type="password" maxlength="1" pattern="[0-9]">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelPinBtn">Отмена</button>
+                <button class="btn btn-primary" id="confirmPinBtn">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
+        <!-- Баннер премиума (отображается на всех вкладках) -->
+        <div class="premium-banner" id="premiumBanner" style="display: none;">
+            <div class="premium-content">
+                <div class="premium-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="premium-text">
+                    <h4>Премиум доступ</h4>
+                    <p>Разблокируйте все возможности с подпиской Premium</p>
+                </div>
+            </div>
+            <a href="/premium" class="btn btn-primary premium-btn">Подробнее</a>
+        </div>
+
         <header>
             <h1><a href="/"><i class="fas fa-arrow-left"></i></a> Мой профиль</h1>
+            <!-- Переключатель вкладок -->
+            <div class="tabs">
+                <div class="tab active" data-tab="profiles">Профили</div>
+                <div class="tab" data-tab="security">Безопасность и промокод</div>
+            </div>
+        </header>
+
+        <!-- Вкладка профилей -->
+        <div id="profiles-tab" class="tab-content active">
             <div class="profile-controls">
                 <a class="btn btn-primary" href="/mobile">
                     <i class="fas fa-mobile"></i> Мобильная версия
@@ -401,137 +634,161 @@
                     <i class="fas fa-plus"></i> Новый профиль
                 </button>
             </div>
-        </header>
 
-        <div id="form-container" style="display: none;">
-            <div class="section">
-                <h2><i class="fas fa-id-card"></i>Данные профиля</h2>
-                <div class="form-group">
-                    <label for="name">Название профиля</label>
-                    <input type="text" id="name" placeholder="Например: Основной профиль">
+            <div id="form-container" style="display: none;">
+                <div class="section">
+                    <h2><i class="fas fa-id-card"></i>Данные профиля</h2>
+                    <div class="form-group">
+                        <label for="name">Название профиля</label>
+                        <input type="text" id="name" placeholder="Например: Основной профиль">
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2><i class="fas fa-camera"></i>Фотография</h2>
+                    <div class="photo-upload">
+                        <div class="photo-preview" id="photoPreview">
+                            <span>Фото не загружено</span>
+                        </div>
+                        <h2></h2>
+                        <div class="photo-upload-btn">
+                            <button class="btn btn-secondary" id="uploadPhotoBtn">
+                                <i class="fas fa-upload"></i> Загрузить фото
+                            </button>
+                            <input type="file" id="photoInput" accept="image/*">
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2><i class="fas fa-user"></i>Личные данные</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="lastName">Фамилия</label>
+                            <input type="text" id="lastName" placeholder="Иванов">
+                        </div>
+                        <div class="form-group">
+                            <label for="firstName">Имя</label>
+                            <input type="text" id="firstName" placeholder="Иван">
+                        </div>
+                        <div class="form-group">
+                            <label for="middleName">Отчество</label>
+                            <input type="text" id="middleName" placeholder="Иванович">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="birthDate">Дата рождения</label>
+                            <input type="text" id="birthDate" placeholder="ДД.ММ.ГГГГ">
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Пол</label>
+                            <select id="gender">
+                                <option value="Мужской">Мужской</option>
+                                <option value="Женский">Женский</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="birthPlace">Место рождения</label>
+                        <input type="text" id="birthPlace" placeholder="СТРАНА ГОРОД">
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2><i class="fas fa-passport"></i>Паспортные данные</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="passportNumber">Номер паспорта</label>
+                            <input type="text" id="passportNumber" placeholder="1234 567890">
+                        </div>
+                        <div class="form-group">
+                            <label for="passportDate">Дата выдачи</label>
+                            <input type="text" id="passportDate" placeholder="ДД.ММ.ГГГГ">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="passportIssued">Кем выдан</label>
+                        <textarea id="passportIssued" placeholder="Отделом УФМС России"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="passportCode">Код подразделения</label>
+                            <input type="text" id="passportCode" placeholder="123-456">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2><i class="fas fa-home"></i>Адрес</h2>
+                    <div class="form-group">
+                        <label for="registrationAddress">Адрес регистрации</label>
+                        <textarea id="registrationAddress" placeholder="Город, улица, дом, квартира"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="livingAddress">Адрес проживания</label>
+                        <textarea id="livingAddress" placeholder="Город, улица, дом, квартира"></textarea>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2><i class="fas fa-file-alt"></i>Другие документы</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="snilsNumber">СНИЛС</label>
+                            <input type="text" id="snilsNumber" placeholder="123-456-789 00">
+                        </div>
+                        <div class="form-group">
+                            <label for="innNumber">ИНН</label>
+                            <input type="text" id="innNumber" placeholder="123456789012">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <a href="/" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </a>
+                    <button id="saveBtn" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                    <button id="deleteBtn" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Удалить
+                    </button>
                 </div>
             </div>
 
-            <div class="section">
-                <h2><i class="fas fa-camera"></i>Фотография</h2>
-                <div class="photo-upload">
-                    <div class="photo-preview" id="photoPreview">
-                        <span>Фото не загружено</span>
-                    </div>
-                    <div class="photo-upload-btn">
-                        <button class="btn btn-secondary">
-                            <i class="fas fa-upload"></i> Загрузить фото
-                        </button>
-                        <input type="file" id="photoInput" accept="image/*">
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2><i class="fas fa-user"></i>Личные данные</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="lastName">Фамилия</label>
-                        <input type="text" id="lastName" placeholder="Иванов">
-                    </div>
-                    <div class="form-group">
-                        <label for="firstName">Имя</label>
-                        <input type="text" id="firstName" placeholder="Иван">
-                    </div>
-                    <div class="form-group">
-                        <label for="middleName">Отчество</label>
-                        <input type="text" id="middleName" placeholder="Иванович">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="birthDate">Дата рождения</label>
-                        <input type="text" id="birthDate" placeholder="ДД.ММ.ГГГГ">
-                    </div>
-                    <div class="form-group">
-                        <label for="gender">Пол</label>
-                        <select id="gender">
-                            <option value="Мужской">Мужской</option>
-                            <option value="Женский">Женский</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="birthPlace">Место рождения</label>
-                    <input type="text" id="birthPlace" placeholder="СТРАНА ГОРОД">
-                </div>
-            </div>
-
-            <div class="section">
-                <h2><i class="fas fa-passport"></i>Паспортные данные</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="passportNumber">Номер паспорта</label>
-                        <input type="text" id="passportNumber" placeholder="1234 567890">
-                    </div>
-                    <div class="form-group">
-                        <label for="passportDate">Дата выдачи</label>
-                        <input type="text" id="passportDate" placeholder="ДД.ММ.ГГГГ">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="passportIssued">Кем выдан</label>
-                    <textarea id="passportIssued" placeholder="Отделом УФМС России"></textarea>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="passportCode">Код подразделения</label>
-                        <input type="text" id="passportCode" placeholder="123-456">
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2><i class="fas fa-home"></i>Адрес</h2>
-                <div class="form-group">
-                    <label for="registrationAddress">Адрес регистрации</label>
-                    <textarea id="registrationAddress" placeholder="Город, улица, дом, квартира"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="livingAddress">Адрес проживания</label>
-                    <textarea id="livingAddress" placeholder="Город, улица, дом, квартира"></textarea>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2><i class="fas fa-file-alt"></i>Другие документы</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="snilsNumber">СНИЛС</label>
-                        <input type="text" id="snilsNumber" placeholder="123-456-789 00">
-                    </div>
-                    <div class="form-group">
-                        <label for="innNumber">ИНН</label>
-                        <input type="text" id="innNumber" placeholder="123456789012">
-                    </div>
-                </div>
-            </div>
-
-            <div class="actions">
-                <a href="/" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Назад
-                </a>
-                <button id="saveBtn" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Сохранить
-                </button>
-                <button id="deleteBtn" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Удалить
+            <div id="empty-state" class="empty-state">
+                <i class="fas fa-user-plus"></i>
+                <h3>Нет активного профиля</h3>
+                <p>Выберите существующий профиль из списка или создайте новый для хранения ваших данных</p>
+                <button id="createProfileBtn2" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Создать профиль
                 </button>
             </div>
         </div>
 
-        <div id="empty-state" class="empty-state">
-            <i class="fas fa-user-plus"></i>
-            <h3>Нет активного профиля</h3>
-            <p>Выберите существующий профиль из списка или создайте новый для хранения ваших данных</p>
-            <button id="createProfileBtn2" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Создать профиль
-            </button>
+        <!-- Вкладка безопасности и промокода -->
+        <div id="security-tab" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-lock"></i>Безопасность</h2>
+                <div class="pin-control">
+                    <button class="btn btn-secondary" id="managePinBtn">
+                        <i class="fas fa-key"></i> Установить PIN-код
+                    </button>
+                    <span class="pin-status" id="pinStatus">Не установлен</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-tag"></i>Промокод</h2>
+                <p>Введите промокод для получения бонусов или активации подписки</p>
+                <div class="promo-input-group">
+                    <input type="text" id="promoCode" placeholder="Введите промокод">
+                    <button class="btn btn-primary" id="applyPromoBtn">Применить</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -553,6 +810,7 @@
         // DOM элементы
         const photoInput = document.getElementById('photoInput');
         const photoPreview = document.getElementById('photoPreview');
+        const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
         const saveBtn = document.getElementById('saveBtn');
         const deleteBtn = document.getElementById('deleteBtn');
         const createProfileBtn = document.getElementById('createProfileBtn');
@@ -561,10 +819,186 @@
         const formContainer = document.getElementById('form-container');
         const emptyState = document.getElementById('empty-state');
         const formFields = document.querySelectorAll('input, textarea, select');
+        const premiumBanner = document.getElementById('premiumBanner');
+        const managePinBtn = document.getElementById('managePinBtn');
+        const pinStatus = document.getElementById('pinStatus');
+        const applyPromoBtn = document.getElementById('applyPromoBtn');
+        const promoCodeInput = document.getElementById('promoCode');
+
+        // Элементы модального окна пин-кода
+        const pinModal = document.getElementById('pinModal');
+        const pinInputs = document.querySelectorAll('#pinInput input');
+        const cancelPinBtn = document.getElementById('cancelPinBtn');
+        const confirmPinBtn = document.getElementById('confirmPinBtn');
+        const pinModalTitle = document.getElementById('pinModalTitle');
+
+        // Элементы вкладок
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
 
         // ID текущего профиля
         let currentProfileId = null;
         let isLoading = false;
+        let hasPremium = false;
+        let globalPin = localStorage.getItem('globalPin') || null;
+
+        // Переключение вкладок
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+
+                // Удаляем активный класс у всех вкладок и контента
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Добавляем активный класс текущей вкладке и контенту
+                tab.classList.add('active');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        // Проверка подписки пользователя
+        async function checkSubscription() {
+            try {
+                const response = await fetch(`${API_URL}/subscription?user_id=${user_id}`);
+                const data = await response.json();
+
+                if (data.plan && data.plan !== 'N') {
+                    hasPremium = true;
+                    premiumBanner.style.display = 'none';
+                } else {
+                    hasPremium = false;
+                    premiumBanner.style.display = 'flex';
+
+                    // Если нет премиума, скрываем возможность загрузки фото
+                    document.querySelector('.photo-upload-btn').style.display = 'none';
+                    const photoSection = document.querySelector('.photo-upload h2');
+                    if (photoSection) {
+                        photoSection.innerHTML +=
+                            ' <span style="color: #ef4444; font-size: 12px;">Загрузка фото и их отображение доступно только с подпиской</span>';
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка проверки подписки:', error);
+            }
+        }
+
+        // Обновление статуса PIN-кода
+        function updatePinStatus() {
+            if (globalPin) {
+                pinStatus.textContent = 'Установлен';
+                pinStatus.classList.add('active');
+                managePinBtn.innerHTML = '<i class="fas fa-key"></i> Изменить PIN-код';
+            } else {
+                pinStatus.textContent = 'Не установлен';
+                pinStatus.classList.remove('active');
+                managePinBtn.innerHTML = '<i class="fas fa-key"></i> Установить PIN-код';
+            }
+        }
+
+        // Показать модальное окно для PIN-кода
+        function showPinModal() {
+            pinModal.style.display = 'flex';
+            pinInputs[0].focus();
+
+            if (globalPin) {
+                pinModalTitle.textContent = 'Изменить PIN-код';
+            } else {
+                pinModalTitle.textContent = 'Установить PIN-код';
+            }
+        }
+
+        // Скрыть модальное окно PIN-кода
+        function hidePinModal() {
+            pinModal.style.display = 'none';
+            pinInputs.forEach(input => input.value = '');
+        }
+
+        // Установить или изменить PIN-код
+        function setPin() {
+            const newPin = Array.from(pinInputs).map(input => input.value).join('');
+
+            if (newPin.length !== 4) {
+                showNotification('PIN-код должен состоять из 4 цифр', 'error');
+                return false;
+            }
+
+            globalPin = newPin;
+            localStorage.setItem('globalPin', globalPin);
+            showNotification('PIN-код успешно ' + (globalPin ? 'изменен' : 'установлен'));
+            updatePinStatus();
+            hidePinModal();
+            return true;
+        }
+
+        // Применение промокода
+        async function applyPromoCode() {
+            const promoCode = promoCodeInput.value.trim();
+            if (!promoCode) {
+                showNotification('Введите промокод', 'error');
+                return;
+            }
+
+            try {
+                isLoading = true;
+                applyPromoBtn.innerHTML = `<span class="loader"></span> Проверка`;
+                applyPromoBtn.disabled = true;
+
+                const response = await fetch(`${API_URL}/promocode/${promoCode}?user_id=${user_id}`);
+                const result = await response.json();
+
+                if (result.status == 'success') {
+                    showNotification(result.message || 'Промокод успешно активирован');
+                    promoCodeInput.value = '';
+                    checkSubscription(); // Обновляем статус подписки
+                } else {
+                    showNotification(result.message || 'Неверный промокод', 'error');
+                }
+            } catch (error) {
+                showNotification('Ошибка при применении промокода', 'error');
+                console.error('Ошибка:', error);
+            } finally {
+                isLoading = false;
+                applyPromoBtn.innerHTML = 'Применить';
+                applyPromoBtn.disabled = false;
+            }
+        }
+
+        // Обработчики для модального окна PIN-кода
+        pinInputs.forEach((input, index) => {
+            input.addEventListener('input', function() {
+                if (this.value.length === 1) {
+                    if (index < pinInputs.length - 1) {
+                        pinInputs[index + 1].focus();
+                    }
+                }
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !this.value && index > 0) {
+                    pinInputs[index - 1].focus();
+                }
+            });
+        });
+
+        confirmPinBtn.addEventListener('click', setPin);
+        cancelPinBtn.addEventListener('click', hidePinModal);
+
+        // Обработчик кнопки управления PIN-кодом
+        managePinBtn.addEventListener('click', showPinModal);
+
+        // Обработчик кнопки применения промокода
+        applyPromoBtn.addEventListener('click', applyPromoCode);
+
+        // Обработчик загрузки фото
+        uploadPhotoBtn.addEventListener('click', function() {
+            if (!hasPremium) {
+                showNotification('Загрузка фото доступна только для Premium подписки', 'error');
+                return;
+            }
+
+            photoInput.click();
+        });
 
         // Форматирование данных
         function formatPassportNumber(value) {
@@ -704,60 +1138,60 @@
 
         // Сохранение профиля
         async function saveProfile() {
-    if (isLoading) return;
+            if (isLoading) return;
 
-    try {
-        isLoading = true;
-        saveBtn.innerHTML = `<i class="fas fa-save"></i> Сохранение <span class="loader"></span>`;
-        saveBtn.classList.add('btn-loading');
+            try {
+                isLoading = true;
+                saveBtn.innerHTML = `<i class="fas fa-save"></i> Сохранение <span class="loader"></span>`;
+                saveBtn.classList.add('btn-loading');
 
-        const data = {
-            last_name: document.getElementById('lastName').value,
-            first_name: document.getElementById('firstName').value,
-            birth_place: document.getElementById('birthPlace').value,
-            middle_name: document.getElementById('middleName').value,
-            passport_number: document.getElementById('passportNumber').value, // оставляем с пробелом "1234 567890"
-            birth_date: document.getElementById('birthDate').value,
-            passport_date: document.getElementById('passportDate').value,
-            passport_issued: document.getElementById('passportIssued').value,
-            passport_code: document.getElementById('passportCode').value, // оставляем с дефисом "123-456"
-            registration_address: document.getElementById('registrationAddress').value,
-            living_address: document.getElementById('livingAddress').value,
-            snils_number: document.getElementById('snilsNumber').value, // оставляем с дефисами и пробелом "123-456-789 00"
-            inn_number: document.getElementById('innNumber').value,
-            name: document.getElementById('name').value,
-            gender: document.getElementById('gender').value
-        };
+                const data = {
+                    last_name: document.getElementById('lastName').value,
+                    first_name: document.getElementById('firstName').value,
+                    birth_place: document.getElementById('birthPlace').value,
+                    middle_name: document.getElementById('middleName').value,
+                    passport_number: document.getElementById('passportNumber').value,
+                    birth_date: document.getElementById('birthDate').value,
+                    passport_date: document.getElementById('passportDate').value,
+                    passport_issued: document.getElementById('passportIssued').value,
+                    passport_code: document.getElementById('passportCode').value,
+                    registration_address: document.getElementById('registrationAddress').value,
+                    living_address: document.getElementById('livingAddress').value,
+                    snils_number: document.getElementById('snilsNumber').value,
+                    inn_number: document.getElementById('innNumber').value,
+                    name: document.getElementById('name').value,
+                    gender: document.getElementById('gender').value
+                };
 
-        if (!data.name) {
-            showNotification('Введите название профиля', 'error');
-            return;
+                if (!data.name) {
+                    showNotification('Введите название профиля', 'error');
+                    return;
+                }
+
+                if (photoPreview.querySelector('img')) {
+                    data.photo = photoPreview.querySelector('img').src;
+                }
+
+                const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${currentProfileId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                showNotification('Профиль успешно сохранён', 'success');
+                loadProfiles();
+            } catch (error) {
+                showNotification('Ошибка сохранения профиля', 'error');
+                console.error('Ошибка:', error);
+            } finally {
+                isLoading = false;
+                saveBtn.innerHTML = `<i class="fas fa-save"></i> Сохранить`;
+                saveBtn.classList.remove('btn-loading');
+            }
         }
-
-        if (photoPreview.querySelector('img')) {
-            data.photo = photoPreview.querySelector('img').src;
-        }
-
-        const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${currentProfileId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-        showNotification('Профиль успешно сохранён', 'success');
-        loadProfiles();
-    } catch (error) {
-        showNotification('Ошибка сохранения профиля', 'error');
-        console.error('Ошибка:', error);
-    } finally {
-        isLoading = false;
-        saveBtn.innerHTML = `<i class="fas fa-save"></i> Сохранить`;
-        saveBtn.classList.remove('btn-loading');
-    }
-}
 
         saveBtn.addEventListener('click', saveProfile);
 
@@ -880,6 +1314,8 @@
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             loadProfiles();
+            checkSubscription();
+            updatePinStatus();
 
             if (localStorage.getItem('currentProfileId')) {
                 formContainer.style.display = 'block';

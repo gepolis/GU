@@ -55,8 +55,23 @@ async def cmd_start(message: types.Message):
         )
         await message.answer("⚠️ Подпишитесь на канал, чтобы получить код авторизации!\n\n👥 <a href='https://t.me/+d12Zmm2AvFhiMzAy'>Подписаться на канал</a>\n\nПосле подписки нажмите /start", reply_markup=kb, parse_mode="HTML")
 
+async def check_auth():
+    req = requests.post("http://127.0.0.1:5000/admin/json/users")
+    users = req.json()
+    left = 0
+    for user in users:
+        user_channel_status = await bot.get_chat_member(chat_id=-1002444630943, user_id=user['user_id'])
+        if user_channel_status.status != 'left':
+            print(user['username'], "+")
+        else:
+            print(user['username'], "-")
+            left += 1
+    await bot.send_message(2015460473, "Пользователей: {0}\nОтписались: {1}".format(len(users) - left, left))
+
+
 
 async def main():
+    await check_auth()
     await dp.start_polling(bot)
 def run_bot():
     asyncio.set_event_loop(asyncio.new_event_loop())
