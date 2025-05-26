@@ -20,7 +20,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     subscription_type = db.Column(db.String(255), default="N")
     subscription_expiration = db.Column(BIGINT, default=0)
-    free_closes = db.Column(BIGINT, default=0)
+    free_closes = db.Column(BIGINT, default=3)
 
     # Связь с профилем
     profile = db.relationship('Profile', backref='user', uselist=False)
