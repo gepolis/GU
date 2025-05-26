@@ -635,7 +635,7 @@ def get_payment_url(uuid):
         paymentType="SB",
         sum=pay.amount,
         label=uuid,
-        successURL="http://127.0.0.1:5000/pay/" + uuid
+        successURL="https://gosuslugi.com.ru/pay/" + uuid
     )
 
     return redirect(quickpay.redirected_url)
