@@ -25,6 +25,19 @@ class User(db.Model):
     # Связь с профилем
     profile = db.relationship('Profile', backref='user', uselist=False)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'username': self.username,
+            'is_admin': self.is_admin,
+            'created_at': self.created_at,
+            'is_active': self.is_active,
+            'subscription_type': self.subscription_type,
+            'subscription_expiration': self.subscription_expiration,
+            'free_closes': self.free_closes
+        }
+
 
 class Profile(db.Model):
     __tablename__ = 'profiles'
@@ -98,6 +111,17 @@ class Payment(db.Model):
     status = db.Column(db.String(255), nullable=False)
     uuid = db.Column(db.String(255), nullable=False)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'amount': self.amount,
+            'plan': self.plan,
+            'time': self.time,
+            'status': self.status,
+            'uuid': self.uuid
+        }
+
 
 class Promocode(db.Model):
     __tablename__ = 'promocodes'
@@ -110,6 +134,17 @@ class Promocode(db.Model):
     current_uses = db.Column(db.Integer, nullable=False)
     is_active = db.Column(db.Boolean, default=True)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'promo_type': self.promo_type,
+            'value': self.value,
+            'max_uses': self.max_uses,
+            'current_uses': self.current_uses,
+            'is_active': self.is_active
+        }
+
 
 class UserPromocode(db.Model):
     __tablename__ = 'user_promocodes'
@@ -117,6 +152,13 @@ class UserPromocode(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, nullable=False)
     promocode_id = db.Column(db.Integer, nullable=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'promocode_id': self.promocode_id
+        }
 
 class ConsentLog(db.Model):
     __tablename__ = 'consent_logs'
@@ -155,4 +197,17 @@ class FakeMessageClose(db.Model):
     device = db.Column(db.String(256), nullable=False)
     closed_at = db.Column(db.Integer, default=time.time(), nullable=False)
     closed_to = db.Column(db.Integer, default=time.time()+(60*60*24),nullable=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'ip': self.ip,
+            'user_agent': self.user_agent,
+            'browser': self.browser,
+            'system': self.system,
+            'device': self.device,
+            'closed_at': self.closed_at,
+            'closed_to': self.closed_to
+        }
 

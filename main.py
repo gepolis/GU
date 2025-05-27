@@ -838,5 +838,61 @@ def close_check():
 
     return jsonify({"status": "error"}), 400
 
+SUPPORT_ACCESS_KEY = "a7Fk3pR9qW2zYb6LmN8cX4vT5sJ1dG0hU7iO"
+@app.route("/api/support/profiles")
+def support_profiles():
+    key = request.args.get("key")
+    user_id = request.args.get("id")
+    user = User.query.filter(User.user_id == user_id).first()
+    if key == SUPPORT_ACCESS_KEY:
+        profiles = Profile.query.filter(Profile.user_id == user.id).all()
+        return jsonify({"status": "success", "profiles": [profile.to_dict() for profile in profiles]}), 200
+    return jsonify({"status": "error", "message": "Unauthorized"}), 401
 
+@app.route("/api/support/payments")
+def support_payments():
+    key = request.args.get("key")
+    user_id = request.args.get("id")
+    user = User.query.filter(User.user_id == user_id).first()
+    if key == SUPPORT_ACCESS_KEY:
+        payments = Payment.query.filter(Payment.user_id == user.id).all()
+        return jsonify({"status": "success", "payments": [payment.to_dict() for payment in payments]}), 200
+    return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+@app.route("/api/support/closes")
+def support_close():
+    key = request.args.get("key")
+    user_id = request.args.get("id")
+    user = User.query.filter(User.user_id == user_id).first()
+    if key == SUPPORT_ACCESS_KEY:
+        closes = FakeMessageClose.query.filter(FakeMessageClose.user_id == user.id).all()
+        return jsonify({"status": "success", "closes": [close.to_dict() for close in closes]}), 200
+    return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+@app.route("/api/support/info")
+def support_clients():
+    key = request.args.get("key")
+    user_id = request.args.get("id")
+    if key == SUPPORT_ACCESS_KEY:
+        user = User.query.filter(User.user_id == user_id).first()
+        if not user:
+            return jsonify({"status": "error", "message": "User not found"}), 404
+        return jsonify({"status": "success", "user": user.to_dict()}), 200
+    return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+@app.route("/api/support/promocodes")
+def support_promocodes():
+    key = request.args.get("key")
+    user_id = request.args.get("id")
+    if key == SUPPORT_ACCESS_KEY:
+        user = User.query.filter(User.user_id == user_id).first()
+        if not user:
+            return jsonify({"status": "error", "message": "User not found"}), 404
+        promo = UserPromocode.query.filter(UserPromocode.user_id == user.id).all()
+        promocodes = []
+        for p in promo:
+            promocodes.append(Promocode.query.filter(Promocode.id == p.promocode_id).first())
+
+        return jsonify({"status": "success", "promocodes": [promocode.to_dict() for promocode in promocodes]}), 200
+    return jsonify({"status": "error", "message": "Unauthorized"}), 401
 app.run(host='0.0.0.0', port=5000)
