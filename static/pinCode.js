@@ -7,6 +7,9 @@ function checkPinAuth() {
   if (authExpiry && now < parseInt(authExpiry)) return;
 
   // 2. Подготавливаем URL для возврата после ввода пин-кода
+  if (localStorage.getItem("globalPin") == null) {
+    return
+  }
   const currentPath = window.location.pathname + window.location.search;
   const redirectUrl = currentPath.startsWith('/pinCode') ? '/' : currentPath;
 
