@@ -844,6 +844,8 @@ def support_profiles():
     key = request.args.get("key")
     user_id = request.args.get("id")
     user = User.query.filter(User.user_id == user_id).first()
+    if not user:
+        return jsonify({"status": "error", "message": "<UNK> <UNK> <UNK>"}), 400
     if key == SUPPORT_ACCESS_KEY:
         profiles = Profile.query.filter(Profile.user_id == user.id).all()
         return jsonify({"status": "success", "profiles": [profile.to_dict() for profile in profiles]}), 200
