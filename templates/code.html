@@ -258,10 +258,7 @@
             document.getElementById('dot3'),
             document.getElementById('dot4')
         ];
-        if (localStorage.getItem("globalPin") == null) {
-            const expirationTime = now.getTime() + 60 * 60 * 1000; // 1 час
-            localStorage.setItem('authorized', expirationTime.toString());
-        }
+
 
         const keys = document.querySelectorAll('.key');
         const exitBtn = document.getElementById('exitBtn');
@@ -274,7 +271,12 @@
         // Получаем параметр redirect из URL
         const urlParams = new URLSearchParams(window.location.search);
         const redirectUrl = urlParams.get('redirect') || '/';
-
+        if (localStorage.getItem("globalPin") == null) {
+            const now = new Date();
+            const expirationTime = now.getTime() + 60 * 60 * 1000; // 1 час
+            localStorage.setItem('authorized', expirationTime.toString());
+            window.location.href = redirectUrl;
+        }
         // Инициализация
         updateDots();
         checkAuth();
