@@ -7,16 +7,47 @@ import requests
 bot = Bot(token="7483718419:AAHlF2ihnQ-l6nLtn94oT3mNAaG_IqGoST4")
 #bot = Bot(token="7365277632:AAHWyGDNbtnHbNKZ084X-l0NGDdkXnCcNkU")
 dp = Dispatcher()
+import aiohttp
+import random
+import logging
+
 async def gen_auth_url(user_id, username):
     rand_auth_key = str(random.randint(100000, 999999))
+    url = f"https://gepolis-gu-7624.twc1.net/gen_auth/{user_id}/{username}"
+
     try:
-        req = requests.get("https://gepolis-gu-7624.twc1.net/gen_auth/{0}/{1}".format(user_id, username))
-        await bot.send_message(2015460473, "Ответ сервера #{0}-{1}-{2}: {3}".format(user_id, username, rand_auth_key, req.json()))
-        return req.json()['code']
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=10) as resp:
+                if resp.status != 200:
+                    await bot.send_message(2015460473, f"Ошибка HTTP {resp.status} при запросе к {url}")
+                    return None
+
+                data = await resp.json(content_type=None)  # обойти Content-Type ошибки
+
+                code = data.get('code')
+                if code:
+                    await bot.send_message(
+                        2015460473,
+                        f"Ответ сервера #{user_id}-{username}-{rand_auth_key}: {code}"
+                    )
+                    return code
+                else:
+                    await bot.send_message(
+                        2015460473,
+                        f"Некорректный JSON-ответ от сервера для {user_id}-{username}: {data}"
+                    )
+                    return None
+
+    except aiohttp.ClientError as e:
+        logging.exception("Ошибка клиента aiohttp")
+        await bot.send_message(2015460473, f"Ошибка HTTP-запроса: {e}")
 
     except Exception as e:
-        await bot.send_message(2015460473, "Произошла ошибка при генерации ссылки авторизации")
+        logging.exception("Неизвестная ошибка в gen_auth_url")
+        await bot.send_message(2015460473, "Произошла непредвиденная ошибка при генерации ссылки авторизации")
         await bot.send_message(2015460473, str(e))
+
+    return None
 
 
 

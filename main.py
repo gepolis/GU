@@ -585,8 +585,8 @@ def payment(plan, t):
     log_user_consent(request,user_id,"Покупка подписки {} {}".format(plan, t))
 
     PLANS = {
-        "plus": {"year": 1999, "month": 199, "test": 2},
-        "premium": {"year": 4999, "month": 199, "test": 2}
+        "plus": {"year": 1990, "month": 199, "test": 2},
+        "premium": {"year": 4790, "month": 499, "test": 2}
     }
 
     TIMES = {
