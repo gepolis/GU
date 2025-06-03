@@ -725,7 +725,7 @@ def pay(uuid):
         if result["status"] in ["success", "already_processed"]:
             return redirect("/premium")
         elif result["status"] == "pending":
-            time.sleep(0.3)
+            time.sleep(0.1)
             continue
 
     return jsonify({
