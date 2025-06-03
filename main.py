@@ -723,7 +723,7 @@ def pay(uuid):
         result = check_payment(uuid)
         print(result)
         if result["status"] in ["success", "already_processed"]:
-            return redirect("/premium/")
+            return redirect("/premium")
         elif result["status"] == "pending":
             time.sleep(0.3)
             continue
