@@ -685,6 +685,7 @@ def get_payment_url(uuid):
 def try_found(uuid):
     client = Client(YOOMONEY_TOKEN)
     history = client.operation_history(label=uuid)
+    time.sleep(0.2)
     print("List of operations:")
     print("Next page starts with: ", history.next_record)
     for operation in history.operations:
@@ -729,6 +730,7 @@ def try_found(uuid):
 @app.route("/pay/<uuid>")
 def pay(uuid):
     oper = try_found(uuid)
+
     if oper:
         if oper["status"] == "success":
             return redirect("/premium/")
