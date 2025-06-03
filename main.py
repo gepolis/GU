@@ -682,9 +682,7 @@ def get_payment_url(uuid):
 
     return redirect(quickpay.redirected_url)
 
-
-@app.route("/pay/<uuid>")
-def pay(uuid):
+def try_found(uuid):
     client = Client(YOOMONEY_TOKEN)
     history = client.operation_history(label=uuid)
     print("List of operations:")
@@ -725,7 +723,30 @@ def pay(uuid):
                 return redirect("/premium")
             return {"status": "success"}
         return {"status": "pending"}
-    return {"status": "error"}
+    return None
+
+
+@app.route("/pay/<uuid>")
+def pay(uuid):
+    oper = try_found(uuid)
+    if oper:
+        if oper["status"] == "success":
+            return redirect("/premium/")
+        return oper
+    else:
+        oper2 = try_found(uuid)
+        if oper2:
+            if oper2["status"] == "success":
+                return redirect("/premium/")
+            return oper2
+        else:
+            oper3 = try_found(uuid)
+            if oper3:
+                if oper3["status"] == "success":
+                    return redirect("/premium/")
+
+
+    return {"status": "error payment not found"}
 
 # ------- PROMOCODE ----------
 @app.route("/api/promocode/<code>")
