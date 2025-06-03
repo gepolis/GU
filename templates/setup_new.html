@@ -793,7 +793,10 @@
             <div class="section">
                 <!-- subcription manage btn redirect -->
                 <h2><i class="fas fa-crown"></i>Подписка</h2>
+                <p>Баланс скрытий: <span id="hides-balance">0</span></p>
+                <br>
                 <p>Подробнее о подписке и возможностях</p>
+
                 <br>
                 <a href="/premium" class="btn btn-primary">
                     <i class="fas fa-info-circle"></i> Подробнее о подписке
@@ -851,7 +854,16 @@
         let isLoading = false;
         let hasPremium = false;
         let globalPin = localStorage.getItem('globalPin') || null;
-
+        async function loadHidesInfo() {
+            try {
+                const response = await fetch(`${API_URL}/subscription?user_id=${user_id}`);
+                const data = await response.json();
+                document.getElementById('hides-balance').textContent = data.free_closes;
+            } catch (error) {
+                console.error('Ошибка загрузки информации о подписке:', error);
+            }
+        }
+        loadHidesInfo()
         // Переключение вкладок
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {

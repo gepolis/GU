@@ -581,8 +581,51 @@ def payment(plan, t):
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'Unauthorized: user_id is required'}), 401
-
     log_user_consent(request,user_id,"Покупка подписки {} {}".format(plan, t))
+    payment_uuid = str(uuid.uuid4())
+    if plan == "hides":
+        amount = t
+        prices = {
+            "1": 20,
+            "3": 54,
+            "5": 80,
+            "10": 140,
+            "15": 195,
+            "20": 250,
+            "25": 275,
+            "30": 300
+        }
+        price = prices[amount]
+        if request.args.get("test"):
+            print("test")
+            user = User.query.filter(User.id==user_id).first()
+            if user:
+                print("user")
+                if user.is_admin:
+                    print("admin")
+                    price = 2
+
+        pay = Payment(
+            user_id=user_id,
+            amount=price,
+            plan=plan,
+            time=amount,
+            status="pending",
+            uuid=payment_uuid
+        )
+        db.session.add(pay)
+        db.session.commit()
+
+        print("Saved DB:", time.time() - start_time)
+
+        # Асинхронно или позже вызывай Quickpay (например, Celery или thread)
+        return jsonify({
+            "url": "/payment/url/" + payment_uuid,
+            "status": "success"
+        })
+
+
+
 
     PLANS = {
         "plus": {"year": 1990, "month": 199, "test": 2},
@@ -600,7 +643,6 @@ def payment(plan, t):
 
     price = PLANS[plan][t]
     duration_seconds = TIMES[t]
-    payment_uuid = str(uuid.uuid4())
 
     # Сохраняем платеж
     pay = Payment(
@@ -663,6 +705,11 @@ def pay(uuid):
 
             if user:
                 if not gave:
+                    if pay.plan == "hides":
+                        user.free_closes = user.free_closes+pay.time
+                        db.session.commit()
+                        print("gaved")
+                        return redirect("/premium")
                     user.subscription_type = pay.plan
                     print(user.subscription_expiration != 0)
                     print(user.subscription_expiration > int(time.time()))
@@ -757,6 +804,8 @@ def promocode(code):
 
 @app.route("/pay/confirm")
 def pay_confirm():
+    if request.args.get("hides"):
+        return render_template("hidespay.html")
     return render_template("pay_confirm.html")
 
 @app.route("/api/consept")

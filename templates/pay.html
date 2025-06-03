@@ -380,6 +380,181 @@
             line-height: 1.6;
         }
 
+        /* Новые стили для вкладки скрытий */
+        .hides-tab {
+            display: none;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .hides-container {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 32px;
+            border: 1px solid var(--border);
+        }
+
+        .hides-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-align: center;
+            color: var(--text);
+        }
+
+        .hides-description {
+            font-size: 15px;
+            color: var(--text-light);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .hides-calculator {
+            margin-bottom: 24px;
+        }
+
+        .hides-slider-container {
+            margin-bottom: 24px;
+        }
+
+        .hides-slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--border);
+            border-radius: 4px;
+            outline: none;
+            margin-bottom: 16px;
+        }
+
+        .hides-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .hides-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        .hides-amount-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .hides-amount {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .hides-price-per-unit {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .hides-total {
+            background-color: rgba(109, 40, 217, 0.05);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .hides-total-label {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .hides-total-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .hides-total-savings {
+            font-size: 14px;
+            color: var(--success);
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .hides-compare {
+            font-size: 14px;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .hides-compare span {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .hides-benefits {
+            margin-bottom: 24px;
+        }
+
+        .hides-benefit {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .hides-benefit i {
+            color: var(--primary);
+            margin-right: 8px;
+            font-size: 16px;
+            margin-top: 2px;
+        }
+
+        /* Табы */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 32px;
+            border-bottom: 1px solid var(--border);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            font-weight: 600;
+            color: var(--text-light);
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--primary);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 16px;
@@ -399,6 +574,15 @@
 
             .plan-price {
                 font-size: 36px;
+            }
+
+            .tabs-container {
+                flex-wrap: wrap;
+            }
+
+            .tab-btn {
+                padding: 8px 16px;
+                font-size: 14px;
             }
         }
 
@@ -428,8 +612,8 @@
 <body>
     <div class="container">
         <header class="fade-in">
-            <h1><a href="/setup"><i class="fas fa-arrow-left"></i></a> Выберите свою подписку</h1>
-            <p class="subtitle">Откройте полный доступ ко всем возможностям сервиса с нашей премиум подпиской</p>
+            <h1><a href="/setup"><i class="fas fa-arrow-left"></i></a> Улучшите свой профиль</h1>
+            <p class="subtitle">Скрывайте плашку "Фейк" и получайте больше возможностей</p>
         </header>
 
         <div id="currentPlanInfo" class="current-plan fade-in delay-1" style="display: none;">
@@ -440,62 +624,111 @@
             </div>
         </div>
 
-        <div class="toggle-container fade-in delay-1">
-            <div class="toggle-bg" id="toggleBg"></div>
-            <button class="toggle-btn active" id="monthlyToggle">Ежемесячно</button>
-            <button class="toggle-btn" id="yearlyToggle">Ежегодно <span class="savings-badge"><i class="fas fa-bolt"></i> -20%</span></button>
+        <!-- Табы -->
+        <div class="tabs-container fade-in delay-1">
+            <button class="tab-btn active" id="subscriptionTabBtn">Подписки</button>
+            <button class="tab-btn" id="hidesTabBtn">Разовые скрытия</button>
         </div>
 
-        <div class="plans-container">
-            <div class="plan-card fade-in delay-2">
-                <div class="plan-name"><i class="fas fa-user"></i> Базовый</div>
-                <div class="plan-price-container">
-                    <div class="plan-price"><span class="currency">₽</span>0</div>
-                    <div class="plan-period" id="basicPeriod">/месяц</div>
-                </div>
-                <ul class="plan-features">
-                    <li><i class="fas fa-check-circle"></i> Основные функции сервиса</li>
-                    <li><i class="fas fa-check-circle"></i> До 3 профилей</li>
-                    <li><i class="fas fa-check-circle"></i> Ограниченная поддержка</li>
-                    <li><i class="fas fa-check-circle"></i> Плашка "Фейк" в профиле</li>
-                </ul>
+        <!-- Контент подписок -->
+        <div id="subscriptionContent">
+            <div class="toggle-container fade-in delay-1">
+                <div class="toggle-bg" id="toggleBg"></div>
+                <button class="toggle-btn active" id="monthlyToggle">Ежемесячно</button>
+                <button class="toggle-btn" id="yearlyToggle">Ежегодно <span class="savings-badge"><i class="fas fa-bolt"></i> -20%</span></button>
             </div>
 
-            <div class="plan-card plus plus-plan fade-in delay-2">
-                <div class="plan-name"><i class="fas fa-bolt"></i> Plus</div>
-                <div class="plan-price-container">
-                    <div class="plan-price" id="plusPrice"><span class="currency">₽</span>199</div>
-                    <div class="plan-period" id="plusPeriod">/месяц</div>
-                    <div class="savings-badge" id="plusSavings" style="display: none;"><i class="fas fa-piggy-bank"></i> Экономия 240 ₽</div>
+            <div class="plans-container">
+                <div class="plan-card fade-in delay-2">
+                    <div class="plan-name"><i class="fas fa-user"></i> Базовый</div>
+                    <div class="plan-price-container">
+                        <div class="plan-price"><span class="currency">₽</span>0</div>
+                        <div class="plan-period" id="basicPeriod">/месяц</div>
+                    </div>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check-circle"></i> Основные функции сервиса</li>
+                        <li><i class="fas fa-check-circle"></i> До 3 профилей</li>
+                        <li><i class="fas fa-check-circle"></i> Ограниченная поддержка</li>
+                        <li><i class="fas fa-check-circle"></i> Плашка "Фейк" в профиле</li>
+                    </ul>
                 </div>
-                <ul class="plan-features plus-features">
-                    <li><i class="fas fa-check-circle"></i> <strong>Скрытие плашки "Фейк"</strong></li>
-                    <li><i class="fas fa-check-circle"></i> Добавление фото профиля</li>
-                    <li><i class="fas fa-check-circle"></i> До 5 профилей</li>
-                    <li><i class="fas fa-check-circle"></i> Базовые настройки приватности</li>
-                    <li><i class="fas fa-check-circle"></i> Улучшенная поддержка</li>
-                </ul>
-                <div class="plan-actions">
-                    <button class="btn btn-plus" id="plusBtn">Попробовать Plus</button>
+
+                <div class="plan-card plus plus-plan fade-in delay-2">
+                    <div class="plan-name"><i class="fas fa-bolt"></i> Plus</div>
+                    <div class="plan-price-container">
+                        <div class="plan-price" id="plusPrice"><span class="currency">₽</span>199</div>
+                        <div class="plan-period" id="plusPeriod">/месяц</div>
+                        <div class="savings-badge" id="plusSavings" style="display: none;"><i class="fas fa-piggy-bank"></i> Экономия 240 ₽</div>
+                    </div>
+                    <ul class="plan-features plus-features">
+                        <li><i class="fas fa-check-circle"></i> <strong>Скрытие плашки "Фейк"</strong></li>
+                        <li><i class="fas fa-check-circle"></i> Добавление фото профиля</li>
+                        <li><i class="fas fa-check-circle"></i> До 5 профилей</li>
+                        <li><i class="fas fa-check-circle"></i> Базовые настройки приватности</li>
+                        <li><i class="fas fa-check-circle"></i> Улучшенная поддержка</li>
+                    </ul>
+                    <div class="plan-actions">
+                        <button class="btn btn-plus" id="plusBtn">Попробовать Plus</button>
+                    </div>
+                </div>
+
+                <div class="plan-card popular fade-in delay-3">
+                    <div class="popular-badge">Премиум</div>
+                    <div class="plan-name"><i class="fas fa-crown"></i> Premium</div>
+                    <div class="plan-price-container">
+                        <div class="plan-price" id="premiumPrice"><span class="currency">₽</span>499</div>
+                        <div class="plan-period" id="premiumPeriod">/месяц</div>
+                        <div class="savings-badge" id="premiumSavings" style="display: none;"><i class="fas fa-piggy-bank"></i> Экономия 1 200 ₽</div>
+                    </div>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check-circle"></i> <strong>Все возможности Plus</strong></li>
+                        <li><i class="fas fa-check-circle"></i> До 15 профилей</li>
+                        <li><i class="fas fa-check-circle"></i> Расширенные настройки</li>
+                        <li><i class="fas fa-check-circle"></i> Эксклюзивные функции</li>
+                    </ul>
+                    <div class="plan-actions">
+                        <button class="btn btn-primary" id="premiumBtn">Выбрать Premium</button>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <div class="plan-card popular fade-in delay-3">
-                <div class="popular-badge">Премиум</div>
-                <div class="plan-name"><i class="fas fa-crown"></i> Premium</div>
-                <div class="plan-price-container">
-                    <div class="plan-price" id="premiumPrice"><span class="currency">₽</span>499</div>
-                    <div class="plan-period" id="premiumPeriod">/месяц</div>
-                    <div class="savings-badge" id="premiumSavings" style="display: none;"><i class="fas fa-piggy-bank"></i> Экономия 1 200 ₽</div>
-                </div>
-                <ul class="plan-features">
-                    <li><i class="fas fa-check-circle"></i> <strong>Все возможности Plus</strong></li>
-                    <li><i class="fas fa-check-circle"></i> До 15 профилей</li>
-                    <li><i class="fas fa-check-circle"></i> Расширенные настройки</li>
-                    <li><i class="fas fa-check-circle"></i> Эксклюзивные функции</li>
-                </ul>
-                <div class="plan-actions">
-                    <button class="btn btn-primary" id="premiumBtn">Выбрать Premium</button>
+        <!-- Контент покупки скрытий -->
+        <div id="hidesContent" class="hides-tab fade-in delay-1">
+            <div class="hides-container">
+                <h2 class="hides-title">Купить скрытия</h2>
+                <p class="hides-description">1 скрытие = 1 день без плашки "Фейк". Чем больше покупаете, тем больше экономите!</p>
+
+                <div class="hides-calculator">
+                    <div class="hides-slider-container">
+                        <div class="hides-amount-display">
+                            <span class="hides-amount" id="hidesAmount">10 скрытий</span>
+                            <span class="hides-price-per-unit" id="hidesPricePerUnit">20 ₽ / скрытие</span>
+                        </div>
+                        <input type="range" min="1" max="30" value="10" class="hides-slider" id="hidesSlider">
+                    </div>
+
+                    <div class="hides-total">
+                        <div class="hides-total-label">Итого к оплате</div>
+                        <div class="hides-total-price" id="hidesTotalPrice">200 ₽</div>
+                        <div class="hides-total-savings" id="hidesSavings">Экономия 0 ₽</div>
+                    </div>
+
+                    <p class="hides-compare">Подписка Plus: <span>30 скрытий за 199 ₽ (6.6 ₽/скрытие)</span></p>
+
+                    <div class="hides-benefits">
+                        <div class="hides-benefit">
+                            <i class="fas fa-check-circle"></i> Скрытия активируются сразу после оплаты
+                        </div>
+                        <div class="hides-benefit">
+                            <i class="fas fa-check-circle"></i> Можно докупить дополнительные скрытия в любой момент
+                        </div>
+                        <div class="hides-benefit">
+                            <i class="fas fa-check-circle"></i> Не суммируется с подпиской (используется более выгодный вариант)
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%;" id="buyHidesBtn">Купить скрытия</button>
                 </div>
             </div>
         </div>
@@ -527,6 +760,18 @@
             }
         };
 
+        // Цены для скрытий (чем больше, тем дешевле)
+        const hidesPrices = [
+            { amount: 1, price: 20, perUnit: 20 },
+            { amount: 3, price: 54, perUnit: 18 },
+            { amount: 5, price: 80, perUnit: 16 },
+            { amount: 10, price: 140, perUnit: 14 },
+            { amount: 15, price: 195, perUnit: 13 },
+            { amount: 20, price: 240, perUnit: 12 },
+            { amount: 25, price: 275, perUnit: 11 },
+            { amount: 30, price: 300, perUnit: 10 }
+        ];
+
         // DOM элементы
         const monthlyToggle = document.getElementById('monthlyToggle');
         const yearlyToggle = document.getElementById('yearlyToggle');
@@ -539,6 +784,33 @@
         const premiumSavings = document.getElementById('premiumSavings');
         const plusBtn = document.getElementById('plusBtn');
         const premiumBtn = document.getElementById('premiumBtn');
+
+        // Элементы для вкладки скрытий
+        const subscriptionTabBtn = document.getElementById('subscriptionTabBtn');
+        const hidesTabBtn = document.getElementById('hidesTabBtn');
+        const subscriptionContent = document.getElementById('subscriptionContent');
+        const hidesContent = document.getElementById('hidesContent');
+        const hidesSlider = document.getElementById('hidesSlider');
+        const hidesAmount = document.getElementById('hidesAmount');
+        const hidesPricePerUnit = document.getElementById('hidesPricePerUnit');
+        const hidesTotalPrice = document.getElementById('hidesTotalPrice');
+        const hidesSavings = document.getElementById('hidesSavings');
+        const buyHidesBtn = document.getElementById('buyHidesBtn');
+
+        // Переключение между вкладками
+        subscriptionTabBtn.addEventListener('click', () => {
+            subscriptionTabBtn.classList.add('active');
+            hidesTabBtn.classList.remove('active');
+            subscriptionContent.style.display = 'block';
+            hidesContent.style.display = 'none';
+        });
+
+        hidesTabBtn.addEventListener('click', () => {
+            hidesTabBtn.classList.add('active');
+            subscriptionTabBtn.classList.remove('active');
+            hidesContent.style.display = 'block';
+            subscriptionContent.style.display = 'none';
+        });
 
         // Переключение между месячной и годовой оплатой
         monthlyToggle.addEventListener('click', () => {
@@ -594,6 +866,51 @@
             }
         }
 
+        // Обработчик слайдера скрытий
+        hidesSlider.addEventListener('input', function() {
+            updateHidesPrice(this.value);
+        });
+
+        // Обновление цены скрытий
+        function updateHidesPrice(amount) {
+            // Находим ближайшее доступное количество (из hidesPrices)
+            let priceInfo = hidesPrices.find(p => p.amount >= amount) || hidesPrices[hidesPrices.length - 1];
+
+            // Если точного совпадения нет, берем следующее большее
+            if (!priceInfo) {
+                for (let i = 0; i < hidesPrices.length; i++) {
+                    if (hidesPrices[i].amount >= amount) {
+                        priceInfo = hidesPrices[i];
+                        break;
+                    }
+                }
+                // Если все равно не нашли (например, amount > 30), берем максимальное
+                if (!priceInfo) priceInfo = hidesPrices[hidesPrices.length - 1];
+            }
+
+            // Обновляем UI
+            hidesAmount.textContent = `${priceInfo.amount} скрытий`;
+            hidesPricePerUnit.textContent = `${priceInfo.perUnit} ₽ / скрытие`;
+            hidesTotalPrice.textContent = `${priceInfo.price} ₽`;
+
+            // Рассчитываем экономию по сравнению с покупкой поштучно (20 ₽ за штуку)
+            const savings = (priceInfo.amount * 20) - priceInfo.price;
+            if (savings > 0) {
+                hidesSavings.textContent = `Экономия ${savings} ₽`;
+                hidesSavings.style.display = 'block';
+            } else {
+                hidesSavings.style.display = 'none';
+            }
+
+            // Обновляем положение слайдера на точное значение из priceInfo
+            hidesSlider.value = priceInfo.amount;
+        }
+
+        // Инициализация калькулятора скрытий
+        function initHidesCalculator() {
+            updateHidesPrice(hidesSlider.value);
+        }
+
         // Обработчики выбора тарифов
         plusBtn.addEventListener('click', () => {
             selectPlan(billingPeriod === 'monthly' ? 'plus_monthly' : 'plus_yearly');
@@ -601,6 +918,11 @@
 
         premiumBtn.addEventListener('click', () => {
             selectPlan(billingPeriod === 'monthly' ? 'premium_monthly' : 'premium_yearly');
+        });
+
+        buyHidesBtn.addEventListener('click', () => {
+            const amount = hidesSlider.value;
+            selectHides(amount);
         });
 
         // API URL
@@ -628,23 +950,22 @@
         }
 
         // Форматирование даты
-function formatDate(unixTimestamp) {
-    if (!unixTimestamp) return '';
+        function formatDate(unixTimestamp) {
+            if (!unixTimestamp) return '';
 
-    // Получаем временную зону пользователя из браузера
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            // Получаем временную зону пользователя из браузера
+            const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    // Форматируем дату с учетом временной зоны
-    return new Date(unixTimestamp * 1000).toLocaleString('ru-RU', {
-        day: 'numeric',
-        month: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: userTimeZone
-    });
-}
-
+            // Форматируем дату с учетом временной зоны
+            return new Date(unixTimestamp * 1000).toLocaleString('ru-RU', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: userTimeZone
+            });
+        }
 
         // Получение названия плана
         function getPlanName(planId) {
@@ -663,11 +984,17 @@ function formatDate(unixTimestamp) {
             window.location.href = '/pay/confirm?plan=' + planId;
         }
 
-
+        // Покупка скрытий
+        function selectHides(amount) {
+            // В реальном приложении здесь была бы переадресация на страницу оплаты
+            console.log('Покупка ' + amount + ' скрытий');
+            window.location.href = '/pay/confirm?hides=' + amount;
+        }
 
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             loadSubscriptionInfo();
+            initHidesCalculator();
 
             // Анимация переключателя
             setTimeout(() => {
