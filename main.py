@@ -721,6 +721,7 @@ def pay(uuid):
     # Проверяем платеж до 3 раз с небольшими задержками
     for _ in range(3):
         result = check_payment(uuid)
+        print(result)
         if result["status"] in ["success", "already_processed"]:
             return redirect("/premium/")
         elif result["status"] == "pending":
