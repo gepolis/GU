@@ -682,73 +682,55 @@ def get_payment_url(uuid):
 
     return redirect(quickpay.redirected_url)
 
-def try_found(uuid):
+
+def check_payment(uuid):
     client = Client(YOOMONEY_TOKEN)
     history = client.operation_history(label=uuid)
-    time.sleep(0.2)
-    print("List of operations:")
-    print("Next page starts with: ", history.next_record)
-    for operation in history.operations:
-        print(operation.status)
-        if operation.status == 'success':
-            pay = Payment.query.filter(Payment.uuid==uuid).first()
-            gave = True
-            print(pay)
-            print(pay.status)
-            if pay and pay.status != "success":
-                pay.status = "success"
-                gave = False
-                db.session.commit()
-            print(gave)
-            user = User.query.filter(User.id==pay.user_id).first()
+    time.sleep(0.2)  # Задержка перед проверкой
 
-            if user:
-                if not gave:
-                    if pay.plan == "hides":
-                        user.free_closes = user.free_closes+pay.time
-                        db.session.commit()
-                        print("gaved")
-                        return redirect("/premium")
-                    else:
-                        user.subscription_type = pay.plan
-                        print(user.subscription_expiration != 0)
-                        print(user.subscription_expiration > int(time.time()))
-                        if (user.subscription_expiration != 0 and
-                           user.subscription_expiration > int(time.time())):
-                            print("Subscription add time")
-                            user.subscription_expiration += pay.time
-                        else:
-                            print("Subscription set time")
-                            user.subscription_expiration = int(time.time()) + pay.time
-                        db.session.commit()
-                return redirect("/premium")
-            return {"status": "success"}
-        return {"status": "pending"}
-    return None
+    for operation in history.operations:
+        if operation.status == 'success':
+            pay = Payment.query.filter_by(uuid=uuid).first()
+            if not pay or pay.status == "success":
+                return {"status": "already_processed"}
+
+            pay.status = "success"
+            user = User.query.get(pay.user_id)
+
+            if not user:
+                return {"status": "user_not_found"}
+
+            if pay.plan == "hides":
+                user.free_closes += pay.time
+            else:
+                current_time = int(time.time())
+                if user.subscription_expiration > current_time:
+                    user.subscription_expiration += pay.time
+                else:
+                    user.subscription_expiration = current_time + pay.time
+                user.subscription_type = pay.plan
+
+            db.session.commit()
+            return {"status": "success", "redirect": "/premium"}
+
+    return {"status": "pending"}
 
 
 @app.route("/pay/<uuid>")
 def pay(uuid):
-    oper = try_found(uuid)
-
-    if oper:
-        if oper["status"] == "success":
+    # Проверяем платеж до 3 раз с небольшими задержками
+    for _ in range(3):
+        result = check_payment(uuid)
+        if result["status"] in ["success", "already_processed"]:
             return redirect("/premium/")
-        return oper
-    else:
-        oper2 = try_found(uuid)
-        if oper2:
-            if oper2["status"] == "success":
-                return redirect("/premium/")
-            return oper2
-        else:
-            oper3 = try_found(uuid)
-            if oper3:
-                if oper3["status"] == "success":
-                    return redirect("/premium/")
+        elif result["status"] == "pending":
+            time.sleep(0.3)
+            continue
 
-
-    return {"status": "error payment not found"}
+    return jsonify({
+        "status": "not_found",
+        "message": "Платеж не найден. Попробуйте обновить страницу через несколько минут."
+    })
 
 # ------- PROMOCODE ----------
 @app.route("/api/promocode/<code>")
