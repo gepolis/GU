@@ -710,17 +710,18 @@ def pay(uuid):
                         db.session.commit()
                         print("gaved")
                         return redirect("/premium")
-                    user.subscription_type = pay.plan
-                    print(user.subscription_expiration != 0)
-                    print(user.subscription_expiration > int(time.time()))
-                    if (user.subscription_expiration != 0 and
-                       user.subscription_expiration > int(time.time())):
-                        print("Subscription add time")
-                        user.subscription_expiration += pay.time
                     else:
-                        print("Subscription set time")
-                        user.subscription_expiration = int(time.time()) + pay.time
-                    db.session.commit()
+                        user.subscription_type = pay.plan
+                        print(user.subscription_expiration != 0)
+                        print(user.subscription_expiration > int(time.time()))
+                        if (user.subscription_expiration != 0 and
+                           user.subscription_expiration > int(time.time())):
+                            print("Subscription add time")
+                            user.subscription_expiration += pay.time
+                        else:
+                            print("Subscription set time")
+                            user.subscription_expiration = int(time.time()) + pay.time
+                        db.session.commit()
                 return redirect("/premium")
             return {"status": "success"}
         return {"status": "pending"}

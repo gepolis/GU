@@ -697,7 +697,9 @@
         <div id="hidesContent" class="hides-tab fade-in delay-1">
             <div class="hides-container">
                 <h2 class="hides-title">Купить скрытия</h2>
-                <p class="hides-description">1 скрытие = 1 день без плашки "Фейк". Чем больше покупаете, тем больше экономите!</p>
+                <p class="hides-description">1 скрытие = 1 день без плашки "Фейк". Чем больше покупаете, тем больше экономите!
+                    <br><br>
+                Ваш баланс скрытий: <span id="hides-balance">0</span></p>
 
                 <div class="hides-calculator">
                     <div class="hides-slider-container">
@@ -717,9 +719,6 @@
                     <p class="hides-compare">Подписка Plus: <span>30 скрытий за 199 ₽ (6.6 ₽/скрытие)</span></p>
 
                     <div class="hides-benefits">
-                        <div class="hides-benefit">
-                            <i class="fas fa-check-circle"></i> Скрытия активируются сразу после оплаты
-                        </div>
                         <div class="hides-benefit">
                             <i class="fas fa-check-circle"></i> Можно докупить дополнительные скрытия в любой момент
                         </div>
@@ -941,6 +940,7 @@
 
                 if (data.plan && data.plan !== 'N') {
                     document.getElementById('currentPlanInfo').style.display = 'flex';
+                    document.getElementById("hides-balance").textContent = data.free_closes
                     document.getElementById('currentPlanName').textContent = getPlanName(data.plan);
                     document.getElementById('planExpiryDate').textContent = formatDate(data.expires_at);
                 }
