@@ -24,6 +24,8 @@
             --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --plus: #7c3aed;
+            --success: #10b981;
+            --error: #ef4444;
         }
 
         * {
@@ -171,6 +173,15 @@
             font-size: 18px;
         }
 
+        .discount {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            color: var(--success);
+            font-weight: 500;
+        }
+
         .btn {
             display: inline-flex;
             align-items: center;
@@ -275,6 +286,60 @@
             text-decoration: underline;
         }
 
+        .promo-code-container {
+            margin: 16px 0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .promo-code-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .promo-code-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.1);
+        }
+
+        .promo-code-btn {
+            padding: 12px 16px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .promo-code-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .promo-code-btn:disabled {
+            background-color: var(--text-lighter);
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: var(--error);
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .success-message {
+            color: var(--success);
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 16px;
@@ -290,11 +355,6 @@
                 padding: 2px 28px;
                 width: 110px;
             }
-        }
-        .error-message {
-            color: red;
-            margin-top: 10px;
-            font-size: 14px;
         }
     </style>
 </head>
@@ -324,6 +384,17 @@
                 <li><i class="fas fa-check-circle"></i> Эксклюзивные функции</li>
             </ul>
 
+            <div class="promo-code-container">
+                <input type="text" id="promoCodeInput" class="promo-code-input" placeholder="Введите промокод">
+                <button id="applyPromoBtn" class="promo-code-btn">Применить</button>
+            </div>
+            <div id="promoMessage" class="error-message" style="display: none;"></div>
+
+            <div id="discountContainer" class="discount" style="display: none;">
+                <span>Скидка:</span>
+                <span id="discountAmount">0 ₽</span>
+            </div>
+
             <div class="total">
                 <span>Итого к оплате:</span>
                 <span id="totalPrice">499 ₽</span>
@@ -339,15 +410,8 @@
             <button class="btn" id="payButton">
                 <i class="fas fa-lock"></i> Оплатить подписку
             </button>
-            <p class="error-message" id="errorMessage" style="display: none;">Вы не можите оплатить подписку уровня ниже Вашей</p>
+            <p class="error-message" id="planLevelError" style="display: none;">Вы не можете оплатить подписку уровня ниже Вашей</p>
         </div>
-
-<!--        <div class="payment-method">-->
-<!--            <p>Способ оплаты:</p>-->
-<!--            <div class="payment-icon">-->
-<!--                <i class="fas fa-credit-card"></i>-->
-<!--            </div>-->
-<!--        </div>-->
 
         <div class="back-link">
             <a href="/premium"><i class="fas fa-arrow-left"></i> Вернуться к выбору подписки</a>
@@ -369,7 +433,7 @@
             'plus_monthly': {
                 name: 'Plus',
                 title: 'Plus подписка',
-                price: '199 ₽',
+                price: 199,
                 period: 'Ежемесячная оплата',
                 features: [
                     '<strong>Скрытие плашки "Фейк"</strong>',
@@ -387,7 +451,7 @@
             'plus_yearly': {
                 name: 'Plus',
                 title: 'Plus подписка',
-                price: '1 990 ₽',
+                price: 1990,
                 period: 'Годовая оплата (экономия 240 ₽)',
                 features: [
                     '<strong>Скрытие плашки "Фейк"</strong>',
@@ -405,7 +469,7 @@
             'premium_monthly': {
                 name: 'Premium',
                 title: 'Premium подписка',
-                price: '499 ₽',
+                price: 499,
                 period: 'Ежемесячная оплата',
                 features: [
                     '<strong>Все возможности Plus</strong>',
@@ -422,7 +486,7 @@
             'premium_yearly': {
                 name: 'Premium',
                 title: 'Premium подписка',
-                price: '4 790 ₽',
+                price: 4790,
                 period: 'Годовая оплата (экономия 1 200 ₽)',
                 features: [
                     '<strong>Все возможности Plus</strong>',
@@ -439,7 +503,7 @@
             'plus_test': {
                 name: 'Test',
                 title: 'Test подписка',
-                price: '2 ₽',
+                price: 2,
                 period: 'Для тестирования',
                 features: [
                     '<strong>Скрытие плашки "Фейк"</strong>',
@@ -457,7 +521,7 @@
             'premium_test': {
                 name: 'Test',
                 title: 'Test подписка',
-                price: '2 ₽',
+                price: 2,
                 period: 'Для тестирования',
                 features: [
                     '<strong>Все возможности Plus</strong>',
@@ -475,6 +539,84 @@
 
         // Текущий выбранный план
         let currentPlan = plans[planType];
+        let discount = 0;
+        let promoCode = '';
+        let originalPrice = currentPlan.price;
+
+        // Форматирование цены
+        function formatPrice(price) {
+            return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
+        }
+
+        async function checkPromoCode(code) {
+    try {
+        const response = await fetch('/api/check-promo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                promo_code: code,
+                plan_type: currentPlan.plan,
+                period: currentPlan.time
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            if (data.valid) {
+                // Рассчитываем сумму скидки в процентах
+                const discountPercent = data.discount || 0;
+                discount = Math.round(originalPrice * discountPercent / 100);
+                promoCode = code;
+                showPromoMessage(data.message || `Промокод успешно применен! Скидка ${discountPercent}%`, 'success');
+                updateTotalPrice();
+            } else {
+                discount = 0;
+                showPromoMessage(data.message || 'Промокод недействителен', 'error');
+                updateTotalPrice();
+            }
+        } else {
+            discount = 0;
+            showPromoMessage(data.message || 'Ошибка при проверке промокода', 'error');
+            updateTotalPrice();
+        }
+    } catch (error) {
+        console.error('Ошибка при проверке промокода:', error);
+        discount = 0;
+        showPromoMessage('Ошибка соединения с сервером', 'error');
+        updateTotalPrice();
+    }
+}
+
+// Обновление итоговой цены
+function updateTotalPrice() {
+    const totalPrice = originalPrice - discount;
+    document.getElementById('totalPrice').textContent = formatPrice(totalPrice);
+
+    if (discount > 0) {
+        document.getElementById('discountContainer').style.display = 'flex';
+        // Показываем процент скидки
+        const discountPercent = Math.round(discount / originalPrice * 100);
+        document.getElementById('discountAmount').textContent = `-${discountPercent}% (${formatPrice(discount)})`;
+    } else {
+        document.getElementById('discountContainer').style.display = 'none';
+    }
+}
+
+        // Показать сообщение о промокоде
+        function showPromoMessage(message, type) {
+            const promoMessage = document.getElementById('promoMessage');
+            promoMessage.textContent = message;
+            promoMessage.style.display = 'block';
+            promoMessage.className = type === 'success' ? 'success-message' : 'error-message';
+
+            // Скрыть сообщение через 5 секунд
+            setTimeout(() => {
+                promoMessage.style.display = 'none';
+            }, 5000);
+        }
 
         // Заполняем данные о плане
         function initPlan() {
@@ -483,8 +625,9 @@
             document.getElementById('planTitle').textContent = currentPlan.title;
             document.getElementById('planPeriod').textContent = currentPlan.period;
             document.getElementById('planName').innerHTML = `<i class="${currentPlan.icon}"></i> ${currentPlan.name}`;
-            document.getElementById('planPrice').textContent = currentPlan.price;
-            document.getElementById('totalPrice').textContent = currentPlan.price;
+            document.getElementById('planPrice').textContent = formatPrice(currentPlan.price);
+            document.getElementById('totalPrice').textContent = formatPrice(currentPlan.price);
+            originalPrice = currentPlan.price;
 
             const featuresList = document.getElementById('planFeatures');
             featuresList.innerHTML = '';
@@ -503,77 +646,104 @@
             }
         }
 
-         function initiatePayment(currentPlan, callback) {
-             fetch(`/payment/${currentPlan.plan}/${currentPlan.time}`, {
-                 method: 'GET',
-                 headers: {
-                     'Content-Type': 'application/json'
-                 }
-             })
-             .then(response => {
-                 if (!response || !response.ok) {
-                     throw new Error(`Ошибка сервера: ${response?.status || 'нет ответа'}`);
-                 }
-                 return response.json();
-             })
-             .then(data => {
-                 if (data.status === 'success') {
-                     console.log('UUID транзакции:', data.uuid);
-                     console.log('Переход на оплату:', data.url);
-                     if (typeof callback === 'function') {
-                         callback(data.url);
-                     }
-                 } else {
-                     console.error('Ошибка оплаты:', data);
-                 }
-             })
-             .catch(error => {
-                 console.error('Сбой запроса оплаты:', error.message);
-             });
-         }
+        async function initiatePayment(currentPlan, callback) {
+            try {
+                const response = await fetch(`/payment/${currentPlan.plan}/${currentPlan.time}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        promo_code: promoCode || null
+                    })
+                });
 
-         function getUserPlan() {
-            fetch('/api/subscription', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.plan == "premium" & currentPlan.plan == "plus") {
-                    document.getElementById('payButton').disabled = true;
-                    document.getElementById("errorMessage").style.display = "block";
+                if (!response.ok) {
+                    throw new Error(`Ошибка сервера: ${response.status}`);
                 }
 
-            })
+                const data = await response.json();
 
+                if (data.status === 'success') {
+                    console.log('UUID транзакции:', data.uuid);
+                    console.log('Переход на оплату:', data.url);
+                    if (typeof callback === 'function') {
+                        callback(data.url);
+                    }
+                } else {
+                    console.error('Ошибка оплаты:', data);
+                    showPromoMessage(data.message || 'Ошибка при создании платежа', 'error');
+                }
+            } catch (error) {
+                console.error('Сбой запроса оплаты:', error.message);
+                showPromoMessage('Ошибка соединения с сервером', 'error');
+            }
         }
 
+        async function getUserPlan() {
+            try {
+                const response = await fetch('/api/subscription', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-        getUserPlan();
-        // Обработчик кнопки оплаты
-        document.getElementById('payButton').addEventListener('click', function() {
-            const termsChecked = document.getElementById('termsCheckbox').checked;
+                const data = await response.json();
 
-            if (!termsChecked) {
-                alert('Пожалуйста, подтвердите согласие с условиями предоставления услуг');
-                return;
+                if (data.plan === "premium" && currentPlan.plan === "plus") {
+                    document.getElementById('payButton').disabled = true;
+                    document.getElementById("planLevelError").style.display = "block";
+                }
+            } catch (error) {
+                console.error('Ошибка при получении данных подписки:', error);
             }
+        }
 
-            // Перенаправляем на страницу оплаты
-            initiatePayment(currentPlan, function (paymentUrl) {
-                if (paymentUrl) {
-                    window.location.href = paymentUrl;
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            initPlan();
+            getUserPlan();
+
+            // Обработчик кнопки применения промокода
+            document.getElementById('applyPromoBtn').addEventListener('click', () => {
+                const promoCode = document.getElementById('promoCodeInput').value.trim();
+                if (promoCode) {
+                    checkPromoCode(promoCode);
                 } else {
-                    alert('Ошибка при создании платежа!');
+                    showPromoMessage('Введите промокод', 'error');
                 }
             });
 
-        });
+            // Обработчик нажатия Enter в поле промокода
+            document.getElementById('promoCodeInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const promoCode = document.getElementById('promoCodeInput').value.trim();
+                    if (promoCode) {
+                        checkPromoCode(promoCode);
+                    } else {
+                        showPromoMessage('Введите промокод', 'error');
+                    }
+                }
+            });
 
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', initPlan);
+            // Обработчик кнопки оплаты
+            document.getElementById('payButton').addEventListener('click', function() {
+                const termsChecked = document.getElementById('termsCheckbox').checked;
+
+                if (!termsChecked) {
+                    showPromoMessage('Подтвердите согласие с условиями предоставления услуг', 'error');
+                    return;
+                }
+
+                // Перенаправляем на страницу оплаты
+                initiatePayment(currentPlan, function(paymentUrl) {
+                    if (paymentUrl) {
+                        window.location.href = paymentUrl;
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>

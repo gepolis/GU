@@ -2,7 +2,7 @@ import hashlib
 import os
 import random
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pprint import pprint
 
 import requests
@@ -15,6 +15,7 @@ from db import db, User, AuthUrl, Profile, Payment, Promocode, UserPromocode, Co
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://gen_user:ovLX1T)Hpg-5%3E_@94.198.216.178:5432/default_db'  # Укажите ваш URI для базы данных
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 app.secret_key = 'GU_GEPOLIS_GUAPPSUPPORT_ADMIN_SECRET_KEY_2'  # Обязательно!
 db.init_app(app)
 LAST_UA_DATE = "26-05-2025"
@@ -192,6 +193,7 @@ def send_to_telegram(message):
 
 @app.before_request
 def track_visits():
+    session.permanent = True
     """Отслеживаем посещения основных страниц"""
     if request.path.count('api') == 0 & request.path.count('6329') == 0 & request.path.count('static') == 0:
         client_info = get_client_info(request)
@@ -573,10 +575,11 @@ import uuid
 from yoomoney import Quickpay, Client
 YOOMONEY_TOKEN = "4100118081125029.B5C5190A0515584D546589668EC04D03BC6680B00269B70913A64220E6657D73ED166EE15820FC4DAA5A15A0A3800E17A9C872A52D07A2D2D43ABDE200C217FE881563B8DC1CC3BE7484958B3FF0EE10B6E5763DDEE322D9D6F45825DA8BA923AE111928DBFE686683BF6C10DC1D4326C0640258434C8D2C89BF885A319CD650"
 WALLET_NUMBER = "4100118081125029"  # Номер кошелька (без точки)
-@app.route("/payment/<plan>/<t>")
+@app.route("/payment/<plan>/<t>", methods=['POST'])
 def payment(plan, t):
     from datetime import datetime
-
+    promo = request.json.get('promo_code')
+    print(promo)
     start_time = time.time()
     user_id = session.get('user_id')
     if not user_id:
@@ -604,7 +607,10 @@ def payment(plan, t):
                 if user.is_admin:
                     print("admin")
                     price = 2
-
+        promo = Promocode.query.filter_by(code=promo, promo_type="discount").first()
+        user_id = session.get('user_id')
+        price = round(price - (price / 100 * promo.value))
+        print("price", price)
         pay = Payment(
             user_id=user_id,
             amount=price,
@@ -643,7 +649,10 @@ def payment(plan, t):
 
     price = PLANS[plan][t]
     duration_seconds = TIMES[t]
-
+    promo = Promocode.query.filter_by(code=promo, promo_type="discount").first()
+    user_id = session.get('user_id')
+    price = round(price - (price / 100 * promo.value))
+    print("price", price)
     # Сохраняем платеж
     pay = Payment(
         user_id=user_id,
@@ -663,6 +672,43 @@ def payment(plan, t):
         "url": "/payment/url/" + payment_uuid,
         "status": "success"
     })
+
+@app.route("/api/check-promo", methods=['POST'])
+def check_promo():
+    promo = request.json.get('promo_code')
+    print(promo)
+    promo = Promocode.query.filter_by(code=promo, promo_type="discount").first()
+    user_id = session.get('user_id')
+    if promo is None:
+        return jsonify({
+            "valid": False,
+            "message": "Промокод не найден"
+        })
+    promo: Promocode = promo
+    if promo.user_id:
+        if promo.user_id != user_id:
+            return jsonify({
+                "valid": False,
+                "message": "Промокод принадлежит не вам"
+            })
+    if not promo.discount_multi_use:
+        if UserPromocode.query.filter_by(promocode_id=promo.id,user_id=user_id).first():
+            return jsonify({
+                "valid": False,
+                "message": "Вы не можете использовать этот промокод повторно"
+            })
+
+        return None
+    if promo.max_uses<=promo.current_uses:
+        return jsonify({
+            "valid": False,
+            "message": "Промокод достиг лимита использований"
+        })
+    return jsonify({
+        "valid": True,
+        "discount": promo.value
+    })
+
 
 @app.route("/payment/url/<uuid>")
 def get_payment_url(uuid):
@@ -830,53 +876,66 @@ def user_agreement():
         as_attachment=False,  # True for download
         download_name=f'user-agreement-{LAST_UA_DATE}.pdf'  # For Flask 2.0+
     )
-
 @app.route("/api/close/fake")
 def close_fake():
     user_id = session.get('user_id')
-    print(user_id, "user_id")
+    if not user_id:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
 
-    if user_id:
-        user = User.query.filter(User.id==user_id).first()
-        if user:
-            can_close = False
-            if user.subscription_type == "plus" or user.subscription_type == "premium":
-                can_close = True
-                print(user.subscription_type)
-            elif user.free_closes > 0:
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+
+    now = int(time.time())
+    # Проверяем, есть ли активное закрытие (closed_to > текущего времени)
+    active_close = FakeMessageClose.query.filter(
+        FakeMessageClose.user_id == user_id,
+        FakeMessageClose.closed_to > now
+    ).first()
+
+    if active_close:
+        return jsonify({"status": "success", "message": "You have already closed today"}), 200
+
+    # Проверяем, может ли пользователь закрыть
+    can_close = (
+        user.subscription_type in ["plus", "premium"] or
+        user.free_closes > 0
+    )
+
+    if not can_close:
+        return jsonify({
+            "status": "error",
+            "message": "У вас закончились бесплатные скрытия. Приобретите <a href='/premium'>подписку</a> или активируйте промокод"
+        }), 400
+
+    try:
+        # Всё в одной транзакции
+        with db.session.begin_nested():
+            if user.free_closes > 0 and user.subscription_type not in ["plus", "premium"]:
                 user.free_closes -= 1
-                db.session.commit()
-                can_close = True
-                print(user.free_closes)
-            print(can_close)
 
-            if can_close:
-                client_data = get_client_info(request)
-                if not client_data:
-                    return jsonify({"status": "error", "message": "Ошибка, попробуйте позже"}), 400
-                now = int(time.time())
-                entry = FakeMessageClose.query.filter(
-                    (FakeMessageClose.user_id == user_id) &
-                    (FakeMessageClose.closed_to > int(time.time()))
-                ).first()
+            client_data = get_client_info(request)
+            if not client_data:
+                return jsonify({"status": "error", "message": "Ошибка, попробуйте позже"}), 400
 
-                if entry:
-                    return jsonify({"status": "success", "message": "You have already closed today"}), 200
-                fk = FakeMessageClose(
-                    user_id=user_id,
-                    ip=client_data['network']['ip'],
-                    user_agent=client_data['network']['user_agent'],
-                    browser=client_data['device']['browser'],
-                    system=client_data['device']['os'],
-                    device=client_data['device']['device']
-                )
-                db.session.add(fk)
-                db.session.commit()
-                return jsonify({"status": "success"}), 200
-            else:
-                return jsonify({"status": "error", "message": "У вас закончились бесплатные скрытия. Приобретите <a href='/premium'>подписку</a> или активируйте промокод"}), 400
+            # Создаём запись с закрытием на 24 часа (вычисляем closed_to здесь!)
+            fk = FakeMessageClose(
+                user_id=user_id,
+                ip=client_data['network']['ip'],
+                user_agent=client_data['network']['user_agent'],
+                browser=client_data['device']['browser'],
+                system=client_data['device']['os'],
+                device=client_data['device']['device'],
+                closed_to=now + 24 * 60 * 60  # Текущее время + 24 часа
+            )
+            db.session.add(fk)
 
-    return jsonify({"status": "error", "message": "Unauthorized"}), 401
+        db.session.commit()
+        return jsonify({"status": "success"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": "Ошибка, попробуйте позже"}), 500
 
 @app.route("/api/close/check")
 def close_check():

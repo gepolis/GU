@@ -128,11 +128,15 @@ class Promocode(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.String(255), nullable=False)
-    promo_type = db.Column(db.String(255), nullable=False) #free_closes, plus, premium
+    promo_type = db.Column(db.String(255), nullable=False) #free_closes, plus, premium, discount
     value = db.Column(db.Integer, nullable=False)
     max_uses = db.Column(db.Integer, nullable=False)
     current_uses = db.Column(db.Integer, nullable=False)
     is_active = db.Column(db.Boolean, default=True)
+    user_id = db.Column(BIGINT, nullable=True, default=None)
+    discount_multi_use = db.Column(db.Boolean, nullable=False, default=False)
+
+
 
     def to_dict(self):
         return {
