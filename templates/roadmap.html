@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дорожная карта продукта</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #8b5cf6;
+            --primary-hover: #6d28d9;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --text-lighter: #9ca3af;
+            --border: #e5e7eb;
+            --background: #f9fafb;
+            --card-bg: #ffffff;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.02);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --released-bg: #f0fdf4;
+            --progress-bg: #f5f3ff;
+            --planned-bg: #fffbeb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            color: var(--text);
+            background-color: var(--background);
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 16px;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 36px;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+            font-weight: 400;
+        }
+
+        .roadmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .roadmap-search {
+            position: relative;
+            width: 300px;
+        }
+
+        .roadmap-search input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            font-size: 15px;
+            transition: var(--transition);
+        }
+
+        .roadmap-search input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.1);
+        }
+
+        .roadmap-search i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-lighter);
+        }
+
+        .roadmap-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .filter-btn.active:hover {
+            background-color: var(--primary-hover);
+            color: white;
+        }
+
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .roadmap-column {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 20px;
+            border-top: 4px solid var(--border);
+        }
+
+        .roadmap-column.released {
+            border-top-color: var(--success);
+            background-color: var(--released-bg);
+        }
+
+        .roadmap-column.progress {
+            border-top-color: var(--primary);
+            background-color: var(--progress-bg);
+        }
+
+        .roadmap-column.planned {
+            border-top-color: var(--warning);
+            background-color: var(--planned-bg);
+        }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .column-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+        }
+
+        .released .column-icon {
+            background-color: var(--success);
+        }
+
+        .progress .column-icon {
+            background-color: var(--primary);
+        }
+
+        .planned .column-icon {
+            background-color: var(--warning);
+        }
+
+        .column-title {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .column-count {
+            margin-left: auto;
+            background-color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .feature-card {
+            background-color: white;
+            border-radius: var(--radius);
+            padding: 16px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .feature-date {
+            font-size: 13px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .feature-description {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .feature-tag {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: var(--radius);
+            font-weight: 500;
+        }
+
+        .tag-access {
+            background-color: rgba(124, 58, 237, 0.1);
+            color: var(--primary);
+        }
+
+        .tag-type {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: var(--text-light);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 12px;
+            color: var(--border);
+        }
+
+        .empty-state p {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .progress-container {
+            margin: 16px 0 12px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            background-color: var(--border);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .released .progress-fill {
+            background-color: var(--success);
+            width: 100%;
+        }
+
+        .progress .progress-fill {
+            background-color: var(--primary);
+            width: 65%;
+        }
+
+        .planned .progress-fill {
+            background-color: var(--warning);
+            width: 10%;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .roadmap-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .roadmap-search {
+                width: 100%;
+            }
+
+            .roadmap-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="fade-in">
+            <h1>Дорожная карта продукта</h1>
+            <p class="subtitle">Следите за нашим развитием и узнавайте о новых функциях первыми</p>
+        </header>
+
+        <div class="roadmap-header fade-in delay-1">
+            <div class="roadmap-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Поиск функций..." id="roadmapSearch">
+            </div>
+            <div class="roadmap-filters">
+                <button class="filter-btn active" data-filter="all">
+                    <i class="fas fa-layer-group"></i> Все
+                </button>
+                <button class="filter-btn" data-filter="released">
+                    <i class="fas fa-check-circle"></i> Выпущено
+                </button>
+                <button class="filter-btn" data-filter="progress">
+                    <i class="fas fa-spinner"></i> В работе
+                </button>
+                <button class="filter-btn" data-filter="planned">
+                    <i class="fas fa-clock"></i> Планы
+                </button>
+            </div>
+        </div>
+
+        <div class="roadmap-grid">
+            <!-- Выпущенные функции -->
+            <div class="roadmap-column released fade-in delay-2" data-category="released">
+                <div class="column-header">
+                    <div class="column-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="column-title">Выпущено</div>
+                    <div class="column-count">3</div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Завершено</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+
+                <div class="feature-list">
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <h3 class="feature-title">Скрытие плашки "Фейк"</h3>
+                            <span class="feature-date">Март 2023</span>
+                        </div>
+                        <p class="feature-description">Возможность скрыть плашку "Фейк" в профиле для подписчиков Plus и Premium</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag tag-access">Plus</span>
+                            <span class="feature-tag tag-access">Premium</span>
+                            <span class="feature-tag tag-type">Профиль</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <h3 class="feature-title">Мультипрофили</h3>
+                            <span class="feature-date">Апрель 2023</span>
+                        </div>
+                        <p class="feature-description">Создание и переключение между несколькими профилями в одном аккаунте</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag tag-access">Premium</span>
+                            <span class="feature-tag tag-type">Профиль</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <h3 class="feature-title">Фото профиля</h3>
+                            <span class="feature-date">Май 2023</span>
+                        </div>
+                        <p class="feature-description">Загрузка собственного фото профиля вместо аватара по умолчанию</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag tag-access">Plus</span>
+                            <span class="feature-tag tag-type">Профиль</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Функции в работе -->
+            <div class="roadmap-column progress fade-in delay-2" data-category="progress">
+                <div class="column-header">
+                    <div class="column-icon">
+                        <i class="fas fa-spinner"></i>
+                    </div>
+                    <div class="column-title">В работе</div>
+                    <div class="column-count">2</div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Прогресс</span>
+                        <span>65%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+
+                <div class="feature-list">
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <h3 class="feature-title">Веб-версия</h3>
+                            <span class="feature-date">Июнь 2023</span>
+                        </div>
+                        <p class="feature-description">Полнофункциональная веб-версия приложения с синхронизацией данных</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag tag-access">Все</span>
+                            <span class="feature-tag tag-type">Платформа</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <h3 class="feature-title">Голосовые сообщения</h3>
+                            <span class="feature-date">Июль 2023</span>
+                        </div>
+                        <p class="feature-description">Запись и отправка голосовых сообщений с возможностью предпрослушивания</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag tag-access">Plus</span>
+                            <span class="feature-tag tag-type">Сообщения</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Запланированные функции -->
+            <div class="roadmap-column planned fade-in delay-3" data-category="planned">
+                <div class="column-header">
+                    <div class="column-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="column-title">Планы</div>
+                    <div class="column-count">3</div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Прогресс</span>
+                        <span>10%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+
+                <div class="feature-list">
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <h3 class="feature-title">Интеграция с Telegram</h3>
+                            <span class="feature-date">Сентябрь 2023</span>
+                        </div>
+                        <p class="feature-description">Возможность отправлять сообщения прямо из Telegram и получать уведомления</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag tag-access">Plus</span>
+                            <span class="feature-tag tag-type">Интеграция</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <h3 class="feature-title">Групповые чаты</h3>
+                            <span class="feature-date">Октябрь 2023</span>
+                        </div>
+                        <p class="feature-description">Создание групповых чатов до 10 участников с общими медиафайлами</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag tag-access">Premium</span>
+                            <span class="feature-tag tag-type">Сообщения</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <h3 class="feature-title">Кастомные темы</h3>
+                            <span class="feature-date">Декабрь 2023</span>
+                        </div>
+                        <p class="feature-description">Возможность настраивать цветовую тему приложения под свой вкус</p>
+                        <div class="feature-tags">
+                            <span class="feature-tag tag-access">Plus</span>
+                            <span class="feature-tag tag-type">Интерфейс</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Получаем user_id из localStorage
+        const user_id = localStorage.getItem('user_id');
+        if (!user_id) {
+            window.location.href = '/auth';
+        }
+
+        // DOM элементы
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const roadmapColumns = document.querySelectorAll('.roadmap-column');
+        const roadmapSearch = document.getElementById('roadmapSearch');
+        const featureCards = document.querySelectorAll('.feature-card');
+
+        // Фильтрация по категориям
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filter = btn.dataset.filter;
+
+                // Обновляем активную кнопку
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Фильтруем колонки
+                roadmapColumns.forEach(column => {
+                    if (filter === 'all' || column.dataset.category === filter) {
+                        column.style.display = 'block';
+                    } else {
+                        column.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Поиск по функциям
+        roadmapSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+
+            featureCards.forEach(card => {
+                const title = card.querySelector('.feature-title').textContent.toLowerCase();
+                const description = card.querySelector('.feature-description').textContent.toLowerCase();
+
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // API URL
+        function getProtocolAndIP() {
+            const protocol = window.location.protocol;
+            const host = window.location.host;
+            return `${protocol}//${host}`;
+        }
+        const API_URL = getProtocolAndIP() + '/api';
+
+        // Загрузка данных roadmap
+        async function loadRoadmapData() {
+            try {
+                const response = await fetch(`${API_URL}/roadmap`);
+                const data = await response.json();
+
+                // Здесь можно обновить UI на основе полученных данных
+                console.log('Roadmap data loaded:', data);
+            } catch (error) {
+                console.error('Ошибка загрузки данных roadmap:', error);
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRoadmapData();
+        });
+    </script>
+</body>
+</html>

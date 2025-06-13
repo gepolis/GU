@@ -189,8 +189,12 @@ def send_to_telegram(message):
     except Exception as e:
         print(f"Ошибка отправки в Telegram: {e}")
         return False
-
-
+@app.route("/roadmap")
+def roadmap():
+    return render_template("roadmap.html")
+@app.route("/teams")
+def teams():
+    return render_template("useragree.html")
 @app.before_request
 def track_visits():
     session.permanent = True
@@ -650,9 +654,10 @@ def payment(plan, t):
     price = PLANS[plan][t]
     duration_seconds = TIMES[t]
     promo = Promocode.query.filter_by(code=promo, promo_type="discount").first()
-    user_id = session.get('user_id')
-    price = round(price - (price / 100 * promo.value))
-    print("price", price)
+    if promo:
+        user_id = session.get('user_id')
+        price = round(price - (price / 100 * promo.value))
+        print("price", price)
     # Сохраняем платеж
     pay = Payment(
         user_id=user_id,
