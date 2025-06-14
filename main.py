@@ -582,7 +582,10 @@ WALLET_NUMBER = "4100118081125029"  # Номер кошелька (без точ
 @app.route("/payment/<plan>/<t>", methods=['POST', 'GET'])
 def payment(plan, t):
     from datetime import datetime
-    promo = request.json.get('promo_code')
+    if request.method == 'POST':
+        promo = request.json.get('promo_code')
+    else:
+        promo = "NONEPROMOCODE"
     print(promo)
     start_time = time.time()
     user_id = session.get('user_id')
@@ -613,7 +616,7 @@ def payment(plan, t):
                     print("admin")
                     price = 2
         promo = Promocode.query.filter_by(code=promo, promo_type="discount").first()
-        if promo.exists():
+        if promo:
             user_id = session.get('user_id')
             price = round(price - (price / 100 * promo.value))
         print("price", price)
