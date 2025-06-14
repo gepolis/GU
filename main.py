@@ -579,7 +579,7 @@ import uuid
 from yoomoney import Quickpay, Client
 YOOMONEY_TOKEN = "4100118081125029.B5C5190A0515584D546589668EC04D03BC6680B00269B70913A64220E6657D73ED166EE15820FC4DAA5A15A0A3800E17A9C872A52D07A2D2D43ABDE200C217FE881563B8DC1CC3BE7484958B3FF0EE10B6E5763DDEE322D9D6F45825DA8BA923AE111928DBFE686683BF6C10DC1D4326C0640258434C8D2C89BF885A319CD650"
 WALLET_NUMBER = "4100118081125029"  # Номер кошелька (без точки)
-@app.route("/payment/<plan>/<t>", methods=['POST'])
+@app.route("/payment/<plan>/<t>", methods=['POST', 'GET'])
 def payment(plan, t):
     from datetime import datetime
     promo = request.json.get('promo_code')
@@ -591,6 +591,7 @@ def payment(plan, t):
     log_user_consent(request,user_id,"Покупка подписки {} {}".format(plan, t))
     payment_uuid = str(uuid.uuid4())
     if plan == "hides":
+        print("hides")
         amount = t
         prices = {
             "1": 20,
@@ -612,8 +613,9 @@ def payment(plan, t):
                     print("admin")
                     price = 2
         promo = Promocode.query.filter_by(code=promo, promo_type="discount").first()
-        user_id = session.get('user_id')
-        price = round(price - (price / 100 * promo.value))
+        if promo.exists():
+            user_id = session.get('user_id')
+            price = round(price - (price / 100 * promo.value))
         print("price", price)
         pay = Payment(
             user_id=user_id,
