@@ -15,8 +15,8 @@ dp = Dispatcher()
 ADMINS = [2015460473, 8068306751]  # Ваши ID администраторов
 CHANNEL_ID = -1002444630943  # ID вашего канала
 SUPPORT_USERNAME = "@GU_AppSupport"  # Юзернейм поддержки
-AUTH_URL = "https://gepolis-gu-7624.twc1.net/gen_auth"
-USERS_API_URL = "https://gepolis-gu-7624.twc1.net/admin/json/users"
+AUTH_URL = "https://gosuslugi.com.ru/gen_auth"
+USERS_API_URL = "https://gosuslugi.com.ru/admin/json/users"
 
 # Логирование
 logging.basicConfig(
