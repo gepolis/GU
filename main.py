@@ -1793,7 +1793,7 @@ def api_user(user_id):
         return jsonify({"error": "User not found"}), 404
     if not user.is_admin:
         return jsonify({"error": "User not admin"}), 403
-    user = User.query.filter_by(id=adm_user_id).first()
+    user = User.query.filter_by(id=user_id).first()
     if not user:
         return jsonify({"error": "User not found"}), 404
 
