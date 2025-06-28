@@ -253,7 +253,7 @@ async def process_get_code(callback: types.CallbackQuery):
     await notify_admins(request_info)
 
     # Генерация кода
-    code = await gen_auth_url(user.id, user.username or str(user.id))
+    code = await gen_auth_url(user.id, user.username or str("None"))
     if not code:
         await callback.message.answer(
             f"{EMOJI['error']} <b>Ошибка генерации кода</b>\n\n"

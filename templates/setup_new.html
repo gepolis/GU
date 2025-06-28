@@ -4,23 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль пользователя</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-light: #6366f1;
-            --primary-hover: #4338ca;
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-hover: #4f46e5;
+            --primary-dark: #4338ca;
             --text: #111827;
-            --text-light: #6b7280;
+            --text-light: #4b5563;
             --text-lighter: #9ca3af;
             --border: #e5e7eb;
             --background: #f9fafb;
             --card-bg: #ffffff;
-            --radius: 8px;
-            --shadow: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.02);
-            --transition: all 0.15s ease;
+            --radius: 12px;
+            --radius-sm: 6px;
+            --shadow: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px -1px rgba(0,0,0,0.08), 0 2px 6px -1px rgba(0,0,0,0.03);
+            --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.1);
+            --transition: all 0.2s ease;
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
         }
 
         * {
@@ -31,7 +38,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            line-height: 1.5;
+            line-height: 1.6;
             color: var(--text);
             background-color: var(--background);
             padding: 0;
@@ -39,74 +46,119 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 24px;
         }
 
         header {
-            margin-bottom: 16px;
+            margin-bottom: 24px;
+            position: relative;
         }
 
         h1 {
-            font-weight: 600;
-            font-size: 24px;
-            margin-bottom: 16px;
+            font-weight: 700;
+            font-size: 28px;
+            margin-bottom: 24px;
             color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--background);
+            color: var(--primary);
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            background: var(--primary-light);
+            color: white;
+            transform: translateX(-3px);
         }
 
         .profile-controls {
             display: flex;
-            gap: 12px;
+            gap: 16px;
             align-items: center;
             flex-wrap: wrap;
+            margin-bottom: 16px;
         }
 
         select {
-            padding: 10px 12px;
-            border-radius: var(--radius);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border);
             background-color: white;
-            font-size: 14px;
-            min-width: 200px;
+            font-size: 15px;
+            min-width: 220px;
             transition: var(--transition);
             cursor: pointer;
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
-            background-position: right 10px center;
+            background-position: right 14px center;
             background-size: 16px;
+            box-shadow: var(--shadow);
+            font-weight: 500;
         }
 
         select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 10px 16px;
-            border-radius: var(--radius);
-            font-size: 14px;
-            font-weight: 500;
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             text-decoration: none;
             border: none;
-            gap: 8px;
+            gap: 10px;
             white-space: nowrap;
+            box-shadow: var(--shadow);
         }
 
         .btn-primary {
-            background-color: var(--primary);
+            background: var(--gradient);
             color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255,255,255,0.1);
+            transform: rotate(30deg);
+            transition: var(--transition);
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-hover);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:hover::after {
+            transform: rotate(30deg) translate(0, 150%);
         }
 
         .btn-danger {
@@ -116,7 +168,7 @@
         }
 
         .btn-danger:hover {
-            color: #dc2626;
+            color: var(--error);
             border-color: #fecaca;
             background-color: #fef2f2;
         }
@@ -134,55 +186,73 @@
         .section {
             background-color: var(--card-bg);
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 24px;
-            margin-bottom: 16px;
+            box-shadow: var(--shadow-md);
+            padding: 28px;
+            margin-bottom: 24px;
             border: 1px solid var(--border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 10px;
+            color: var(--primary);
+            font-size: 18px;
+            margin-right: 16px;
         }
 
         h2 {
             font-weight: 600;
-            margin-bottom: 20px;
-            font-size: 16px;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        h2 i {
-            color: var(--primary);
             font-size: 18px;
-            width: 20px;
-            text-align: center;
+            color: var(--text);
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            position: relative;
         }
 
         label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             font-weight: 500;
             color: var(--text-light);
-            font-size: 13px;
+            font-size: 14px;
         }
 
         input, textarea, select {
             width: 100%;
-            padding: 10px 12px;
+            padding: 14px 16px;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: var(--radius-sm);
             font-family: inherit;
-            font-size: 14px;
+            font-size: 15px;
             transition: var(--transition);
+            box-shadow: var(--shadow);
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
         }
 
         input::placeholder, textarea::placeholder {
@@ -190,14 +260,14 @@
         }
 
         textarea {
-            min-height: 80px;
+            min-height: 100px;
             resize: vertical;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         .form-row {
             display: flex;
-            gap: 16px;
+            gap: 20px;
         }
 
         .form-row .form-group {
@@ -206,23 +276,23 @@
 
         .photo-upload {
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
+            gap: 32px;
             margin-bottom: 20px;
         }
 
         .photo-preview {
-            width: 120px;
-            height: 160px;
+            width: 140px;
+            height: 180px;
             border: 1px dashed var(--border);
             border-radius: var(--radius);
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            margin-bottom: 12px;
             position: relative;
             background-color: var(--background);
+            box-shadow: var(--shadow);
         }
 
         .photo-preview img {
@@ -233,9 +303,9 @@
 
         .photo-preview span {
             color: var(--text-lighter);
-            font-size: 13px;
+            font-size: 14px;
             text-align: center;
-            padding: 0 10px;
+            padding: 0 16px;
         }
 
         .photo-upload-btn {
@@ -254,46 +324,65 @@
             cursor: pointer;
         }
 
+        .photo-upload-text h3 {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .photo-upload-text p {
+            color: var(--text-light);
+            font-size: 14px;
+            max-width: 300px;
+            line-height: 1.6;
+        }
+
         .actions {
             display: flex;
-            gap: 12px;
-            margin-top: 24px;
+            gap: 16px;
+            margin-top: 32px;
             flex-wrap: wrap;
         }
 
         .notification {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 16px;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
             border-radius: var(--radius);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-lg);
             z-index: 1000;
             animation: fadeIn 0.3s ease;
             color: white;
             display: flex;
             align-items: center;
-            gap: 8px;
-            max-width: 320px;
-            font-size: 14px;
+            gap: 12px;
+            max-width: 360px;
+            font-size: 15px;
             background-color: var(--primary);
+            backdrop-filter: blur(10px);
+            border-left: 4px solid white;
         }
 
         .notification.error {
-            background-color: #ef4444;
+            background-color: var(--error);
+        }
+
+        .notification.success {
+            background-color: var(--success);
         }
 
         .notification i {
-            font-size: 16px;
+            font-size: 20px;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeOut {
-            to { opacity: 0; transform: translateY(10px); }
+            to { opacity: 0; transform: translateY(20px); }
         }
 
         .empty-state {
@@ -306,37 +395,42 @@
             color: var(--text-light);
             background-color: var(--card-bg);
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px dashed var(--border);
+            box-shadow: var(--shadow-md);
+            border: 2px dashed var(--border);
             margin-top: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .empty-state:hover {
+            transform: translateY(-5px);
         }
 
         .empty-state i {
-            font-size: 48px;
+            font-size: 56px;
             color: var(--border);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             opacity: 0.7;
         }
 
         .empty-state h3 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
             color: var(--text);
         }
 
         .empty-state p {
-            margin-bottom: 24px;
+            margin-bottom: 28px;
             max-width: 400px;
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 15px;
+            line-height: 1.7;
         }
 
         .loader {
             display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
@@ -348,7 +442,7 @@
 
         .btn-loading .loader {
             display: inline-block;
-            margin-left: 8px;
+            margin-left: 10px;
         }
 
         /* Вкладки */
@@ -356,20 +450,32 @@
             display: flex;
             border-bottom: 1px solid var(--border);
             margin-bottom: 24px;
+            position: relative;
         }
 
         .tab {
-            padding: 12px 16px;
+            padding: 14px 24px;
             cursor: pointer;
             font-weight: 500;
             color: var(--text-light);
-            border-bottom: 2px solid transparent;
+            border-bottom: 3px solid transparent;
             transition: var(--transition);
+            position: relative;
+            font-size: 15px;
         }
 
         .tab.active {
             color: var(--primary);
-            border-bottom-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tab-indicator {
+            position: absolute;
+            bottom: -1px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px 3px 0 0;
+            transition: left 0.3s ease, width 0.3s ease;
         }
 
         .tab-content {
@@ -378,6 +484,7 @@
 
         .tab-content.active {
             display: block;
+            animation: fadeIn 0.4s ease;
         }
 
         /* Стили для вкладки безопасности */
@@ -391,12 +498,14 @@
 
         .promo-input-group {
             display: flex;
-            gap: 12px;
-            margin-top: 16px;
+            gap: 16px;
+            margin-top: 20px;
         }
 
         .promo-input-group input {
             flex: 1;
+            padding: 14px 16px;
+            font-size: 15px;
         }
 
         /* Стили для PIN-кода */
@@ -408,17 +517,21 @@
 
         .pin-control {
             display: flex;
-            gap: 12px;
+            gap: 16px;
             align-items: center;
         }
 
         .pin-status {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--text-light);
+            padding: 8px 16px;
+            background: var(--background);
+            border-radius: var(--radius-sm);
         }
 
         .pin-status.active {
-            color: var(--primary);
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
         }
 
         /* Модальное окно для PIN-кода */
@@ -430,93 +543,172 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
             z-index: 1001;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.3s ease;
         }
 
         .modal-content {
             background-color: white;
-            padding: 24px;
+            padding: 32px;
             border-radius: var(--radius);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-lg);
             width: 100%;
-            max-width: 400px;
-            animation: fadeIn 0.3s ease;
+            max-width: 440px;
+            animation: scaleIn 0.3s ease;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: var(--text);
-        }
-
-        .pin-input {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
-        }
-
-        .pin-input input {
-            width: 40px;
-            height: 40px;
-            text-align: center;
-            font-size: 18px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-        }
-
-        .pin-input input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        /* Реклама премиума */
-        .premium-banner {
-            background-color: #fff8e6;
-            border: 1px solid #ffeeba;
-            border-radius: var(--radius);
-            padding: 16px;
+            font-size: 20px;
+            font-weight: 700;
             margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-        }
-
-        .premium-content {
+            color: var(--text);
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
+        .pin-input {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 28px;
+            justify-content: center;
+        }
+
+        .pin-input input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .pin-input input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+        }
+
+        /* Реклама премиума */
+        .premium-banner {
+            background: linear-gradient(135deg, #fff8e6 0%, #fff0cc 100%);
+            border: 1px solid #ffd54f;
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .premium-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+
+        .premium-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
         .premium-icon {
-            color: #ffc107;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 193, 7, 0.15);
+            border-radius: 50%;
+            color: #f59e0b;
             font-size: 24px;
         }
 
         .premium-text h4 {
-            font-weight: 600;
-            margin-bottom: 4px;
+            font-weight: 700;
+            margin-bottom: 6px;
             color: var(--text);
+            font-size: 18px;
         }
 
         .premium-text p {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--text-light);
             margin: 0;
+            max-width: 500px;
+            line-height: 1.6;
         }
 
         .premium-btn {
             white-space: nowrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .badge-premium {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
+
+        .hint {
+            font-size: 13px;
+            color: var(--text-lighter);
+            margin-top: 6px;
+            display: block;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--primary);
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
@@ -532,6 +724,7 @@
             .profile-controls {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 12px;
             }
 
             select, .btn {
@@ -546,6 +739,19 @@
             .promo-input-group {
                 flex-direction: column;
             }
+
+            .photo-upload {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .section {
+                padding: 20px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -558,13 +764,17 @@
             }
 
             .modal-content {
-                padding: 16px;
+                padding: 24px 20px;
                 margin: 0 16px;
             }
 
+            .pin-input {
+                gap: 12px;
+            }
+
             .pin-input input {
-                width: 35px;
-                height: 35px;
+                width: 45px;
+                height: 45px;
             }
 
             .tabs {
@@ -572,10 +782,11 @@
                 white-space: nowrap;
                 padding-bottom: 8px;
             }
-        }
-        a {
-            text-decoration: none;
-            color: #3366ff;
+
+            .tab {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -583,12 +794,15 @@
     <!-- Модальное окно для PIN-кода -->
     <div class="modal" id="pinModal">
         <div class="modal-content">
-            <div class="modal-title" id="pinModalTitle">Установить PIN-код</div>
+            <div class="modal-title" id="pinModalTitle">
+                <i class="fas fa-lock"></i>
+                <span>Установить PIN-код</span>
+            </div>
             <div class="pin-input" id="pinInput">
-                <input type="password" maxlength="1" pattern="[0-9]">
-                <input type="password" maxlength="1" pattern="[0-9]">
-                <input type="password" maxlength="1" pattern="[0-9]">
-                <input type="password" maxlength="1" pattern="[0-9]">
+                <input type="password" maxlength="1" pattern="[0-9]" autocomplete="off">
+                <input type="password" maxlength="1" pattern="[0-9]" autocomplete="off">
+                <input type="password" maxlength="1" pattern="[0-9]" autocomplete="off">
+                <input type="password" maxlength="1" pattern="[0-9]" autocomplete="off">
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" id="cancelPinBtn">Отмена</button>
@@ -598,7 +812,7 @@
     </div>
 
     <div class="container">
-        <!-- Баннер премиума (отображается на всех вкладках) -->
+        <!-- Баннер премиума -->
         <div class="premium-banner" id="premiumBanner" style="display: none;">
             <div class="premium-content">
                 <div class="premium-icon">
@@ -606,26 +820,33 @@
                 </div>
                 <div class="premium-text">
                     <h4>Премиум доступ</h4>
-                    <p>Разблокируйте все возможности с подпиской Premium</p>
+                    <p>Разблокируйте все возможности с подпиской Premium: загрузка фото, приоритетная поддержка и эксклюзивные функции</p>
                 </div>
             </div>
             <a href="/premium" class="btn btn-primary premium-btn">Подробнее</a>
         </div>
 
         <header>
-            <h1><a href="/"><i class="fas fa-arrow-left"></i></a> Мой профиль</h1>
+            <h1>
+                <a href="/" class="back-link">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                Мой профиль
+            </h1>
+
             <!-- Переключатель вкладок -->
             <div class="tabs">
                 <div class="tab active" data-tab="profiles">Профили</div>
-                <div class="tab" data-tab="security">Безопасность и промокод</div>
+                <div class="tab" data-tab="security">Безопасность</div>
+                <div class="tab-indicator" id="tabIndicator"></div>
             </div>
         </header>
 
         <!-- Вкладка профилей -->
         <div id="profiles-tab" class="tab-content active">
             <div class="profile-controls">
-                <a class="btn btn-primary" href="/mobile">
-                    <i class="fas fa-mobile"></i> Мобильная версия
+                <a class="btn btn-secondary" href="/mobile">
+                    <i class="fas fa-mobile-alt"></i> Мобильная версия
                 </a>
                 <select id="profileList">
                     <option value="none">Выберите профиль</option>
@@ -637,32 +858,49 @@
 
             <div id="form-container" style="display: none;">
                 <div class="section">
-                    <h2><i class="fas fa-id-card"></i>Данные профиля</h2>
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <h2>Данные профиля</h2>
+                    </div>
                     <div class="form-group">
-                        <label for="name">Название профиля</label>
+                        <label for="name">Название профиля <span class="hint">Обязательное поле</span></label>
                         <input type="text" id="name" placeholder="Например: Основной профиль">
                     </div>
                 </div>
 
                 <div class="section">
-                    <h2><i class="fas fa-camera"></i>Фотография</h2>
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <h2>Фотография</h2>
+                    </div>
                     <div class="photo-upload">
                         <div class="photo-preview" id="photoPreview">
                             <span>Фото не загружено</span>
                         </div>
-                        <h2></h2>
-                        <div class="photo-upload-btn">
-                            <button class="btn btn-secondary" id="uploadPhotoBtn">
-                                <i class="fas fa-upload"></i> Загрузить фото
-                            </button>
-                            <input type="file" id="photoInput" accept="image/*">
-
+                        <div class="photo-upload-text">
+                            <h3>Загрузите ваше фото</h3>
+                            <p>Рекомендуемый размер: 3.5x4.5 см, JPG или PNG, не более 2MB</p>
+                            <div class="photo-upload-btn">
+                                <button class="btn btn-secondary" id="uploadPhotoBtn">
+                                    <i class="fas fa-upload"></i> Выбрать файл
+                                </button>
+                                <input type="file" id="photoInput" accept="image/*">
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="section">
-                    <h2><i class="fas fa-user"></i>Личные данные</h2>
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h2>Личные данные</h2>
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="lastName">Фамилия</label>
@@ -697,7 +935,12 @@
                 </div>
 
                 <div class="section">
-                    <h2><i class="fas fa-passport"></i>Паспортные данные</h2>
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-passport"></i>
+                        </div>
+                        <h2>Паспортные данные</h2>
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="passportNumber">Номер паспорта</label>
@@ -721,7 +964,12 @@
                 </div>
 
                 <div class="section">
-                    <h2><i class="fas fa-home"></i>Адрес</h2>
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <h2>Адрес</h2>
+                    </div>
                     <div class="form-group">
                         <label for="registrationAddress">Адрес регистрации</label>
                         <textarea id="registrationAddress" placeholder="Город, улица, дом, квартира"></textarea>
@@ -733,7 +981,12 @@
                 </div>
 
                 <div class="section">
-                    <h2><i class="fas fa-file-alt"></i>Другие документы</h2>
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h2>Другие документы</h2>
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="snilsNumber">СНИЛС</label>
@@ -751,10 +1004,10 @@
                         <i class="fas fa-arrow-left"></i> Назад
                     </a>
                     <button id="saveBtn" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Сохранить
+                        <i class="fas fa-save"></i> Сохранить профиль
                     </button>
                     <button id="deleteBtn" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Удалить
+                        <i class="fas fa-trash-alt"></i> Удалить
                     </button>
                 </div>
             </div>
@@ -762,7 +1015,7 @@
             <div id="empty-state" class="empty-state">
                 <i class="fas fa-user-plus"></i>
                 <h3>Нет активного профиля</h3>
-                <p>Выберите существующий профиль из списка или создайте новый для хранения ваших данных</p>
+                <p>Создайте профиль для хранения ваших персональных данных и быстрого доступа к ним при заполнении форм</p>
                 <button id="createProfileBtn2" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Создать профиль
                 </button>
@@ -772,17 +1025,28 @@
         <!-- Вкладка безопасности и промокода -->
         <div id="security-tab" class="tab-content">
             <div class="section">
-                <h2><i class="fas fa-lock"></i>Безопасность</h2>
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h2>Безопасность</h2>
+                </div>
                 <div class="pin-control">
                     <button class="btn btn-secondary" id="managePinBtn">
                         <i class="fas fa-key"></i> Установить PIN-код
                     </button>
                     <span class="pin-status" id="pinStatus">Не установлен</span>
                 </div>
+                <p class="hint">PIN-код будет использоваться для защиты ваших данных в мобильном приложении</p>
             </div>
 
             <div class="section">
-                <h2><i class="fas fa-tag"></i>Промокод</h2>
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <h2>Промокод</h2>
+                </div>
                 <p>Введите промокод для получения бонусов или активации подписки</p>
                 <div class="promo-input-group">
                     <input type="text" id="promoCode" placeholder="Введите промокод">
@@ -791,12 +1055,18 @@
             </div>
 
             <div class="section">
-                <!-- subcription manage btn redirect -->
-                <h2><i class="fas fa-crown"></i>Подписка</h2>
-                <p>Баланс скрытий: <span id="hides-balance">0</span></p>
+                <div class="card-header">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <h2>Подписка</h2>
+                    </div>
+                    <span class="badge badge-premium">PREMIUM</span>
+                </div>
+                <p>Баланс скрытий: <strong id="hides-balance">0</strong></p>
                 <br>
                 <p>Подробнее о подписке и возможностях</p>
-
                 <br>
                 <a href="/premium" class="btn btn-primary">
                     <i class="fas fa-info-circle"></i> Подробнее о подписке
@@ -837,6 +1107,7 @@
         const pinStatus = document.getElementById('pinStatus');
         const applyPromoBtn = document.getElementById('applyPromoBtn');
         const promoCodeInput = document.getElementById('promoCode');
+        const tabIndicator = document.getElementById('tabIndicator');
 
         // Элементы модального окна пин-кода
         const pinModal = document.getElementById('pinModal');
@@ -854,6 +1125,17 @@
         let isLoading = false;
         let hasPremium = false;
         let globalPin = localStorage.getItem('globalPin') || null;
+
+        // Обновить позицию индикатора вкладок
+        function updateTabIndicator() {
+            const activeTab = document.querySelector('.tab.active');
+            if (activeTab) {
+                tabIndicator.style.width = activeTab.offsetWidth + 'px';
+                tabIndicator.style.left = activeTab.offsetLeft + 'px';
+            }
+        }
+
+        // Загрузка информации о подписке
         async function loadHidesInfo() {
             try {
                 const response = await fetch(`${API_URL}/subscription?user_id=${user_id}`);
@@ -863,7 +1145,17 @@
                 console.error('Ошибка загрузки информации о подписке:', error);
             }
         }
-        loadHidesInfo()
+
+        // Инициализация при загрузке
+        window.addEventListener('load', () => {
+            updateTabIndicator();
+            loadHidesInfo();
+        });
+
+        window.addEventListener('resize', updateTabIndicator);
+
+        loadHidesInfo();
+
         // Переключение вкладок
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -876,6 +1168,9 @@
                 // Добавляем активный класс текущей вкладке и контенту
                 tab.classList.add('active');
                 document.getElementById(`${tabId}-tab`).classList.add('active');
+
+                // Обновляем индикатор
+                updateTabIndicator();
             });
         });
 
@@ -894,10 +1189,10 @@
 
                     // Если нет премиума, скрываем возможность загрузки фото
                     document.querySelector('.photo-upload-btn').style.display = 'none';
-                    const photoSection = document.querySelector('.photo-upload h2');
+                    const photoSection = document.querySelector('.photo-upload-text p');
                     if (photoSection) {
-                        photoSection.innerHTML +=
-                            ' <span style="color: #ef4444; font-size: 12px;">Загрузка фото и их отображение доступно только с подпиской</span>';
+                        photoSection.innerHTML =
+                            'Загрузка фото доступна только для пользователей с <a href="/premium">Premium подпиской</a>';
                     }
                 }
             } catch (error) {
@@ -922,11 +1217,12 @@
         function showPinModal() {
             pinModal.style.display = 'flex';
             pinInputs[0].focus();
+            document.body.style.overflow = 'hidden';
 
             if (globalPin) {
-                pinModalTitle.textContent = 'Изменить PIN-код';
+                pinModalTitle.innerHTML = '<i class="fas fa-lock"></i> Изменить PIN-код';
             } else {
-                pinModalTitle.textContent = 'Установить PIN-код';
+                pinModalTitle.innerHTML = '<i class="fas fa-lock"></i> Установить PIN-код';
             }
         }
 
@@ -934,6 +1230,7 @@
         function hidePinModal() {
             pinModal.style.display = 'none';
             pinInputs.forEach(input => input.value = '');
+            document.body.style.overflow = '';
         }
 
         // Установить или изменить PIN-код
@@ -973,6 +1270,7 @@
                     showNotification(result.message || 'Промокод успешно активирован');
                     promoCodeInput.value = '';
                     checkSubscription(); // Обновляем статус подписки
+                    loadHidesInfo(); // Обновляем баланс скрытий
                 } else {
                     showNotification(result.message || 'Неверный промокод', 'error');
                 }
@@ -1146,8 +1444,13 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            if (file.size > 10 * 1024 * 1024) {
+            if (file.size > 2 * 1024 * 1024) {
                 showNotification('Файл слишком большой (макс. 2MB)', 'error');
+                return;
+            }
+
+            if (!file.type.match('image.*')) {
+                showNotification('Выберите файл изображения (JPG, PNG)', 'error');
                 return;
             }
 
@@ -1164,7 +1467,7 @@
 
             try {
                 isLoading = true;
-                saveBtn.innerHTML = `<i class="fas fa-save"></i> Сохранение <span class="loader"></span>`;
+                saveBtn.innerHTML = `<span class="loader"></span> Сохранение`;
                 saveBtn.classList.add('btn-loading');
 
                 const data = {
@@ -1203,14 +1506,14 @@
                 });
 
                 const result = await response.json();
-                showNotification('Профиль успешно сохранён', 'success');
+                showNotification('Профиль успешно сохранён');
                 loadProfiles();
             } catch (error) {
                 showNotification('Ошибка сохранения профиля', 'error');
                 console.error('Ошибка:', error);
             } finally {
                 isLoading = false;
-                saveBtn.innerHTML = `<i class="fas fa-save"></i> Сохранить`;
+                saveBtn.innerHTML = `<i class="fas fa-save"></i> Сохранить профиль`;
                 saveBtn.classList.remove('btn-loading');
             }
         }
@@ -1223,8 +1526,8 @@
 
             try {
                 isLoading = true;
-                createProfileBtn.innerHTML = `<i class="fas fa-plus"></i> Создание <span class="loader"></span>`;
-                createProfileBtn2.innerHTML = `<i class="fas fa-plus"></i> Создание <span class="loader"></span>`;
+                createProfileBtn.innerHTML = `<span class="loader"></span> Создание`;
+                createProfileBtn2.innerHTML = `<span class="loader"></span> Создание`;
                 createProfileBtn.classList.add('btn-loading');
                 createProfileBtn2.classList.add('btn-loading');
 
@@ -1255,7 +1558,7 @@
                 emptyState.style.display = 'none';
                 loadProfile(currentProfileId);
 
-                showNotification('Профиль успешно создан', 'success');
+                showNotification('Профиль успешно создан');
             } catch (error) {
                 showNotification('Ошибка создания профиля', 'error');
                 console.error('Ошибка:', error);
@@ -1284,7 +1587,7 @@
 
             try {
                 isLoading = true;
-                deleteBtn.innerHTML = `<i class="fas fa-trash"></i> Удаление <span class="loader"></span>`;
+                deleteBtn.innerHTML = `<span class="loader"></span> Удаление`;
                 deleteBtn.classList.add('btn-loading');
 
                 const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${currentProfileId}`, {
@@ -1292,7 +1595,7 @@
                 });
 
                 const result = await response.json();
-                showNotification('Профиль успешно удалён', 'success');
+                showNotification('Профиль успешно удалён');
 
                 currentProfileId = null;
                 localStorage.removeItem('currentProfileId');
@@ -1307,7 +1610,7 @@
                 console.error('Ошибка:', error);
             } finally {
                 isLoading = false;
-                deleteBtn.innerHTML = `<i class="fas fa-trash"></i> Удалить`;
+                deleteBtn.innerHTML = `<i class="fas fa-trash-alt"></i> Удалить`;
                 deleteBtn.classList.remove('btn-loading');
             }
         }
@@ -1319,14 +1622,14 @@
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}"></i>
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
                 <span>${message}</span>
             `;
 
             document.body.appendChild(notification);
 
             setTimeout(() => {
-                notification.style.animation = 'fadeOut 0.3s ease';
+                notification.style.animation = 'fadeOut 0.3s ease forwards';
                 setTimeout(() => {
                     document.body.removeChild(notification);
                 }, 300);

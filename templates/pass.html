@@ -456,6 +456,195 @@
   transform: translateX(0);
   opacity: 1;
 }
+
+/* Стили для сканов документов */
+.scans-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.scan-item {
+    width: calc(50% - 6px);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 1 / 1.4;
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+.scan-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.scan-item:hover img {
+    transform: scale(1.03);
+}
+
+.scan-item .scan-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Модальное окно для просмотра скана */
+.scan-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.scan-modal-content {
+    max-width: 100%;
+    max-height: 90vh;
+    position: relative;
+}
+
+.scan-modal-content img {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+.close-scan-modal {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.5);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-scans {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+/* Стили для кнопки добавления скана */
+.add-scan-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100%;
+    color: #3366ff;
+    font-weight: 500;
+}
+
+.add-scan-btn i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: #3366ff;
+}
+
+/* Индикатор загрузки */
+.loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3366ff;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Оверлей для загрузки */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    display: none;
+}
+
+/* Стили для статуса загрузки */
+.upload-status {
+    margin-top: 15px;
+    text-align: center;
+    color: #4caf50;
+    display: none;
+}
+
+.upload-error {
+    margin-top: 15px;
+    text-align: center;
+    color: #ff5252;
+    display: none;
+}
+
+/* Стили для списка сканов */
+.scan-link {
+    display: block;
+    padding: 10px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    color: #3366ff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.scan-link:hover {
+    background: #eef;
+}
+
+.scan-link i {
+    margin-right: 8px;
+    color: #3366ff;
+}
+
+/* Индикатор загрузки файла */
+.upload-indicator {
+    display: none;
+    text-align: center;
+    margin-top: 15px;
+    color: #3366ff;
+}
+
+.upload-indicator i {
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -590,12 +779,30 @@
         </div>
 
         <div class="card">
-            <div class="section-title">Фото, сканы или pdf</div>
-            <div class="add-file-card">
+            <div class="section-title">Сканы документа</div>
+            <div id="scans-container" class="scans-container">
+                <!-- Здесь будут отображаться сканы -->
+                <div class="loading-scans">Загрузка сканов...</div>
+            </div>
+
+            <!-- Скрытый input для выбора файла -->
+            <input type="file" id="fileInput" accept="image/*,.pdf" style="display: none;">
+
+            <!-- Индикатор загрузки -->
+            <div id="uploadIndicator" class="upload-indicator">
+                <i class="fas fa-spinner"></i> Загрузка файла...
+            </div>
+
+            <div class="add-file-card" onclick="document.getElementById('fileInput').click()">
                 <div class="add-file-content">
-                    <span>Добавить</span>
+                    <i class="fas fa-plus clip-icon"></i>
+                    <span>Добавить скан</span>
                 </div>
             </div>
+
+            <!-- Статус загрузки -->
+            <div id="uploadStatus" class="upload-status"></div>
+            <div id="uploadError" class="upload-error"></div>
         </div>
 
         <!-- share btn -->
@@ -603,6 +810,21 @@
             Поделиться
         </div>
     </div>
+
+    <!-- Модальное окно для просмотра скана -->
+    <div id="scanModal" class="scan-modal">
+        <div class="scan-modal-content">
+            <span class="close-scan-modal" onclick="closeScanModal()">&times;</span>
+            <img id="modalScanImage" src="" alt="Скан документа">
+        </div>
+    </div>
+
+    <!-- Индикатор загрузки -->
+    <div class="overlay" id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Уведомления -->
     <div id="fakeNotification" class="notification" style="display:none;">
   <div class="notification-icon">⚠️</div>
   <div class="notification-content">
@@ -632,53 +854,13 @@
     ">Согласен</button>
   </div>
 </div>
+
     <script>
-        // Функции для переключения между видами
-        function showMainView() {
-            setTimeout(() => {
-                document.getElementById('main-view').style.display = 'block';
-                document.getElementById('detail-view').style.display = 'none';
-            }, 150);
-        }
-
-        function showDetailView() {
-            setTimeout(() => {
-                document.getElementById('main-view').style.display = 'none';
-                document.getElementById('detail-view').style.display = 'block';
-                // Обновляем данные в детальном виде при переходе
-                updateDetailView();
-            }, 150);
-
-        }
-
-        function updateDetailView() {
-            }
-
-        function toggleDarkMode() {
-            const currentHour = new Date().getHours();
-            const body = document.body;
-
-            if (currentHour >= 18 || currentHour < 6) {
-                body.classList.add('dark-mode');
-            } else {
-                body.classList.remove('dark-mode');
-            }
-        }
-
-        // Вызов функции при загрузке страницы
-        toggleDarkMode();
-        // Опционально: можно установить таймер для проверки каждые 30 минут
-        setInterval(toggleDarkMode, 15 * 60 * 1000); // каждые 30 минут
-        function getProtocolAndIP() {
-            const protocol = window.location.protocol;   // "http:" или "https:"
-            const host = window.location.host;           // "localhost:5000" или "127.0.0.1:5000"
-            return `${protocol}//${host}`;
-        }
-
-        const API_URL = getProtocolAndIP() + '/api';
+        // Константы
+        const API_URL = window.location.protocol + '//' + window.location.host + '/api';
         const user_id = localStorage.getItem('user_id');
         const profileCache = localStorage.getItem('profileCache');
-
+        const currentProfileId = localStorage.getItem('currentProfileId');
 const LOCAL_STORAGE_KEY = 'fakeNotificationStatus';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
@@ -796,9 +978,18 @@ async function fakeClose() {
     fakeNotification.classList.add('pulse');
   }
 }
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!user_id) window.location.href = '/auth';
 
-document.addEventListener('DOMContentLoaded', () => {
-  checkFakeStatus();
+            // Загрузка данных
+            loadCache();
+            loadProfile(currentProfileId);
+            loadDocumentScans();
+
+            // Настройка обработчиков
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+            checkFakeStatus();
 
   document.getElementById('closeNotification').addEventListener('click', () => {
     hideNotification('fakeNotification');
@@ -807,134 +998,233 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('confirmAgreement').addEventListener('click', fakeClose);
 
-  document.getElementById('closeSuccessNotification').addEventListener('click', () => {
-    if (userConfirmed) {
-      hideNotification('successNotification');
-    }
-  });
-});
+            document.getElementById('scanModal').addEventListener('click', function(e) {
+                if (e.target === this) closeScanModal();
+            });
+            document.getElementById('passportNumber').addEventListener('click', copyPassportNumber);
 
+            // Настройка темы
+            toggleDarkMode();
+            setInterval(toggleDarkMode, 15 * 60 * 1000);
+            checkFakeStatus()
+        });
+
+        // Функции для работы с UI
+        function showMainView() {
+            document.getElementById('main-view').style.display = 'block';
+            document.getElementById('detail-view').style.display = 'none';
+        }
+
+        function showDetailView() {
+            document.getElementById('main-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'block';
+        }
+
+        function toggleDarkMode() {
+            const currentHour = new Date().getHours();
+            document.body.classList.toggle('dark-mode', currentHour >= 18 || currentHour < 6);
+        }
+
+        // Функции для работы со сканами
+        async function loadDocumentScans() {
+            const scansContainer = document.getElementById('scans-container');
+            scansContainer.innerHTML = '<div class="loading-scans">Загрузка сканов...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/documents/scans?user_id=${user_id}&profile_id=${currentProfileId}`);
+                const data = await response.json();
+
+                if (data.status === 'success' && data.scans && data.scans.length > 0) {
+                    renderScans(data.scans);
+                } else {
+                    scansContainer.innerHTML = '<div class="loading-scans">Сканы документа отсутствуют</div>';
+                }
+            } catch (error) {
+                scansContainer.innerHTML = '<div class="loading-scans">Ошибка загрузки сканов</div>';
+            }
+        }
+
+        function renderScans(scans) {
+            const scansContainer = document.getElementById('scans-container');
+            scansContainer.innerHTML = '';
+
+            // Отображаем сканы в виде миниатюр
+            scans.forEach((scan, index) => {
+                const scanItem = document.createElement('div');
+                scanItem.className = 'scan-item';
+
+                // Создаем изображение из Data URL
+                const img = document.createElement('img');
+                img.src = scan.scan_data;
+                img.alt = `Скан документа ${index + 1}`;
+                img.onclick = () => openScanModal(scan.scan_data);
+
+                scanItem.appendChild(img);
+                scansContainer.appendChild(scanItem);
+            });
+
+            // Добавляем кнопку для добавления новых сканов
+        }
+
+        function openScanModal(imageData) {
+            document.getElementById('modalScanImage').src = imageData;
+            document.getElementById('scanModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeScanModal() {
+            document.getElementById('scanModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Проверка типа файла
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                showUploadError('Неподдерживаемый тип файла. Используйте изображения (JPEG, PNG, GIF) или PDF.');
+                return;
+            }
+
+            // Показываем индикатор загрузки
+            document.getElementById('uploadIndicator').style.display = 'block';
+            document.getElementById('uploadStatus').style.display = 'none';
+            document.getElementById('uploadError').style.display = 'none';
+
+            // Чтение файла как Data URL
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                // Отправляем Data URL на сервер
+                uploadScanData(e.target.result);
+            };
+
+            reader.onerror = function() {
+                showUploadError('Ошибка чтения файла');
+                document.getElementById('uploadIndicator').style.display = 'none';
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // Функция отправки Data URL на сервер
+        async function uploadScanData(scanData) {
+            const user_id = localStorage.getItem('user_id');
+            const profile_id = localStorage.getItem('currentProfileId');
+
+            try {
+                const response = await fetch(`${API_URL}/documents/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: user_id,
+                        profile_id: profile_id,
+                        scan_data: scanData
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    document.getElementById('uploadStatus').textContent = 'Файл успешно загружен!';
+                    document.getElementById('uploadStatus').style.display = 'block';
+
+                    // Обновляем список сканов
+                    setTimeout(() => {
+                        loadDocumentScans();
+                    }, 250);
+                } else {
+                    showUploadError(result.message || 'Ошибка при загрузке файла');
+                }
+            } catch (error) {
+                showUploadError('Ошибка сети: ' + error.message);
+            } finally {
+                // Скрываем индикатор и сбрасываем input
+                document.getElementById('uploadIndicator').style.display = 'none';
+                document.getElementById('fileInput').value = '';
+            }
+        }
+
+        function showUploadError(message) {
+            const errorElement = document.getElementById('uploadError');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Функции для работы с профилем
         function loadCache() {
             if (profileCache) {
                 try {
                     const profile = JSON.parse(profileCache);
-                    console.log("Start cache");
-                    const photoToShow = profile.showPhoto && profile.photoInput
-                    ? profile.photoInput
-                    : (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
-                    console.log(photoToShow)
-                    document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + profile.middleName || '').toUpperCase();
-                    document.getElementById('fn-detail').innerText = profile.lastName + ' ' + profile.firstName + ' ' + (profile.middleName || '');
-                    document.getElementById('birthDate').innerText = profile.birthDate || '';
-                    document.getElementById('birthDate-detail').innerText = profile.birthDate || '';
-                    document.getElementById('birthPlace').innerText = profile.birthPlace || '';
-                    document.getElementById('birthPlace-detail').innerText = profile.birthPlace || '';
-                    document.getElementById('passportNumber').innerHTML = profile.passportNumber + " <img src='static/copy.jpg' class='copy-icon'>" || '';
-                    document.getElementById('passportNumber-detail').innerText = profile.passportNumber || '';
-                    document.getElementById('passportIssued').innerText = profile.passportIssued || '';
-                    document.getElementById('passportIssued-detail').innerText = profile.passportIssued || '';
-                    document.getElementById('passportCode').innerText = profile.passportCode || '';
-                    document.getElementById('passportCode-detail').innerText = profile.passportCode || '';
-                    document.getElementById('passportDate').innerText = profile.passportDate || '';
-                    document.getElementById('passportDate-detail').innerText = profile.passportDate || '';
-                    document.getElementById('photoPreview').src = photoToShow;
-                    const gender = profile.gender.toUpperCase() || 'МУЖСКОЙ';
-                    document.getElementById('gender').innerText = gender === 'МУЖСКОЙ' ? 'МУЖ' : 'ЖЕН';
-                    document.getElementById('gender-detail').innerText = gender === 'МУЖСКОЙ' ? 'Мужской' : 'Женский';
-                    console.log("End cache");
-                } catch (error) {
-                    console.error('Error parsing profile cache:', error);
-                }
+                    updateProfileUI(profile);
+                } catch (error) {}
             }
         }
 
-        if (!user_id) {
-            window.location.href = '/auth';
+        async function loadProfile(profileId) {
+            try {
+                const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${profileId}`);
+                const profile = await response.json();
+                localStorage.setItem('profileCache', JSON.stringify(profile));
+                updateProfileUI(profile);
+            } catch (error) {}
         }
 
-
-        async function loadProfile(profileId) {
-            console.log("Fetch data");
-            const response = await fetch(`${API_URL}/profile?user_id=${user_id}&profile_id=${localStorage.getItem('currentProfileId')}`);
-            const profile = await response.json();
-            localStorage.setItem('profileCache', JSON.stringify(profile));
-            console.log("Fetch data end");
-
-            console.log(profile);
+        function updateProfileUI(profile) {
             const photoToShow = profile.showPhoto && profile.photoInput
                 ? profile.photoInput
                 : (profile.gender[0] === 'М' ? 'static/men.jpg' : 'static/women.jpg');
-                console.log(photoToShow)
-            document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + profile.middleName || '').toUpperCase();
-            document.getElementById('fn-detail').innerText = profile.lastName + ' ' + profile.firstName + ' ' + (profile.middleName || '');
-            document.getElementById('birthDate').innerText = profile.birthDate || '';
-            document.getElementById('birthDate-detail').innerText = profile.birthDate || '';
-            document.getElementById('birthPlace').innerText = profile.birthPlace || '';
-            document.getElementById('birthPlace-detail').innerText = profile.birthPlace || '';
+
+            document.getElementById('fn').innerHTML = (profile.lastName + ' ' + profile.firstName + '<br>' + (profile.middleName || '')).toUpperCase();
+            document.getElementById('fn-detail').textContent = profile.lastName + ' ' + profile.firstName + ' ' + (profile.middleName || '');
+            document.getElementById('birthDate').textContent = profile.birthDate || '';
+            document.getElementById('birthDate-detail').textContent = profile.birthDate || '';
+            document.getElementById('birthPlace').textContent = profile.birthPlace || '';
+            document.getElementById('birthPlace-detail').textContent = profile.birthPlace || '';
             document.getElementById('passportNumber').innerHTML = profile.passportNumber + " <img src='static/copy.jpg' class='copy-icon'>" || '';
-            document.getElementById('passportNumber-detail').innerText = profile.passportNumber || '';
-            document.getElementById('passportIssued').innerText = profile.passportIssued || '';
-            document.getElementById('passportIssued-detail').innerText = profile.passportIssued || '';
-            document.getElementById('passportCode').innerText = profile.passportCode || '';
-            document.getElementById('passportCode-detail').innerText = profile.passportCode || '';
-            document.getElementById('passportDate').innerText = profile.passportDate || '';
-            document.getElementById('passportDate-detail').innerText = profile.passportDate || '';
-            const gender = profile.gender.toUpperCase() || 'МУЖСКОЙ';
-            document.getElementById('gender').innerText = gender === 'МУЖСКОЙ' ? 'МУЖ' : 'ЖЕН';
-            document.getElementById('gender-detail').innerText = gender === 'МУЖСКОЙ' ? 'Мужской' : 'Женский';
+            document.getElementById('passportNumber-detail').textContent = profile.passportNumber || '';
+            document.getElementById('passportIssued').textContent = profile.passportIssued || '';
+            document.getElementById('passportIssued-detail').textContent = profile.passportIssued || '';
+            document.getElementById('passportCode').textContent = profile.passportCode || '';
+            document.getElementById('passportCode-detail').textContent = profile.passportCode || '';
+            document.getElementById('passportDate').textContent = profile.passportDate || '';
+            document.getElementById('passportDate-detail').textContent = profile.passportDate || '';
             document.getElementById('photoPreview').src = photoToShow;
-            console.log("END");
+
+            const gender = profile.gender.toUpperCase() || 'МУЖСКОЙ';
+            document.getElementById('gender').textContent = gender === 'МУЖСКОЙ' ? 'МУЖ' : 'ЖЕН';
+            document.getElementById('gender-detail').textContent = gender === 'МУЖСКОЙ' ? 'Мужской' : 'Женский';
         }
 
-        async function sharePassport() {
+        function sharePassport() {
             const profile = JSON.parse(localStorage.getItem('profileCache') || '{}');
-            console.log("copy");
+            const shareText = `Паспорт РФ\nФамилия: ${profile.lastName}\nИмя: ${profile.firstName}\nОтчество: ${profile.middleName}\nДата рождения: ${profile.birthDate}\nМесто рождения: ${profile.birthPlace}\nСерия: ${profile.passportNumber.split(' ')[0]}\nНомер: ${profile.passportNumber.split(' ')[1]}\nКем выдан: ${profile.passportIssued}\nДата выдачи: ${profile.passportDate}\nКод подразделения: ${profile.passportCode}\nОтправлено из приложения «Госуслуги»`;
 
-            // Формируем текст для分享
-            const shareText = `Паспорт РФ\n` +
-                            `Фамилия: ${profile.lastName}\n` +
-                            `Имя: ${profile.firstName}\n` +
-                            `Отчество: ${profile.middleName}\n` +
-                            `Дата рождения: ${profile.birthDate}\n` +
-                            `Место рождения: ${profile.birthPlace}\n` +
-                            `Серия: ${profile.passportNumber.split(' ')[0]}\n` +
-                            `Номер: ${profile.passportNumber.split(' ')[1]}\n` +
-                            `Кем выдан: ${profile.passportIssued}\n` +
-                            `Дата выдачи: ${profile.passportDate}\n` +
-                            `Код подразделения: ${profile.passportCode}\n` +
-                            `Отправлено из приложения «Госуслуги»`;
-
-            try {
-                // Пытаемся использовать Web Share API если доступен
-                if (navigator.share) {
-                    await navigator.share({
-                        title: 'Данные паспорта РФ',
-                        text: shareText,
-                    });
-                } else {
-                    // Fallback для браузеров без Web Share API
-                    await navigator.clipboard.writeText(shareText);
-                }
-            } catch (err) {
-                console.error('Ошибка при попытке поделиться:', err);
-                // Дополнительный fallback
-                const textarea = document.createElement('textarea');
-                textarea.value = shareText;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
+            if (navigator.share) {
+                navigator.share({ title: 'Данные паспорта РФ', text: shareText });
+            } else {
+                navigator.clipboard.writeText(shareText).catch(() => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = shareText;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                });
             }
         }
 
-        document.getElementById('passportNumber').addEventListener('click', function() {
-            let number = document.getElementById('passportNumber').innerText.replace(' <i class="fas fa-copy"></i>', '');
+        function copyPassportNumber() {
+            const number = this.textContent.replace(' <i class="fas fa-copy"></i>', '');
             navigator.clipboard.writeText(number);
-        });
+        }
 
-        // Инициализация
-        loadCache();
-        loadProfile(localStorage.getItem('currentProfileId'));
+
+
     </script>
 </body>
 </html>

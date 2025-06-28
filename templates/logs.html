@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Логи действий — Панель администратора</title>
+  <style>
+    /* --- Минимализм --- */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121212;
+      color: #ddd;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    header {
+      background: #181818;
+      padding: 16px 0;
+      text-align: center;
+      font-weight: 600;
+      font-size: 22px;
+      color: #90caf9; /* мягкий голубой */
+      border-bottom: 1px solid #333;
+      user-select: none;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px 20px;
+      background: #1f1f1f;
+      border-bottom: 1px solid #333;
+    }
+    .filters input,
+    .filters button {
+      background: #2a2a2a;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: #ddd;
+      font-size: 14px;
+      outline-offset: 2px;
+      outline-color: transparent;
+      outline-style: solid;
+      user-select: text;
+      transition: background-color 0.2s ease;
+      flex-grow: 1;
+      min-width: 140px;
+      max-width: 220px;
+    }
+    .filters input::placeholder {
+      color: #777;
+      font-style: italic;
+    }
+    .filters input:focus {
+      background-color: #3a3a3a;
+      outline-color: #90caf9;
+    }
+    .filters button {
+      max-width: 110px;
+      cursor: pointer;
+      font-weight: 600;
+      background-color: #90caf9;
+      color: #121212;
+      flex-grow: 0;
+      user-select: none;
+    }
+    .filters button:hover {
+      background-color: #6ea4d9;
+    }
+    .filters button:active {
+      background-color: #5380bb;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 6px;
+      margin: 20px 0 32px 0;
+      font-weight: 400;
+    }
+    thead th {
+      background: #1e1e1e;
+      color: #90caf9;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      user-select: none;
+    }
+    tbody tr {
+      background: #222;
+      border-radius: 6px;
+      transition: background-color 0.2s ease;
+      cursor: default;
+    }
+    tbody tr:hover {
+      background: #333;
+    }
+    tbody td {
+      padding: 12px 16px;
+      color: #ccc;
+      font-size: 13px;
+      vertical-align: top;
+      word-break: break-word;
+      user-select: text;
+    }
+    tbody td a {
+      color: #90caf9;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+    tbody td a:hover {
+      color: #6ea4d9;
+      text-decoration: underline;
+    }
+    .metadata {
+      font-size: 12px;
+      color: #bbb;
+      white-space: pre-wrap;
+      max-width: 280px;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 0 24px 0;
+      user-select: none;
+      flex-wrap: wrap;
+    }
+    .pagination button {
+      background: #2a2a2a;
+      border: none;
+      border-radius: 6px;
+      color: #ccc;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      min-width: 36px;
+      text-align: center;
+      line-height: 1;
+    }
+    .pagination button:hover:not(.active) {
+      background: #90caf9;
+      color: #121212;
+    }
+    .pagination button.active {
+      background: #90caf9;
+      color: #121212;
+      cursor: default;
+    }
+
+    /* Модальные окна */
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(18,18,18,0.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      user-select: none;
+    }
+    .modal-content {
+      background: #1f1f1f;
+      padding: 20px 24px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 0 10px #90caf9aa;
+      user-select: text;
+    }
+    .modal-content h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-weight: 600;
+      color: #90caf9;
+      user-select: none;
+    }
+    .modal-content pre {
+      background: #2a2a2a;
+      padding: 12px 16px;
+      border-radius: 6px;
+      color: #ddd;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 70vh;
+      overflow-x: auto;
+      user-select: text;
+    }
+    .modal-content button {
+      margin-top: 18px;
+      background: #90caf9;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      color: #121212;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      user-select: none;
+    }
+    .modal-content button:hover {
+      background: #6ea4d9;
+    }
+    .modal-content button:active {
+      background: #5380bb;
+    }
+
+    /* Адаптив */
+    @media (max-width: 680px) {
+      .filters input, .filters button {
+        flex-grow: 1;
+        max-width: 100%;
+      }
+      .metadata {
+        max-width: 180px;
+        font-size: 11px;
+      }
+      tbody td, thead th {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>Логи действий | GU2.0</header>
+<div class="filters">
+  <input type="text" id="user_id" placeholder="ID пользователя" />
+  <input type="text" id="action_type" placeholder="Тип действия" />
+  <input type="text" id="ip" placeholder="IP-адрес" />
+  <input type="date" id="date_from" />
+  <input type="date" id="date_to" />
+  <button onclick="loadLogs(1)">🔎 Поиск</button>
+    <button id="exportBtn" onclick="exportData()" title="Экспорт данных для госорганов" style="background:#4caf50;">⬇️ Экспорт</button>
+</div>
+<div id="pagination-top" class="pagination"></div>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Пользователь</th>
+      <th>Тип</th>
+      <th>Описание</th>
+      <th>Дата</th>
+      <th>Метаданные</th>
+    </tr>
+  </thead>
+  <tbody id="logs-body">
+    <tr><td colspan="6" style="text-align:center; color: #777;">Загрузка...</td></tr>
+  </tbody>
+</table>
+<div id="pagination-bottom" class="pagination"></div>
+<div class="modal" id="userModal">
+  <div class="modal-content">
+    <h3>Информация о пользователе</h3>
+    <div id="userData">Загрузка...</div>
+    <button onclick="loadUserLogs()">📄 Просмотр логов</button>
+    <button onclick="closeUserModal()">❌ Закрыть</button>
+  </div>
+</div>
+<div class="modal" id="logModal">
+  <div class="modal-content">
+    <h3>Данные лога</h3>
+    <div id="logData">Загрузка...</div>
+    <button onclick="closeLogModal()">❌ Закрыть</button>
+  </div>
+</div>
+<script>
+  let currentPage = 1;
+  const limit = 100;
+  let currentUser = null;
+
+  function formatMetadata(metadata) {
+    try {
+      const parsed = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+      return JSON.stringify(parsed, (key, value) => {
+        if (typeof value === 'string' && value.match(/^data:image\/.+|https?:\/\//)) {
+          return `🔗 [ссылка](${value})`;
+        }
+        return value;
+      }, 2).replace(/"🔗 \[ссылка\]\((.+?)\)"/g, '<a href="$1" target="_blank" style="color:#90caf9">[ссылка]</a>');
+    } catch (e) {
+      return metadata;
+    }
+  }
+
+  async function loadLogs(page = 1) {
+    currentPage = page;
+    const params = new URLSearchParams({
+      user_id: document.getElementById('user_id').value,
+      action_type: document.getElementById('action_type').value,
+      ip: document.getElementById('ip').value,
+      date_from: document.getElementById('date_from').value,
+      date_to: document.getElementById('date_to').value,
+      page: page,
+      limit: limit
+    });
+    const response = await fetch('/api/logs?' + params.toString());
+    const data = await response.json();
+    const tbody = document.getElementById('logs-body');
+    tbody.innerHTML = '';
+    if (!data.logs || data.logs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#666">Нет логов</td></tr>';
+      renderPagination(0, 0);
+      return;
+    }
+    for (const log of data.logs) {
+      const tr = document.createElement('tr');
+      const userCell = log.user_id
+        ? `<a href="#" onclick="openUserModal(${log.user_id}); return false;" style="color:#90caf9">${log.user_id}</a>`
+        : '-';
+      tr.innerHTML = `
+        <td><a href="#" onclick="openLogModal(${log.id}); return false;" style="color:#90caf9">${log.id}</a></td>
+        <td>${userCell}</td>
+        <td>${log.action_type}</td>
+        <td>${log.description}</td>
+        <td>${new Date(log.timestamp).toLocaleString()}</td>
+        <td class="metadata">${formatMetadata(log.metadata)}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+    renderPagination(data.page, data.total_pages);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderPagination(current, total) {
+    const top = document.getElementById('pagination-top');
+    const bottom = document.getElementById('pagination-bottom');
+    top.innerHTML = '';
+    bottom.innerHTML = '';
+    if (total < 2) return;
+    for (let i = 1; i <= total; i++) {
+      const btnTop = createPageButton(i, current);
+      const btnBottom = createPageButton(i, current);
+      top.appendChild(btnTop);
+      bottom.appendChild(btnBottom);
+    }
+  }
+
+  function createPageButton(i, current) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    if (i === current) btn.classList.add('active');
+    btn.onclick = () => loadLogs(i);
+    return btn;
+  }
+
+  async function openUserModal(userId) {
+    currentUser = userId;
+    document.getElementById('userModal').style.display = 'flex';
+    const response = await fetch('/api/user/' + userId);
+    const data = await response.json();
+    document.getElementById('userData').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+  }
+
+  function closeUserModal() {
+    document.getElementById('userModal').style.display = 'none';
+    currentUser = null;
+  }
+
+  function loadUserLogs() {
+    if (currentUser) {
+      document.getElementById('user_id').value = currentUser;
+      closeUserModal();
+      loadLogs(1);
+    }
+  }
+
+  async function openLogModal(logId) {
+    document.getElementById('logModal').style.display = 'flex';
+    const response = await fetch('/api/log/' + logId);
+    const data = await response.json();
+    document.getElementById('logData').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+  }
+
+  function closeLogModal() {
+    document.getElementById('logModal').style.display = 'none';
+  }
+  function exportData() {
+    const btn = document.getElementById('exportBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Подготавливаем...';
+
+    const params = new URLSearchParams({
+      user_id: document.getElementById('user_id').value,
+      action_type: document.getElementById('action_type').value,
+      ip: document.getElementById('ip').value,
+      date_from: document.getElementById('date_from').value,
+      date_to: document.getElementById('date_to').value,
+    });
+
+    // Сформируем URL с параметрами запроса
+    const exportUrl = '/api/export?' + params.toString();
+
+    // Создадим "невидимую" ссылку для скачивания
+    const link = document.createElement('a');
+    link.href = exportUrl;
+    link.download = ''; // Пускай сервер отдаст файл с нужным именем
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Восстанавливаем кнопку
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '⬇️ Экспорт';
+    }, 1500);
+  }
+
+  window.onload = () => loadLogs(1);
+</script>
+</body>
+</html>

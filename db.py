@@ -215,3 +215,93 @@ class FakeMessageClose(db.Model):
             'closed_to': self.closed_to
         }
 
+class DocumentScan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    profile_id = db.Column(db.Integer, nullable=False)
+    scan_data = db.Column(db.Text, nullable=False)  # Data URL скана
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_deleted = db.Column(db.Boolean, default=False)
+
+    def to_dict(self):
+        return {
+            'profile_id': self.profile_id,
+            'scan_data': self.scan_data,
+            'uploaded_at': self.uploaded_at,
+            'is_deleted': self.is_deleted
+        }
+
+class ActionLog(db.Model):
+    __tablename__ = 'action_logs'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Кто сделал
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True, nullable=True)
+    session_id = db.Column(db.String(128), nullable=True)  # можно брать из cookie/session
+
+    # Что сделал
+    action_type = db.Column(db.String(64), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    mdata = db.Column(db.JSON, nullable=True)
+    detail_url = db.Column(db.String(512), nullable=True)
+
+    # Откуда
+    ip = db.Column(db.String(45), nullable=False)
+    location_country = db.Column(db.String(128), nullable=True)
+    location_city = db.Column(db.String(128), nullable=True)
+    location_region = db.Column(db.String(128), nullable=True)
+    location_lat = db.Column(db.Float, nullable=True)
+    location_lon = db.Column(db.Float, nullable=True)
+    location_provider = db.Column(db.String(128), nullable=True)
+
+    # С чего
+    user_agent = db.Column(db.String(512), nullable=False)
+    browser = db.Column(db.String(128), nullable=False)
+    os = db.Column(db.String(128), nullable=False)
+    device_type = db.Column(db.String(64), nullable=False)     # Mobile, Tablet, PC, Bot, Unknown
+    device_brand = db.Column(db.String(64), nullable=True)     # Apple, Samsung, etc.
+    device_model = db.Column(db.String(64), nullable=True)
+
+    # Доп. контекст
+    language = db.Column(db.String(64), nullable=True)
+    screen_resolution = db.Column(db.String(64), nullable=True)
+    referer = db.Column(db.String(512), nullable=True)
+    origin = db.Column(db.String(512), nullable=True)
+
+    # Когда
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "session_id": self.session_id,
+            "action_type": self.action_type,
+            "description": self.description,
+            "metadata": self.mdata,
+            "detail_url": self.detail_url,
+            "ip": self.ip,
+            "location": {
+                "country": self.location_country,
+                "region": self.location_region,
+                "city": self.location_city,
+                "lat": self.location_lat,
+                "lon": self.location_lon,
+                "provider": self.location_provider
+            },
+            "device": {
+                "browser": self.browser,
+                "os": self.os,
+                "type": self.device_type,
+                "brand": self.device_brand,
+                "model": self.device_model,
+                "user_agent": self.user_agent
+            },
+            "context": {
+                "language": self.language,
+                "screen_resolution": self.screen_resolution,
+                "referer": self.referer,
+                "origin": self.origin
+            },
+            "timestamp": self.timestamp.isoformat()
+        }

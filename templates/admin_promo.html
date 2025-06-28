@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление промокодами</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2a5885;
+            --primary-light: #3a7cb9;
+            --secondary: #4CAF50;
+            --error: #f44336;
+            --warning: #ff9800;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --background: #f5f7fa;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2:before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background-color: var(--primary);
+            border-radius: 2px;
+            margin-right: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background-color: var(--card-bg);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(58, 124, 185, 0.2);
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #f0f7ff;
+        }
+
+        .btn-success {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--error);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* Таблицы */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .table th, .table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+        }
+
+        .table tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .status-active {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .status-inactive {
+            color: var(--error);
+            font-weight: 500;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .badge-free {
+            background-color: #9c27b0;
+        }
+
+        .badge-plus {
+            background-color: #2196f3;
+        }
+
+        .badge-premium {
+            background-color: #ff9800;
+        }
+
+        .badge-discount {
+            background-color: #4caf50;
+        }
+
+        .badge-user {
+            background-color: #607d8b;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .edit-btn {
+            color: var(--primary);
+        }
+
+        .delete-btn {
+            color: var(--error);
+        }
+
+        .toggle-btn {
+            color: var(--secondary);
+        }
+
+        .view-btn {
+            color: var(--warning);
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        /* Вкладки */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1000;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .notification-success {
+            background-color: var(--secondary);
+        }
+
+        .notification-error {
+            background-color: var(--error);
+        }
+
+        .notification-warning {
+            background-color: var(--warning);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .container {
+                padding: 5px;
+            }
+
+            .section {
+                padding: 12px 10px;
+            }
+
+            .table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Управление промокодами</h1>
+        </header>
+
+        <div class="section">
+            <div class="tabs">
+                <div class="tab active" data-tab="promocodes">Промокоды</div>
+                <div class="tab" data-tab="activations">Активации</div>
+            </div>
+
+            <div class="tab-content active" id="promocodes-tab">
+                <div class="btn-container">
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        <i class="fas fa-plus"></i> Создать промокод
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" id="searchInput" placeholder="Поиск по коду или типу..." oninput="filterPromocodes()">
+                </div>
+
+                <table class="table" id="promoTable">
+                    <thead>
+                        <tr>
+                            <th>Код</th>
+                            <th>Тип</th>
+                            <th>Значение</th>
+                            <th>Использования</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="promoTableBody">
+                        <!-- Промокоды будут загружены здесь -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="activations-tab">
+                <div class="form-group">
+                    <input type="text" id="searchActivationsInput" placeholder="Поиск по пользователю или промокоду..." oninput="filterActivations()">
+                </div>
+
+                <table class="table" id="activationsTable">
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Промокод</th>
+                            <th>Тип</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activationsTableBody">
+                        <!-- Активации будут загружены здесь -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания -->
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Создать промокод</h3>
+                <button class="close-btn" onclick="closeModal('createModal')">&times;</button>
+            </div>
+            <form id="promoForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="promoCode">Код промокода</label>
+                        <input type="text" id="promoCode" placeholder="SUMMER2023" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="promoType">Тип промокода</label>
+                        <select id="promoType" required>
+                            <option value="">Выберите тип</option>
+                            <option value="free_closes">Бесплатные закрытия</option>
+                            <option value="plus">Подписка Plus</option>
+                            <option value="premium">Подписка Premium</option>
+                            <option value="discount">Скидка</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="promoValue">Значение</label>
+                        <input type="number" id="promoValue" placeholder="Количество/Время в сек/Процент" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="maxUses">Макс. использований</label>
+                        <input type="number" id="maxUses" placeholder="0 для неограниченного" value="1" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userId">ID пользователя (опц.)</label>
+                        <input type="number" id="userId" placeholder="Оставьте пустым для всех">
+                    </div>
+                    <div class="form-group">
+                        <label for="multiUse">Множественное использование</label>
+                        <select id="multiUse">
+                            <option value="false">Нет</option>
+                            <option value="true">Да</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Редактировать промокод</h3>
+                <button class="close-btn" onclick="closeModal('editModal')">&times;</button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editCode">Код промокода</label>
+                        <input type="text" id="editCode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editType">Тип промокода</label>
+                        <select id="editType" required>
+                            <option value="free_closes">Бесплатные закрытия</option>
+                            <option value="plus">Подписка Plus</option>
+                            <option value="premium">Подписка Premium</option>
+                            <option value="discount">Скидка</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editValue">Значение</label>
+                        <input type="number" id="editValue" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMaxUses">Макс. использований</label>
+                        <input type="number" id="editMaxUses" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editUserId">ID пользователя</label>
+                        <input type="number" id="editUserId">
+                    </div>
+                    <div class="form-group">
+                        <label for="editMultiUse">Множественное использование</label>
+                        <select id="editMultiUse">
+                            <option value="false">Нет</option>
+                            <option value="true">Да</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editIsActive">Статус</label>
+                    <select id="editIsActive">
+                        <option value="true">Активен</option>
+                        <option value="false">Неактивен</option>
+                    </select>
+                </div>
+
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно активаций -->
+    <div class="modal" id="activationsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Активации промокода</h3>
+                <button class="close-btn" onclick="closeModal('activationsModal')">&times;</button>
+            </div>
+            <div id="activationsModalContent">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Подписка</th>
+                            <th>Дата активации</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activationsModalBody">
+                        <!-- Активации будут загружены здесь -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="btn-container">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('activationsModal')">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Текущая вкладка
+        let currentTab = 'promocodes';
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработчики вкладок
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    switchTab(tabId);
+                });
+            });
+
+            // Загрузка данных
+            loadPromocodes();
+            loadActivations();
+        });
+
+        // Переключение вкладок
+        function switchTab(tabId) {
+            currentTab = tabId;
+
+            // Обновляем активные вкладки
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabId);
+            });
+
+            // Обновляем активный контент
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === `${tabId}-tab`);
+            });
+        }
+
+        // Загрузка промокодов
+        async function loadPromocodes() {
+            try {
+                const response = await fetch('/api/promocodes');
+                const promocodes = await response.json();
+                renderPromocodes(promocodes);
+            } catch (error) {
+                showNotification('Ошибка при загрузке промокодов', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Отображение промокодов в таблице
+        function renderPromocodes(promocodes) {
+            const tableBody = document.getElementById('promoTableBody');
+            tableBody.innerHTML = '';
+
+            promocodes.forEach(promo => {
+                const row = document.createElement('tr');
+
+                // Определяем класс для типа промокода
+                let typeBadge = '';
+                switch(promo.promo_type) {
+                    case 'free_closes':
+                        typeBadge = '<span class="badge badge-free">Бесплатные закрытия</span>';
+                        break;
+                    case 'plus':
+                        typeBadge = '<span class="badge badge-plus">Plus</span>';
+                        break;
+                    case 'premium':
+                        typeBadge = '<span class="badge badge-premium">Premium</span>';
+                        break;
+                    case 'discount':
+                        typeBadge = '<span class="badge badge-discount">Скидка</span>';
+                        break;
+                }
+
+                // Форматируем значение в зависимости от типа
+                let formattedValue = promo.value;
+                if (promo.promo_type === 'plus' || promo.promo_type === 'premium') {
+                    // Конвертируем секунды в дни
+                    const days = Math.floor(promo.value / (3600 * 24));
+                    formattedValue = `${days} дней`;
+                } else if (promo.promo_type === 'discount') {
+                    formattedValue = `${promo.value}%`;
+                }
+
+                row.innerHTML = `
+                    <td>${promo.code}</td>
+                    <td>${typeBadge}</td>
+                    <td>${formattedValue}</td>
+                    <td>${promo.current_uses}/${promo.max_uses === 0 ? '∞' : promo.max_uses}</td>
+                    <td class="${promo.is_active ? 'status-active' : 'status-inactive'}">
+                        ${promo.is_active ? 'Активен' : 'Неактивен'}
+                    </td>
+                    <td class="actions">
+                        <button class="action-btn edit-btn btn-sm" onclick="openEditModal(${promo.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn btn-sm" onclick="deletePromocode(${promo.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="action-btn toggle-btn btn-sm" onclick="togglePromocodeStatus(${promo.id}, ${!promo.is_active})">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                        <button class="action-btn view-btn btn-sm" onclick="viewPromocodeActivations(${promo.id}, '${promo.code}')">
+                            <i class="fas fa-users"></i>
+                        </button>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Загрузка активаций
+        async function loadActivations() {
+            try {
+                const response = await fetch('/api/activations');
+                const activations = await response.json();
+                renderActivations(activations);
+            } catch (error) {
+                showNotification('Ошибка при загрузке активаций', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Отображение активаций в таблице
+        async function renderActivations(activations) {
+            const tableBody = document.getElementById('activationsTableBody');
+            tableBody.innerHTML = '';
+
+            activations.forEach(activation => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <span class="badge badge-user">${activation.user.username}</span>
+                        ${activation.user.is_admin ? '<i class="fas fa-crown" style="color: gold;"></i>' : ''}
+                    </td>
+                    <td>${activation.promocode.code} (${activation.promocode.promo_type})</td>
+                    <td>${activation.promocode.promo_type}</td>
+                    <td>${new Date(activation.created_at).toLocaleString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Фильтрация промокодов
+        function filterPromocodes() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#promoTableBody tr');
+
+            rows.forEach(row => {
+                const code = row.cells[0].textContent.toLowerCase();
+                const type = row.cells[1].textContent.toLowerCase();
+
+                if (code.includes(searchTerm) || type.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Фильтрация активаций
+        function filterActivations() {
+            const searchTerm = document.getElementById('searchActivationsInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#activationsTableBody tr');
+
+            rows.forEach(row => {
+                const user = row.cells[0].textContent.toLowerCase();
+                const promo = row.cells[1].textContent.toLowerCase();
+
+                if (user.includes(searchTerm) || promo.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Открытие модального окна создания
+        function openCreateModal() {
+            document.getElementById('promoForm').reset();
+            document.getElementById('createModal').style.display = 'flex';
+        }
+
+        // Создание нового промокода
+        document.getElementById('promoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const promoData = {
+                code: document.getElementById('promoCode').value,
+                promo_type: document.getElementById('promoType').value,
+                value: parseInt(document.getElementById('promoValue').value),
+                max_uses: parseInt(document.getElementById('maxUses').value),
+                user_id: document.getElementById('userId').value || null,
+                discount_multi_use: document.getElementById('multiUse').value === 'true'
+            };
+
+            try {
+                const response = await fetch('/api/promocodes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(promoData)
+                });
+
+                if (response.ok) {
+                    showNotification('Промокод успешно создан', 'success');
+                    loadPromocodes();
+                    closeModal('createModal');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.message || 'Ошибка при создании промокода', 'error');
+                }
+            } catch (error) {
+                showNotification('Ошибка при создании промокода', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Открытие модального окна редактирования
+        async function openEditModal(promoId) {
+            try {
+                const response = await fetch(`/api/promocodes/${promoId}`);
+                const promo = await response.json();
+
+                document.getElementById('editId').value = promo.id;
+                document.getElementById('editCode').value = promo.code;
+                document.getElementById('editType').value = promo.promo_type;
+                document.getElementById('editValue').value = promo.value;
+                document.getElementById('editMaxUses').value = promo.max_uses;
+                document.getElementById('editUserId').value = promo.user_id || '';
+                document.getElementById('editMultiUse').value = promo.discount_multi_use;
+                document.getElementById('editIsActive').value = promo.is_active;
+
+                document.getElementById('editModal').style.display = 'flex';
+            } catch (error) {
+                showNotification('Ошибка при загрузке данных промокода', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Просмотр активаций промокода
+        async function viewPromocodeActivations(promoId, promoCode) {
+            try {
+                const response = await fetch(`/api/promocodes/${promoId}/activations`);
+                const activations = await response.json();
+
+                const modalTitle = document.querySelector('#activationsModal .modal-title');
+                modalTitle.textContent = `Активации промокода: ${promoCode}`;
+
+                const modalBody = document.getElementById('activationsModalBody');
+                modalBody.innerHTML = '';
+
+                if (activations.length === 0) {
+                    modalBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Нет активаций</td></tr>';
+                } else {
+                    activations.forEach(activation => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>
+                                <span class="badge badge-user">${activation.user.username}</span>
+                                ${activation.user.is_admin ? '<i class="fas fa-crown" style="color: gold;"></i>' : ''}
+                            </td>
+                            <td>${activation.user.subscription_type} (до ${new Date(activation.user.subscription_expiration * 1000).toLocaleDateString()})</td>
+                            <td>${new Date(activation.created_at).toLocaleString()}</td>
+                        `;
+                        modalBody.appendChild(row);
+                    });
+                }
+
+                document.getElementById('activationsModal').style.display = 'flex';
+            } catch (error) {
+                showNotification('Ошибка при загрузке активаций', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Закрытие модального окна
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Сохранение изменений промокода
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const promoData = {
+                code: document.getElementById('editCode').value,
+                promo_type: document.getElementById('editType').value,
+                value: parseInt(document.getElementById('editValue').value),
+                max_uses: parseInt(document.getElementById('editMaxUses').value),
+                user_id: document.getElementById('editUserId').value || null,
+                discount_multi_use: document.getElementById('editMultiUse').value === 'true',
+                is_active: document.getElementById('editIsActive').value === 'true'
+            };
+
+            const promoId = document.getElementById('editId').value;
+
+            try {
+                const response = await fetch(`/api/promocodes/${promoId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(promoData)
+                });
+
+                if (response.ok) {
+                    showNotification('Промокод успешно обновлен', 'success');
+                    loadPromocodes();
+                    closeModal('editModal');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.message || 'Ошибка при обновлении промокода', 'error');
+                }
+            } catch (error) {
+                showNotification('Ошибка при обновлении промокода', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Удаление промокода
+        async function deletePromocode(promoId) {
+            if (!confirm('Вы уверены, что хотите удалить этот промокод?')) return;
+
+            try {
+                const response = await fetch(`/api/promocodes/${promoId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showNotification('Промокод успешно удален', 'success');
+                    loadPromocodes();
+                } else {
+                    const error = await response.json();
+                    showNotification(error.message || 'Ошибка при удалении промокода', 'error');
+                }
+            } catch (error) {
+                showNotification('Ошибка при удалении промокода', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Переключение статуса промокода
+        async function togglePromocodeStatus(promoId, newStatus) {
+            try {
+                const response = await fetch(`/api/promocodes/${promoId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ is_active: newStatus })
+                });
+
+                if (response.ok) {
+                    showNotification(`Промокод успешно ${newStatus ? 'активирован' : 'деактивирован'}`, 'success');
+                    loadPromocodes();
+                } else {
+                    const error = await response.json();
+                    showNotification(error.message || 'Ошибка при изменении статуса', 'error');
+                }
+            } catch (error) {
+                showNotification('Ошибка при изменении статуса', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Показать уведомление
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-exclamation-triangle'}"></i>
+                ${message}
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

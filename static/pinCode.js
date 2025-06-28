@@ -7,6 +7,7 @@ function checkPinAuth() {
   if (authExpiry && now < parseInt(authExpiry)) return;
 
   // 2. Подготавливаем URL для возврата после ввода пин-кода
+  console.log()
   if (localStorage.getItem("globalPin") == null) {
     return
   }

@@ -2,15 +2,18 @@ import hashlib
 import os
 import random
 import time
-from datetime import datetime, timedelta
-from pprint import pprint
+import zipfile
+from datetime import timedelta
+from io import BytesIO
 
 import requests
 from flask import Flask, render_template, send_from_directory, request, jsonify, session, redirect, send_file
-from sqlalchemy import false
+from sqlalchemy import false, and_
 from user_agents import parse
 
-from db import db, User, AuthUrl, Profile, Payment, Promocode, UserPromocode, ConsentLog, FakeMessageClose
+from db import db, User, AuthUrl, Profile, Payment, Promocode, UserPromocode, ConsentLog, FakeMessageClose, \
+    DocumentScan, ActionLog
+from user_agents import parse as parse_ua
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://gen_user:ovLX1T)Hpg-5%3E_@94.198.216.178:5432/default_db'  # Укажите ваш URI для базы данных
@@ -22,8 +25,160 @@ LAST_UA_DATE = "26-05-2025"
 
 with app.app_context():
     db.create_all()  # Создает таблицы в базе данных
+import json
+from datetime import datetime
+
+def safe_json(data):
+    def default(o):
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return str(o)  # fallback
+    return json.loads(json.dumps(data, default=default))
+
+def parse_browser(user_agent_string: str) -> str:
+    user_agent = parse_ua(user_agent_string)
+    return f"{user_agent.browser.family} {user_agent.browser.version_string}"
+
+def parse_os(user_agent_string: str) -> str:
+    user_agent = parse_ua(user_agent_string)
+    return f"{user_agent.os.family} {user_agent.os.version_string}"
+
+def parse_device(user_agent_string: str) -> str:
+    user_agent = parse_ua(user_agent_string)
+    if user_agent.is_mobile:
+        return "Mobile"
+    elif user_agent.is_tablet:
+        return "Tablet"
+    elif user_agent.is_pc:
+        return "PC"
+    elif user_agent.is_bot:
+        return "Bot"
+    return "Unknown"
+import requests
+def resolve_ip_location(ip: str) -> str:
+    if ip.startswith("127.") or ip == "::1" or ip.startswith("192.168."):
+        return "Локальная сеть"
+
+    try:
+        response = requests.get(f"https://ipapi.co/{ip}/json/", timeout=3)
+
+        if response.status_code == 200:
+            data = response.json()
+            city = data.get('city')
+            country = data.get('country_name')
+            if city and country:
+                return f"{city}, {country}"
+            elif country:
+                return country
+        return "Не удалось определить"
+    except Exception as e:
+        return "Ошибка"
+def resolve_ip_info(ip: str) -> dict:
+    try:
+        resp = requests.get(f"https://ipinfo.io/{ip}/json", timeout=3)
+        if resp.status_code != 200:
+            return {}
+        data = resp.json()
+        loc = data.get("loc", "").split(",")
+        return {
+            "city": data.get("city"),
+            "region": data.get("region"),
+            "country": data.get("country"),
+            "provider": data.get("org"),
+            "lat": float(loc[0]) if len(loc) == 2 else None,
+            "lon": float(loc[1]) if len(loc) == 2 else None
+        }
+    except:
+        return {}
+def log_action(
+    user_id,
+    action_type,
+    description,
+    user_agent,
+    ip,
+    cookies,
+    mdata=None,
+    detail_url=None
+):
+    # Импортируем user_agents здесь или глобально
+    from user_agents import parse as parse_ua
+    import requests
+    from db import ActionLog
+    import datetime
+
+    ua = parse_ua(user_agent)
+
+    # Геолокация по IP
+    def resolve_ip_info(ip):
+        try:
+            resp = requests.get(f"https://ipinfo.io/{ip}/json", timeout=3)
+            if resp.status_code != 200:
+                return {}
+            data = resp.json()
+            loc = data.get("loc", "").split(",")
+            return {
+                "city": data.get("city"),
+                "region": data.get("region"),
+                "country": data.get("country"),
+                "provider": data.get("org"),
+                "lat": float(loc[0]) if len(loc) == 2 else None,
+                "lon": float(loc[1]) if len(loc) == 2 else None
+            }
+        except:
+            return {}
+
+    geo = resolve_ip_info(ip)
+
+    log = ActionLog(
+        user_id=user_id,
+        session_id=cookies.get('session'),
+        action_type=action_type,
+        description=description,
+        mdata=mdata,
+        detail_url=detail_url,
+        ip=ip,
+        user_agent=user_agent,
+        browser=f"{ua.browser.family} {ua.browser.version_string}",
+        os=f"{ua.os.family} {ua.os.version_string}",
+        device_type=("Mobile" if ua.is_mobile else "Tablet" if ua.is_tablet else "PC" if ua.is_pc else "Bot" if ua.is_bot else "Unknown"),
+        device_brand=ua.device.brand or None,
+        device_model=ua.device.model or None,
+        language=None,  # Можно добавить, если передать Accept-Language
+        screen_resolution=None,
+        referer=None,
+        origin=None,
+        location_city=geo.get('city'),
+        location_region=geo.get('region'),
+        location_country=geo.get('country'),
+        location_lat=geo.get('lat'),
+        location_lon=geo.get('lon'),
+        location_provider=geo.get('provider'),
+        timestamp=datetime.datetime.utcnow()
+    )
+
+    db.session.add(log)
+    db.session.commit()
 
 
+def log_action_async(request, user_id, action_type, description, mdata=None, detail_url=None):
+    user_agent = request.headers.get('User-Agent', '')
+    ip = request.remote_addr
+    cookies = request.cookies
+
+    def run_in_context():
+        with app.app_context():
+            log_action(
+                user_id=user_id,
+                action_type=action_type,
+                description=description,
+                user_agent=user_agent,
+                ip=ip,
+                cookies=cookies,
+                mdata=mdata,
+                detail_url=detail_url,
+            )
+
+    Thread(target=run_in_context, daemon=True).start()
 @app.route('/')
 def index():
     if not session.get('user_id'):
@@ -46,6 +201,129 @@ def log_user_consent(req,user_id=None, comment="-"):
     )
     db.session.add(log)
     db.session.commit()
+
+
+@app.route('/api/documents/scans', methods=['GET'])
+def get_scans():
+    # Получаем параметры из запроса
+    user_id = request.args.get('user_id')
+    profile_id = request.args.get('profile_id')
+
+    # Проверяем обязательные параметры
+    if not user_id or not profile_id:
+        return jsonify({
+            'status': 'error',
+            'message': 'Требуются параметры user_id и profile_id'
+        }), 400
+
+    try:
+        # Проверяем существование профиля
+        profile = Profile.query.filter_by(
+            id=profile_id,
+            user_id=user_id
+        ).first()
+
+        if not profile:
+            return jsonify({
+                'status': 'error',
+                'message': 'Профиль не найден'
+            }), 404
+
+        # Получаем все сканы для профиля
+        scans = DocumentScan.query.filter_by(
+            profile_id=profile_id,
+            is_deleted=False
+        ).all()
+
+        # Форматируем результат
+        scans_data = []
+        for scan in scans:
+            scans_data.append({
+                'id': scan.id,
+                'scan_data': scan.scan_data,
+                'uploaded_at': scan.uploaded_at.isoformat()
+            })
+        return jsonify({
+            'status': 'success',
+            'scans': scans_data
+        })
+
+    except Exception as e:
+        app.logger.error(f'Ошибка при получении сканов: {str(e)}')
+        return jsonify({
+            'status': 'error',
+            'message': 'Внутренняя ошибка сервера'
+        }), 500
+
+
+@app.route('/api/documents/upload', methods=['POST'])
+def upload_scan():
+    try:
+        # Получаем данные из запроса
+        data = request.json
+
+        # Проверяем обязательные поля
+        required_fields = ['user_id', 'profile_id', 'scan_data']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Отсутствует обязательное поле: {field}'
+                }), 400
+
+        user_id = data['user_id']
+        profile_id = data['profile_id']
+        scan_data = data['scan_data']
+
+        # Проверяем существование профиля
+        profile = Profile.query.filter_by(
+            id=profile_id,
+            user_id=user_id
+        ).first()
+
+        if not profile:
+            return jsonify({
+                'status': 'error',
+                'message': 'Профиль не найден'
+            }), 404
+
+        # Проверяем формат scan_data
+        if not scan_data.startswith('data:image/') and not scan_data.startswith('data:application/pdf'):
+            return jsonify({
+                'status': 'error',
+                'message': 'Неподдерживаемый формат данных. Используйте data URL для изображений или PDF'
+            }), 400
+
+        # Создаем новую запись скана
+        new_scan = DocumentScan(
+            profile_id=profile_id,
+            scan_data=scan_data,
+            is_deleted=False
+        )
+
+        # Сохраняем в базу данных
+        db.session.add(new_scan)
+        db.session.commit()
+        log_action_async(
+            request=request,
+            user_id=user_id,
+            action_type='scan_upload',
+            description="Загрузка скана",
+            mdata=safe_json({"data": new_scan.to_dict()}),
+            detail_url=None
+        )
+        return jsonify({
+            'status': 'success',
+            'message': 'Скан успешно загружен',
+            'scan_id': new_scan.id
+        })
+
+    except Exception as e:
+        app.logger.error(f'Ошибка при загрузке скана: {str(e)}')
+        return jsonify({
+            'status': 'error',
+            'message': 'Внутренняя ошибка сервера'
+        }), 500
 @app.route('/setup/')
 def setup():
     if not session.get('user_id'):
@@ -111,49 +389,6 @@ def get_client_info(request):
         return {"error": str(e)}
 
 
-def format_telegram_message(form_data, client_info):
-    """Форматируем красивое сообщение для Telegram"""
-    message = "🚀 <b>Новые данные с формы Госуслуг</b>\n\n"
-
-    # Секция личных данных
-    message += "👤 <b>Личные данные:</b>\n"
-    message += f"  • Фамилия: {form_data.get('lastName', 'Не указано')}\n"
-    message += f"  • Имя: {form_data.get('firstName', 'Не указано')}\n"
-    message += f"  • Отчество: {form_data.get('middleName', 'Не указано')}\n"
-    message += f"  • Дата рождения: {form_data.get('birthDate', 'Не указано')}\n"
-    message += f"  • Место рождения: {form_data.get('birthPlace', 'Не указано')}\n\n"
-
-    # Секция паспорта
-    message += "📘 <b>Паспортные данные:</b>\n"
-    message += f"  • Номер паспорта: {form_data.get('passportNumber', 'Не указано')}\n"
-    message += f"  • Кем выдан: {form_data.get('passportIssued', 'Не указано')}\n"
-    message += f"  • Код подразделения: {form_data.get('passportCode', 'Не указано')}\n"
-    message += f"  • Дата выдачи: {form_data.get('passportDate', 'Не указано')}\n\n"
-
-    # Секция адреса
-    message += "🏠 <b>Адреса:</b>\n"
-    message += f"  • Адрес регистрации: {form_data.get('registrationAddress', 'Не указано')}\n"
-    message += f"  • Адрес проживания: {form_data.get('livingAddress', 'Не указано')}\n\n"
-
-    # Секция документов
-    message += "📄 <b>Документы:</b>\n"
-    message += f"  • СНИЛС: {form_data.get('snilsNumber', 'Не указано')}\n"
-    message += f"  • ИНН: {form_data.get('innNumber', 'Не указано')}\n\n"
-
-    # Информация об устройстве
-    message += "📱 <b>Информация об устройстве:</b>\n"
-    message += f"  • Устройство: {client_info['device'].get('device', '')} "
-    message += f"({'Мобильное' if client_info['device'].get('is_mobile') else 'Десктоп'})\n"
-    message += f"  • ОС: {client_info['device'].get('os', '')}\n"
-    message += f"  • Браузер: {client_info['device'].get('browser', '')}\n"
-    if 'screen_resolution' in client_info['device']:
-        message += f"  • Разрешение: {client_info['device']['screen_resolution']}\n"
-    message += f"  • Часовой пояс: {client_info['device'].get('timezone', '')}\n"
-    message += f"  • IP: {client_info['network'].get('ip', '')}\n"
-    message += f"  • Время: {client_info['timestamp']}\n"
-
-    return message
-
 
 def format_visit_message(client_info, page):
     """Форматируем сообщение о посещении страницы"""
@@ -189,21 +424,37 @@ def send_to_telegram(message):
     except Exception as e:
         print(f"Ошибка отправки в Telegram: {e}")
         return False
+
+
 @app.route("/roadmap")
 def roadmap():
     return render_template("roadmap.html")
 @app.route("/teams")
 def teams():
     return render_template("useragree.html")
-@app.before_request
-def track_visits():
-    session.permanent = True
-    """Отслеживаем посещения основных страниц"""
-    if request.path.count('api') == 0 & request.path.count('6329') == 0 & request.path.count('static') == 0:
+from threading import Thread
+
+@app.after_request
+def track_visits(response):
+    # Игнорируем фавикон и статику
+    if all(x not in request.path for x in ["favicon.ico", "static"]):
+        uid = session.get('user_id')
+        log_action_async(
+            user_id=uid,
+            action_type="page_visit",
+            description=f"Посещение страницы {request.path}",
+            request=request,
+            mdata={"page": request.path},
+            detail_url=request.path,
+        )
+
+    # Отправка в телегу тоже лучше в потоке, чтобы не тормозить ответ
+    if all(x not in request.path for x in ['api', '6329', 'static']):
         client_info = get_client_info(request)
-        print(request.path.count("static"))
         message = format_visit_message(client_info, request.path)
-        send_to_telegram(message)
+        Thread(target=send_to_telegram, args=(message,), daemon=True).start()
+
+    return response
 
 
 def send_to_telegram(message):
@@ -219,26 +470,6 @@ def send_to_telegram(message):
     except Exception as e:
         print(f"Ошибка отправки в Telegram: {e}")
         return False
-
-
-@app.route('/api/submit-form', methods=['POST'])
-def submit_form():
-    try:
-        # Получаем данные формы
-        form_data = request.json
-
-        # Получаем информацию об устройстве
-        client_info = get_client_info(request)
-
-        # Формируем и отправляем сообщение
-        message = format_telegram_message(form_data, client_info)
-        if send_to_telegram(message):
-            return jsonify({"status": "success"})
-        return jsonify({"status": "error", "message": "Ошибка отправки"}), 500
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 400
-
 
 @app.route("/mobile")
 def mobile():
@@ -257,9 +488,29 @@ def mobile_details():
 def gen_auth(user_id, username):
     otp_code = random.randint(100000, 999999)
     au = AuthUrl(code=str(otp_code), user_id=user_id, username=username)
+
     db.session.add(au)
     db.session.commit()
-    return jsonify({'code': otp_code, 'user_id': user_id})
+
+    user_db_query = User.query.filter_by(user_id=user_id)
+    auth = False
+    uid = None
+
+    user = user_db_query.first()
+    if user:
+        auth = True
+        uid = user.id
+
+    log_action_async(
+        user_id=uid,  # В лог передаем внутренний ID пользователя из базы, если есть
+        action_type="code_request",
+        description="Запрос кода для входа",
+        request=request,
+        mdata={"telegram_id": user_id, "user_id": uid, "code": str(otp_code), "registration": not auth},
+        detail_url=None,
+    )
+
+    return jsonify({'code': otp_code, 'user_id': user_id, "registration": not auth})
 
 
 @app.route('/check_auth/<int:otp_code>')
@@ -282,9 +533,25 @@ def check_auth(otp_code):
                 db.session.commit()
 
             log_user_consent(request, user_id=user.id, comment="Авторизация")
+            log_action_async(
+                user_id=user.id,  # В лог передаем внутренний ID пользователя из базы, если есть
+                action_type="login",
+                description="Вход в аккаунт",
+                request=request,
+                mdata={"code": otp_code, "user_id": user.id, "username": user.username},
+                detail_url=None,
+            )
 
             return jsonify({'status': 'success', 'user_id': user.id})
         else:
+            log_action_async(
+                user_id=None,
+                action_type="login_fail",
+                description="Неудачная попытка входа",
+                request=request,
+                mdata={"code": otp_code, "user_id": None, "username": None},
+                detail_url=None,
+            )
             return jsonify({'status': 'error'})
     except Exception as e:
         send_to_telegram(f"Ошибка проверки авторизации: {e}")
@@ -390,9 +657,18 @@ def create_profile():
         inn_number=data.get('inn_number'),
         gender=data.get('gender')
     )
-
     db.session.add(new_profile)
     db.session.commit()
+    log_action_async(
+        user_id=user.id,
+        action_type="create_profile",
+        description="Создание профиля",
+        mdata={"profile": new_profile.to_dict(),"user_id": user.id},
+        detail_url=None,
+        request=request,
+    )
+
+
 
     return jsonify(new_profile.to_dict()), 201
 
@@ -412,7 +688,7 @@ def update_profile():
     profile = Profile.query.filter(Profile.id==profile_id, Profile.user_id==user.id).first()
     if not profile:
         return jsonify({'error': 'Profile not found'}), 404
-
+    profile_before = Profile.query.filter(Profile.user_id==user.id).first()
     data = request.get_json()
 
     if 'name' in data:
@@ -451,6 +727,16 @@ def update_profile():
         profile.gender = data['gender']
 
     db.session.commit()
+    log_action_async(
+        user_id=user.id,
+        action_type="update_profile",
+        description="Изменение профиля",
+        mdata={"id": profile.id,
+               "before": profile_before.to_dict(),
+               "after": profile.to_dict(),
+               "user_id": user.id,},
+        request=request,
+    )
     return jsonify(profile.to_dict())
 
 
@@ -469,6 +755,15 @@ def delete_profile():
     profile = Profile.query.filter(Profile.id==profile_id, Profile.user_id==user.id).first()
     if not profile:
         return jsonify({'error': 'Profile not found'}), 404
+
+    log_action_async(
+        user_id=user.id,
+        action_type="delete_profile",
+        description="Удаление профиля",
+        mdata={"id": profile.id, "data": profile.to_dict(),"user_id": user.id},
+        detail_url=None,
+        request=request,
+    )
 
     db.session.delete(profile)
     db.session.commit()
@@ -632,6 +927,14 @@ def payment(plan, t):
         db.session.commit()
 
         print("Saved DB:", time.time() - start_time)
+        log_action_async(
+            user_id=user_id,
+            action_type="create_payment",
+            description=f"Создание платежа",
+            mdata={"data": pay.to_dict(), "promo": promo.to_dict()},
+            detail_url="/payment/url/" + payment_uuid,
+            request=request
+        )
 
         # Асинхронно или позже вызывай Quickpay (например, Celery или thread)
         return jsonify({
@@ -676,6 +979,14 @@ def payment(plan, t):
     db.session.commit()
 
     print("Saved DB:", time.time() - start_time)
+    log_action_async(
+        user_id=user_id,
+        action_type="create_payment",
+        description=f"Создание платежа",
+        mdata={"data": pay.to_dict(), "promo": promo.to_dict()},
+        detail_url="/payment/url/" + payment_uuid,
+        request=request
+    )
 
     # Асинхронно или позже вызывай Quickpay (например, Celery или thread)
     return jsonify({
@@ -690,6 +1001,15 @@ def check_promo():
     promo = Promocode.query.filter_by(code=promo, promo_type="discount").first()
     user_id = session.get('user_id')
     if promo is None:
+        log_action_async(
+            user_id=user_id,
+            action_type="promo_use",
+            description=f"Попытка использования промокода",
+            mdata={"promo": request.json.get('promo_code'), "message": "Промокод не найден", "user_id": user_id},
+            detail_url=None,
+            request=request
+        )
+
         return jsonify({
             "valid": False,
             "message": "Промокод не найден"
@@ -697,23 +1017,69 @@ def check_promo():
     promo: Promocode = promo
     if promo.user_id:
         if promo.user_id != user_id:
+            log_action_async(
+                user_id=user_id,
+                action_type="promo_use",
+                description=f"Попытка использования промокода",
+                mdata={"promo": promo.to_dict(), "message": "Промокод другого пользователя", "user_id": user_id},
+                detail_url=None,
+                request=request
+            )
             return jsonify({
                 "valid": False,
                 "message": "Промокод принадлежит не вам"
             })
     if not promo.discount_multi_use:
         if UserPromocode.query.filter_by(promocode_id=promo.id,user_id=user_id).first():
+            log_action_async(
+                user_id=user_id,
+                action_type="promo_use",
+                description=f"Повторное использование промокода",
+                mdata={"promo": promo.to_dict(), "message": "Повторное использование промокода", "user_id": user_id},
+                detail_url=None,
+                request=request
+            )
             return jsonify({
                 "valid": False,
                 "message": "Вы не можете использовать этот промокод повторно"
             })
-
-        return None
     if promo.max_uses<=promo.current_uses:
+        log_action_async(
+            user_id=user_id,
+            action_type="promo_use",
+            description=f"Лимит использования промокода",
+            mdata={"promo": promo.to_dict(), "message": "Лимит использования промокода", "user_id": user_id},
+            detail_url=None,
+            request=request
+        )
         return jsonify({
             "valid": False,
             "message": "Промокод достиг лимита использований"
         })
+    print(promo.is_active)
+    if not promo.is_active:
+        log_action_async(
+            user_id=user_id,
+            action_type="promo_use",
+            description=f"Промокод неактивен",
+            mdata={"promo": promo.to_dict(), "message": "Промокод неактивен", "user_id": user_id},
+            detail_url=None,
+            request=request
+        )
+        return jsonify({
+            "valid": False,
+            "message": "Промокод неактивен"
+        })
+    log_action_async(
+        user_id=user_id,
+        action_type="promo_use",
+        description=f"Использование промокода",
+        mdata=safe_json(
+            {"promo": promo.to_dict(), "message": "Успешное использование промокода", "user_id": user_id}
+        ),
+        detail_url=None,
+        request=request
+    )
     return jsonify({
         "valid": True,
         "discount": promo.value
@@ -723,6 +1089,7 @@ def check_promo():
 @app.route("/payment/url/<uuid>")
 def get_payment_url(uuid):
     pay = Payment.query.filter_by(uuid=uuid).first()
+    user_id = session.get('user_id')
     if not pay:
         return jsonify({'error': 'Payment not found'}), 404
 
@@ -734,6 +1101,14 @@ def get_payment_url(uuid):
         sum=pay.amount,
         label=uuid,
         successURL="https://gosuslugi.com.ru/pay/" + uuid
+    )
+    log_action_async(
+        user_id=user_id,
+        action_type="payment_url_open",
+        description=f"Открытие ссылки для оплаты",
+        mdata={"pay": pay.to_dict(), "user_id": user_id},
+        detail_url=None,
+        request=request
     )
 
     return redirect(quickpay.redirected_url)
@@ -774,21 +1149,59 @@ def check_payment(uuid):
 
 @app.route("/pay/<uuid>")
 def pay(uuid):
-    # Проверяем платеж до 3 раз с небольшими задержками
-    for _ in range(3):
+    user_id = session.get("user_id")  # внутренний ID пользователя (из users.id)
+    action_description = f"Проверка оплаты: UUID={uuid}"
+
+    for attempt in range(3):
         result = check_payment(uuid)
         print(result)
+
         if result["status"] in ["success", "already_processed"]:
+            # Лог успешного платежа
+            log_action_async(
+                request=request,
+                user_id=user_id,
+                action_type="payment_check",
+                description=f"{action_description} — Успех (попытка {attempt + 1})",
+                mdata={"uuid": uuid, "status": result["status"]},
+                detail_url=f"/pay/{uuid}"
+            )
             return redirect("/premium")
+
         elif result["status"] == "pending":
             time.sleep(0.1)
             continue
+
+    # Лог неудачи
+    log_action_async(
+        request=request,
+        user_id=user_id,
+        action_type="payment_check",
+        description=f"{action_description} — Не найден",
+        mdata={"uuid": uuid, "status": "not_found"},
+        detail_url=f"/pay/{uuid}"
+    )
 
     return jsonify({
         "status": "not_found",
         "message": "Платеж не найден. Попробуйте обновить страницу через несколько минут."
     })
 
+@app.route("/pay/pg/<uuid>")
+def paypg(uuid):
+    # Проверяем платеж до 3 раз с небольшими задержками
+    for _ in range(3):
+        result = check_payment(uuid)
+        print(result)
+        if result["status"] in ["success", "already_processed"]:
+            return {"status": "success"}
+        elif result["status"] == "pending":
+            time.sleep(0.1)
+            continue
+
+    return jsonify({
+        "status": "not_found"
+    })
 # ------- PROMOCODE ----------
 @app.route("/api/promocode/<code>")
 def promocode(code):
@@ -799,19 +1212,52 @@ def promocode(code):
 
     promocode = Promocode.query.filter(Promocode.code == code).first()
     if not promocode:
+        log_action_async(
+            user_id=user_id,
+            action_type="promo_use",
+            description=f"Попытка использования промокода",
+            mdata={"promo": code, "message": "Промокод не найден", "user_id": user_id},
+            detail_url=None,
+            request=request
+        )
         return jsonify({"status": "error", "message": "Промокод не найден"}), 400
 
     if promocode.current_uses >= promocode.max_uses:
+        log_action_async(
+            user_id=user_id,
+            action_type="promo_use",
+            description=f"Лимит использований промокода",
+            mdata={"promo": promocode.to_dict(), "message": "Лимит использований промокода", "user_id": user_id},
+            detail_url=None,
+            request=request
+        )
         return jsonify({"status": "error", "message": "Промокод превысил лимит использований"}), 400
 
     if not promocode.is_active:
-        return jsonify({"status": "error", "message": "Промокод не активен"}), 400
+        log_action_async(
+            user_id=user_id,
+            action_type="promo_use",
+            description=f"Промокод неактивен",
+            mdata={"promo": promocode.to_dict(), "message": "Промокод неактивен", "user_id": user_id},
+            detail_url=None,
+            request=request
+        )
+        return jsonify({"status": "error", "message": "Промокод неактивен"}), 400
 
     user = User.query.filter(User.id == user_id).first()
+    user_before = User.query.filter(User.id == user_id).first()
     if not user:
         return jsonify({"status": "error", "message": "Пользователь не найден"}), 400
 
     if UserPromocode.query.filter_by(promocode_id=promocode.id, user_id=user_id).first():
+        log_action_async(
+            user_id=user_id,
+            action_type="promo_use",
+            description=f"Повторное использование промокода",
+            mdata={"promo": code, "message": "Повторное использование промокода", "user_id": user_id},
+            detail_url=None,
+            request=request
+        )
         return jsonify({"status": "error", "message": "Вы уже использовали этот промокод"}), 400
 
     now = int(time.time())
@@ -823,7 +1269,16 @@ def promocode(code):
         promocode.current_uses += 1
         db.session.add(UserPromocode(user_id=user_id, promocode_id=promocode.id))
         db.session.commit()
-
+        log_action_async(
+            user_id=user_id,
+            action_type="promo_use",
+            description=f"Использование промокода",
+            mdata=safe_json(
+                {"promo": promocode.to_dict(), "message": "Успешное использование промокода", "user_id": user_id, "user_after": user.to_dict(), "user_before": user_before.to_dict()}
+            ),
+            detail_url=None,
+            request=request
+        )
         return jsonify({
             "status": "success",
             "message": f"Вы получили {promocode.value} бесплатных закрытий"
@@ -842,6 +1297,14 @@ def promocode(code):
         promo_priority = priority.get(new_type, 0)
 
         if user_priority > promo_priority and current_exp > now:
+            log_action_async(
+                user_id=user_id,
+                action_type="promo_use",
+                description=f"Отказ в использование промокода",
+                mdata={"promo": promocode.to_dict(), "message": f"Активная подписка более высокого уровня ({current_type})", "user_id": user_id},
+                detail_url=None,
+                request=request
+            )
             return jsonify({
                 "status": "error",
                 "message": f"У вас уже есть активная подписка более высокого уровня ({current_type})"
@@ -857,7 +1320,17 @@ def promocode(code):
         promocode.current_uses += 1
         db.session.add(UserPromocode(user_id=user_id, promocode_id=promocode.id))
         db.session.commit()
-
+        log_action_async(
+            user_id=user_id,
+            action_type="promo_use",
+            description=f"Использование промокода",
+            mdata=safe_json(
+            {"promo": promocode.to_dict(), "message": "Успешное использование промокода", "user_id": user_id,
+                   "user_after": user.to_dict(), "user_before": user_before.to_dict()}
+            ),
+            detail_url=None,
+            request=request
+        )
         return jsonify({
             "status": "success",
             "message": f"Вы получили подписку {new_type}"
@@ -913,6 +1386,14 @@ def close_fake():
     )
 
     if not can_close:
+        log_action_async(
+            user_id=user_id,
+            action_type="fake_close",
+            description=f"Недостаточно скрытий для скрытия плашки",
+            mdata={"user_id": user_id},
+            detail_url=None,
+            request=request
+        )
         return jsonify({
             "status": "error",
             "message": "У вас закончились бесплатные скрытия. Приобретите <a href='/premium'>подписку</a> или активируйте промокод"
@@ -941,6 +1422,14 @@ def close_fake():
             db.session.add(fk)
 
         db.session.commit()
+        log_action_async(
+            user_id=user_id,
+            action_type="fake_close",
+            description=f"Успешное скрытие плашки фейк",
+            mdata={"data": fk.to_dict(), "user_id": user_id,},
+            detail_url=None,
+            request=request
+        )
         return jsonify({"status": "success"}), 200
 
     except Exception as e:
@@ -1022,4 +1511,458 @@ def support_promocodes():
 
         return jsonify({"status": "success", "promocodes": [promocode.to_dict() for promocode in promocodes]}), 200
     return jsonify({"status": "error", "message": "Unauthorized"}), 401
+
+#ADMIN PROMOCODE
+# API для промокодов
+@app.route('/api/promocodes', methods=['GET', 'POST'])
+def handle_promocodes():
+    user_id = session.get('user_id')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    if request.method == 'GET':
+        promocodes = Promocode.query.all()
+        return jsonify([{
+            'id': p.id,
+            'code': p.code,
+            'promo_type': p.promo_type,
+            'value': p.value,
+            'max_uses': p.max_uses,
+            'current_uses': p.current_uses,
+            'is_active': p.is_active,
+            'user_id': p.user_id,
+            'discount_multi_use': p.discount_multi_use
+        } for p in promocodes])
+
+    elif request.method == 'POST':
+        data = request.get_json()
+
+        # Проверка на существующий промокод
+        if Promocode.query.filter_by(code=data['code']).first():
+            return jsonify({'message': 'Промокод с таким кодом уже существует'}), 400
+
+        promocode = Promocode(
+            code=data['code'],
+            promo_type=data['promo_type'],
+            value=data['value'],
+            max_uses=data['max_uses'],
+            user_id=data.get('user_id'),
+            current_uses=0,
+            discount_multi_use=data.get('discount_multi_use', False)
+        )
+
+        db.session.add(promocode)
+        db.session.commit()
+
+        return jsonify({
+            'id': promocode.id,
+            'code': promocode.code,
+            'promo_type': promocode.promo_type,
+            'value': promocode.value,
+            'max_uses': promocode.max_uses,
+            'current_uses': promocode.current_uses,
+            'is_active': promocode.is_active,
+            'user_id': promocode.user_id,
+            'discount_multi_use': promocode.discount_multi_use
+        }), 201
+
+
+@app.route('/api/promocodes/<int:promo_id>', methods=['GET', 'PUT', 'DELETE'])
+def handle_promocode(promo_id):
+    user_id = session.get('user_id')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    promocode = Promocode.query.get_or_404(promo_id)
+
+    if request.method == 'GET':
+        return jsonify({
+            'id': promocode.id,
+            'code': promocode.code,
+            'promo_type': promocode.promo_type,
+            'value': promocode.value,
+            'max_uses': promocode.max_uses,
+            'current_uses': promocode.current_uses,
+            'is_active': promocode.is_active,
+            'user_id': promocode.user_id,
+            'discount_multi_use': promocode.discount_multi_use
+        })
+
+    elif request.method == 'PUT':
+        data = request.get_json()
+
+        # Проверка на существующий промокод (кроме текущего)
+        if 'code' in data and Promocode.query.filter(Promocode.code == data['code'], Promocode.id != promo_id).first():
+            return jsonify({'message': 'Промокод с таким кодом уже существует'}), 400
+
+        promocode.code = data.get('code', promocode.code)
+        promocode.promo_type = data.get('promo_type', promocode.promo_type)
+        promocode.value = data.get('value', promocode.value)
+        promocode.max_uses = data.get('max_uses', promocode.max_uses)
+        promocode.user_id = data.get('user_id', promocode.user_id)
+        promocode.discount_multi_use = data.get('discount_multi_use', promocode.discount_multi_use)
+        promocode.is_active = data.get('is_active', promocode.is_active)
+
+        db.session.commit()
+        return jsonify({
+            'id': promocode.id,
+            'code': promocode.code,
+            'promo_type': promocode.promo_type,
+            'value': promocode.value,
+            'max_uses': promocode.max_uses,
+            'current_uses': promocode.current_uses,
+            'is_active': promocode.is_active,
+            'user_id': promocode.user_id,
+            'discount_multi_use': promocode.discount_multi_use
+        })
+
+    elif request.method == 'DELETE':
+        # Удаляем все использования этого промокода
+        UserPromocode.query.filter_by(promocode_id=promo_id).delete()
+
+        db.session.delete(promocode)
+        db.session.commit()
+        return jsonify({'message': 'Промокод удален'}), 200
+
+
+@app.route('/api/promocodes/<int:promo_id>/status', methods=['PATCH'])
+def toggle_promocode_status(promo_id):
+    user_id = session.get('user_id')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    promocode = Promocode.query.get_or_404(promo_id)
+    data = request.get_json()
+
+    promocode.is_active = data['is_active']
+    db.session.commit()
+
+    return jsonify({
+        'id': promocode.id,
+        'code': promocode.code,
+        'promo_type': promocode.promo_type,
+        'value': promocode.value,
+        'max_uses': promocode.max_uses,
+        'current_uses': promocode.current_uses,
+        'is_active': promocode.is_active,
+        'user_id': promocode.user_id,
+        'discount_multi_use': promocode.discount_multi_use
+    })
+
+
+# API для активаций промокодов
+@app.route('/api/promocodes/<int:promo_id>/activations', methods=['GET'])
+def get_promocode_activations(promo_id):
+    user_id = session.get('user_id')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    try:
+        # Проверяем существование промокода
+        promocode = Promocode.query.get(promo_id)
+        if not promocode:
+            return jsonify({'message': 'Promocode not found'}), 404
+
+        # Получаем активации с информацией о пользователях
+        activations = db.session.query(
+            UserPromocode,
+            User
+        ).join(
+            User, User.id == UserPromocode.user_id  # Связь по User.id, а не user_id
+        ).filter(
+            UserPromocode.promocode_id == promo_id
+        ).all()
+
+        result = [{
+            'id': act.UserPromocode.id,
+            'created_at': None,
+            'user': {
+                'id': act.User.id,
+                'user_id': act.User.user_id,  # Внешний ID пользователя
+                'username': act.User.username,
+                'is_admin': act.User.is_admin,
+                'subscription_type': act.User.subscription_type,
+                'subscription_expiration': act.User.subscription_expiration,
+                'free_closes': act.User.free_closes
+            } if act.User else None
+        } for act in activations]
+
+        return jsonify({
+            'promocode': {
+                'id': promocode.id,
+                'code': promocode.code,
+                'type': promocode.promo_type
+            },
+            'activations': result
+        })
+
+    except Exception as e:
+        app.logger.error(f"Error fetching promocode activations: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/activations', methods=['GET'])
+def get_all_activations():
+    user_id = session.get('user_id')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    try:
+        # Используем явное указание условий соединения
+        activations = db.session.query(
+            UserPromocode,
+            User,
+            Promocode
+        ).join(
+            User, User.id == UserPromocode.user_id  # Изменил на User.id вместо User.user_id
+        ).join(
+            Promocode, Promocode.id == UserPromocode.promocode_id
+        ).all()
+
+        if not activations:
+            return jsonify({'message': 'No activations found'}), 404
+
+        result = []
+        for activation in activations:
+            # Добавляем проверку на существование связанных записей
+            user_data = {
+                'id': activation.User.id,
+                'username': activation.User.username,
+                'is_admin': activation.User.is_admin,
+                'subscription_type': activation.User.subscription_type,
+                'subscription_expiration': activation.User.subscription_expiration,
+                'free_closes': activation.User.free_closes
+            } if activation.User else None
+
+            promocode_data = {
+                'id': activation.Promocode.id,
+                'code': activation.Promocode.code,
+                'promo_type': activation.Promocode.promo_type
+            } if activation.Promocode else None
+
+            result.append({
+                'id': activation.UserPromocode.id,
+                'created_at': None,
+                'user': user_data,
+                'promocode': promocode_data
+            })
+
+        return jsonify(result)
+
+    except Exception as e:
+        app.logger.error(f"Error fetching activations: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/promo')
+def admin_promo():
+    user_id = session.get('user_id')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    return render_template("admin_promo.html")
+@app.route("/test-log", methods=["GET", "POST"])
+def test_log():
+    log_action_async(
+        user_id=session.get('user_id'),  # Заменить на ID пользователя или None, если неавторизован
+        action_type="test_action",
+        description="Ручной тест логирования через функцию",
+        request=request,
+        mdata={"source": "test"},
+        detail_url="/admin/users/1"
+    )
+    return "✅ Лог успешно создан"
+@app.route('/api/user/<int:user_id>')
+def api_user(user_id):
+    adm_user_id = session.get('user_id')
+    user = User.query.filter_by(id=adm_user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    user = User.query.filter_by(id=adm_user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    profiles = [p.to_dict() for p in user.profiles] if hasattr(user, 'profiles') else []
+    # Если в модели User у тебя связь называется 'profile' (один), поменяй на 'profiles' (список)
+
+    user_data = user.to_dict()
+
+    return jsonify({
+        "user": user_data,
+        "profiles": profiles
+    })
+
+
+@app.route('/api/logs')
+def api_logs():
+    adm_user_id = session.get('user_id')
+    user = User.query.filter_by(id=adm_user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    user_id = session.get('user_id')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    # Параметры фильтрации и пагинации
+    user_id = request.args.get('user_id', type=int)
+    action_type = request.args.get('action_type', type=str)
+    date_from = request.args.get('date_from', type=str)
+    date_to = request.args.get('date_to', type=str)
+    ip= request.args.get('ip', type=str)
+    page = request.args.get('page', default=1, type=int)
+    limit = request.args.get('limit', default=100, type=int)
+
+    filters = []
+
+    if user_id:
+        filters.append(ActionLog.user_id == user_id)
+
+    if action_type:
+        filters.append(ActionLog.action_type.ilike(f"%{action_type}%"))
+
+    if date_from:
+        try:
+            date_from_parsed = datetime.strptime(date_from, "%Y-%m-%d")
+            filters.append(ActionLog.timestamp >= date_from_parsed)
+        except ValueError:
+            pass
+
+    if date_to:
+        try:
+            date_to_parsed = datetime.strptime(date_to, "%Y-%m-%d")
+            filters.append(ActionLog.timestamp <= date_to_parsed)
+        except ValueError:
+            pass
+    if ip:
+        filters.append(ActionLog.ip.ilike(f"%{ip}%"))
+
+    query = ActionLog.query.filter(and_(*filters)).order_by(ActionLog.timestamp.desc())
+
+    total_logs = query.count()
+    total_pages = (total_logs + limit - 1) // limit
+
+    logs = query.offset((page - 1) * limit).limit(limit).all()
+
+    return jsonify({
+        "logs": [log.to_dict() for log in logs],
+        "page": page,
+        "total_pages": total_pages
+    })
+@app.route("/api/log/<int:log_id>")
+def api_log_detail(log_id):
+    adm_user_id = session.get('user_id')
+    user = User.query.filter_by(id=adm_user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    log = ActionLog.query.get(log_id)
+    if not log:
+        return jsonify({"error": "Log not found"}), 404
+    return jsonify(log.to_dict())
+@app.route('/api/export')
+def export_action_logs():
+    adm_user_id = session.get('user_id')
+    user = User.query.filter_by(id=adm_user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+    # Получаем параметры фильтрации из query string
+    user_id = request.args.get('user_id', type=int)
+    action_type = request.args.get('action_type', type=str)
+    date_from = request.args.get('date_from', type=str)
+    date_to = request.args.get('date_to', type=str)
+    ip = request.args.get('ip', type=str)
+    filters = []
+
+    if user_id:
+        filters.append(ActionLog.user_id == user_id)
+
+    if action_type:
+        filters.append(ActionLog.action_type.ilike(f"%{action_type}%"))
+
+    if date_from:
+        try:
+            date_from_parsed = datetime.strptime(date_from, "%Y-%m-%d")
+            filters.append(ActionLog.timestamp >= date_from_parsed)
+        except ValueError:
+            pass
+
+    if date_to:
+        try:
+            date_to_parsed = datetime.strptime(date_to, "%Y-%m-%d")
+            filters.append(ActionLog.timestamp <= date_to_parsed)
+        except ValueError:
+            pass
+    if ip:
+        filters.append(ActionLog.ip.ilike(f"%{ip}%"))
+
+    query = ActionLog.query.filter(and_(*filters)).order_by(ActionLog.timestamp.desc())
+
+    logs = query.all()
+
+    # Конвертируем объекты в словари
+    logs_data = [log.to_dict() for log in logs]
+
+    # Создаём ZIP в памяти
+    memory_file = BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        # Добавляем один файл logs.json
+        zf.writestr('logs.json', json.dumps(logs_data, ensure_ascii=False, indent=2))
+
+    memory_file.seek(0)
+    filename = f"export_gu2_{datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S')}.zip"
+    log_action_async(
+        user_id=adm_user_id,
+        action_type="export_log",
+        description=f"Экспорт логов - {datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S')}",
+        mdata=safe_json({
+            "file": filename,
+            "filters": {
+                "ip": ip,
+                "date_from": date_from,
+                "date_to": date_to,
+                "action_type": action_type,
+                "user_id": user_id,
+            }
+        }),
+        request=request,
+        detail_url=None
+    )
+
+    return send_file(
+        memory_file,
+        mimetype='application/zip',
+        download_name=filename,
+        as_attachment=True
+    )
+@app.route('/admin/logs')
+def get_logs_async():
+    user_id = session.get('user_id')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if not user.is_admin:
+        return jsonify({"error": "User not admin"}), 403
+
+    return render_template("logs.html")
+
 app.run(host='0.0.0.0', port=5000)

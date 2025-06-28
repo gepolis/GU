@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Премиум подписка</title>
+    <title>Поддержка проекта</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #6d28d9;
-            --primary-light: #8b5cf6;
-            --primary-hover: #5b21b6;
-            --text: #1f2937;
-            --text-light: #6b7280;
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-hover: #4f46e5;
+            --primary-dark: #4338ca;
+            --text: #111827;
+            --text-light: #4b5563;
             --text-lighter: #9ca3af;
             --border: #e5e7eb;
             --background: #f9fafb;
@@ -56,15 +57,34 @@
             text-align: center;
         }
 
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            color: var(--primary);
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
         h1 {
             font-weight: 700;
             font-size: 32px;
             margin-bottom: 12px;
             color: var(--text);
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-block;
         }
 
         .subtitle {
@@ -72,6 +92,16 @@
             color: var(--text-light);
             max-width: 600px;
             margin: 0 auto;
+        }
+
+        .support-note {
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            padding: 16px;
+            border-radius: var(--radius);
+            margin: 24px auto;
+            max-width: 800px;
+            text-align: center;
         }
 
         .btn {
@@ -555,6 +585,31 @@
             background-color: var(--primary);
         }
 
+        .legal-section {
+            background-color: rgba(249, 250, 251, 0.8);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-top: 40px;
+            border: 1px solid var(--border);
+            max-width: 800px;
+            margin: 40px auto 0;
+        }
+
+        .legal-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .legal-text {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 16px;
@@ -584,6 +639,13 @@
                 padding: 8px 16px;
                 font-size: 14px;
             }
+
+            .back-link {
+                position: relative;
+                left: 0;
+                top: 0;
+                margin-bottom: 20px;
+            }
         }
 
         /* Анимации */
@@ -611,15 +673,23 @@
 </head>
 <body>
     <div class="container">
+        <a href="/" class="back-link fade-in">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+
         <header class="fade-in">
-            <h1><a href="/setup"><i class="fas fa-arrow-left"></i></a> Улучшите свой профиль</h1>
-            <p class="subtitle">Скрывайте плашку "Фейк" и получайте больше возможностей</p>
+            <h1>Поддержка проекта</h1>
+            <p class="subtitle">Ваша поддержка помогает развивать сервис и улучшать его функциональность</p>
         </header>
+
+        <div class="support-note fade-in delay-1">
+            <p>Согласно законодательству РФ, мы принимаем добровольные пожертвования на развитие проекта. В качестве благодарности за вашу поддержку, мы предоставляем дополнительные возможности в сервисе.</p>
+        </div>
 
         <div id="currentPlanInfo" class="current-plan fade-in delay-1" style="display: none;">
             <i class="fas fa-crown"></i>
             <div class="current-plan-content">
-                <div class="current-plan-text">Ваш текущий тариф: <span class="current-plan-name" id="currentPlanName"></span></div>
+                <div class="current-plan-text">Ваша текущая подписка: <span class="current-plan-name" id="currentPlanName"></span></div>
                 <div class="current-plan-expiry">Истекает <span id="planExpiryDate"></span></div>
             </div>
         </div>
@@ -627,7 +697,7 @@
         <!-- Табы -->
         <div class="tabs-container fade-in delay-1">
             <button class="tab-btn active" id="subscriptionTabBtn">Подписки</button>
-            <button class="tab-btn" id="hidesTabBtn">Разовые скрытия</button>
+            <button class="tab-btn" id="hidesTabBtn">Скрытия</button>
         </div>
 
         <!-- Контент подписок -->
@@ -668,7 +738,7 @@
                         <li><i class="fas fa-check-circle"></i> Улучшенная поддержка</li>
                     </ul>
                     <div class="plan-actions">
-                        <button class="btn btn-plus" id="plusBtn">Попробовать Plus</button>
+                        <button class="btn btn-plus" id="plusBtn">Получить Plus</button>
                     </div>
                 </div>
 
@@ -687,7 +757,7 @@
                         <li><i class="fas fa-check-circle"></i> Эксклюзивные функции</li>
                     </ul>
                     <div class="plan-actions">
-                        <button class="btn btn-primary" id="premiumBtn">Выбрать Premium</button>
+                        <button class="btn btn-primary" id="premiumBtn">Получить Premium</button>
                     </div>
                 </div>
             </div>
@@ -696,8 +766,8 @@
         <!-- Контент покупки скрытий -->
         <div id="hidesContent" class="hides-tab fade-in delay-1">
             <div class="hides-container">
-                <h2 class="hides-title">Купить скрытия</h2>
-                <p class="hides-description">1 скрытие = 1 день без плашки "Фейк". Чем больше покупаете, тем больше экономите!
+                <h2 class="hides-title">Получить скрытия в благодарность за поддержку</h2>
+                <p class="hides-description">1 скрытие = 1 день без плашки "Фейк". Чем больше поддержка, тем больше скрытий вы получаете!
                     <br><br>
                 Ваш баланс скрытий: <span id="hides-balance">0</span></p>
 
@@ -711,7 +781,7 @@
                     </div>
 
                     <div class="hides-total">
-                        <div class="hides-total-label">Итого к оплате</div>
+                        <div class="hides-total-label">Сумма поддержки проекта</div>
                         <div class="hides-total-price" id="hidesTotalPrice">200 ₽</div>
                         <div class="hides-total-savings" id="hidesSavings">Экономия 0 ₽</div>
                     </div>
@@ -720,20 +790,35 @@
 
                     <div class="hides-benefits">
                         <div class="hides-benefit">
-                            <i class="fas fa-check-circle"></i> Можно докупить дополнительные скрытия в любой момент
+                            <i class="fas fa-check-circle"></i> Скрытия можно получить в любой момент
                         </div>
                         <div class="hides-benefit">
                             <i class="fas fa-check-circle"></i> Не суммируется с подпиской (используется более выгодный вариант)
                         </div>
                     </div>
 
-                    <button class="btn btn-primary" style="width: 100%;" id="buyHidesBtn">Купить скрытия</button>
+                    <button class="btn btn-primary" style="width: 100%;" id="buyHidesBtn">Поддержать проект и получить скрытия</button>
                 </div>
             </div>
         </div>
 
+        <div class="legal-section fade-in delay-3">
+            <h3 class="legal-title">Юридическая информация</h3>
+            <p class="legal-text">
+                Настоящим вы подтверждаете, что перечисляемые средства являются добровольным пожертвованием на развитие проекта.
+                В качестве благодарности за поддержку проекта, мы предоставляем вам дополнительные цифровые возможности в нашем сервисе.
+            </p>
+            <p class="legal-text">
+                Пожертвование не является коммерческой сделкой, а носит исключительно благотворительный характер.
+                Средства, перечисленные вами, будут направлены на развитие проекта, оплату серверов и улучшение функционала.
+            </p>
+            <p class="legal-text">
+                <a href="#">Ознакомиться с полным текстом договора оферты</a>
+            </p>
+        </div>
+
         <div class="footer-note fade-in delay-3">
-            <p>Совершая оплату, вы соглашаетесь с <a href="#">пользовательским соглашением</a></p>
+            <p>Совершая пожертвование, вы соглашаетесь с <a href="#">пользовательским соглашением</a> и <a href="#">договором оферты</a></p>
         </div>
     </div>
 
@@ -846,8 +931,8 @@
                 premiumSavings.style.display = 'none';
 
                 // Кнопки
-                plusBtn.textContent = 'Попробовать Plus';
-                premiumBtn.textContent = 'Выбрать Premium';
+                plusBtn.textContent = 'Поддержать проект и получить Plus';
+                premiumBtn.textContent = 'Поддержать проект и получить Premium';
             } else {
                 // Plus план
                 plusPrice.innerHTML = '<span class="currency">₽</span>1,990';
@@ -860,8 +945,8 @@
                 premiumSavings.style.display = 'inline-block';
 
                 // Кнопки
-                plusBtn.textContent = 'Годовая подписка Plus';
-                premiumBtn.textContent = 'Годовая подписка Premium';
+                plusBtn.textContent = 'Поддержать проект и получить Plus (год)';
+                premiumBtn.textContent = 'Поддержать проект и получить Premium (год)';
             }
         }
 
