@@ -162,7 +162,9 @@ def log_action(
 
 def log_action_async(request, user_id, action_type, description, mdata=None, detail_url=None):
     user_agent = request.headers.get('User-Agent', '')
-    ip = request.remote_addr
+    ip = request.headers.get('X-Real-IP', request.remote_addr)
+    if ',' in ip:
+        ip = ip.split(',')[0].strip()
     cookies = request.cookies
 
     def run_in_context():
