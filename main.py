@@ -985,7 +985,7 @@ def payment(plan, t):
         user_id=user_id,
         action_type="create_payment",
         description=f"Создание платежа",
-        mdata={"data": pay.to_dict(), "promo": promo.to_dict()},
+        mdata={"data": pay.to_dict(), "promo": promo},
         detail_url="/payment/url/" + payment_uuid,
         request=request
     )
