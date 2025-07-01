@@ -10,7 +10,8 @@ from datetime import datetime
 from aiogram.types import ReplyKeyboardRemove
 
 # Настройки бота
-bot = Bot(token="7483718419:AAHlF2ihnQ-l6nLtn94oT3mNAaG_IqGoST4")
+#bot = Bot(token="7483718419:AAHlF2ihnQ-l6nLtn94oT3mNAaG_IqGoST4")
+bot = Bot(token="7707847470:AAGJmprISRa2Q_eTYTDMNZyNwmcy0uAeP8c")
 dp = Dispatcher()
 ADMINS = [2015460473, 8068306751]  # Ваши ID администраторов
 CHANNEL_ID = -1002444630943  # ID вашего канала
@@ -42,9 +43,141 @@ EMOJI = {
     "mail": "✉️",
     "chart": "📊",
     "clock": "⏳",
-    "search": "🔍"
+    "search": "🔍",
+    "star": "🌟"
 }
 
+import aiohttp
+
+API_BASE = "http://127.0.0.1:5000"  # поменяй на нужный адрес
+
+
+async def get_user_tasks(user_id: int):
+    url = f"{API_BASE}/api/tasks/{user_id}"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status != 200:
+                return []
+            data = await resp.json()
+            # предположим, что API возвращает список заданий в формате
+            # [{"id":1, "description":"...", "url_id":-10012345}, ...]
+            print(data)
+            return data
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+@dp.message(Command("tasks"))
+async def show_tasks(message: types.Message):
+    user_id = message.from_user.id
+    tasks = await get_user_tasks(user_id)
+    if not tasks:
+        await message.answer("Заданий для вас нет.")
+        return
+
+    kb = InlineKeyboardBuilder()
+    for task in tasks:
+        kb.add(
+            types.InlineKeyboardButton(
+                text=task.get("description", "Задание"),
+                callback_data=f"show_task:{task['id']}"
+            )
+        )
+    await message.answer("Доступные задания:", reply_markup=kb.as_markup())
+@dp.callback_query(lambda c: c.data and c.data.startswith("show_task:"))
+async def show_task_detail(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    task_id = int(callback.data.split(":")[1])
+
+    tasks = await get_user_tasks(user_id)
+    task = next((t for t in tasks if t["id"] == task_id), None)
+    if not task:
+        await callback.answer("Задание не найдено.", show_alert=True)
+        return
+
+    text = (
+        f"✨ <b>{task.get('title', 'Задание')}</b>\n\n"
+        f"📝 <b>Описание:</b>\n{task.get('description', 'Описание отсутствует')}\n\n"
+        f"🎁 <b>Награда:</b> <b>{task.get('reward', 0)}</b> скрытий"
+    )
+
+
+    kb = InlineKeyboardBuilder()
+    kb.row(
+        types.InlineKeyboardButton(
+            text="Перейти",
+            url=task.get("url")
+        )
+    )
+    kb.row(types.InlineKeyboardButton(
+        text="✅ Проверить",
+        callback_data=f"check_task:{task['id']}"
+    ))
+    kb.row(
+        types.InlineKeyboardButton(
+            text="◀️ Назад",
+            callback_data="back_to_tasks"
+        )
+    )
+
+    await callback.message.edit_text(text, parse_mode="HTML", reply_markup=kb.as_markup())
+    await callback.answer()
+
+@dp.callback_query(lambda c: c.data and c.data.startswith("check_task:"))
+async def check_task_handler(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    task_id = int(callback.data.split(":")[1])
+
+    # Получаем задания заново, чтобы найти нужное
+    tasks = await get_user_tasks(user_id)
+    task = next((t for t in tasks if t["id"] == task_id), None)
+    if not task:
+        await callback.answer("⚠️ Задание не найдено. Попробуйте обновить или выбрать другое.", show_alert=True)
+        return
+
+    # Проверяем подписку на канал с url_id
+    url_id = task.get("url_id")
+    try:
+        member = await bot.get_chat_member(url_id, user_id)
+        if member.status not in ["member", "administrator", "creator"]:
+            await callback.answer("⚠️ Вы ещё не подписаны на канал.", show_alert=True)
+            return
+    except Exception as e:
+        await callback.answer(f"Ошибка проверки: {e}", show_alert=True)
+        return
+
+    # Отправляем запрос на API о выполнении задания
+    async with aiohttp.ClientSession() as session:
+        try:
+            complete_url = f"{API_BASE}/api/tasks/complete"
+            resp = await session.post(complete_url, json={"user_id": user_id, "task_id": task_id})
+            if resp.status == 200:
+                data = await resp.json()
+                if data.get("status") == "success":
+                    await callback.answer("Задание успешно выполнено! Ваш приз уже на аккаунте", show_alert=True)
+                else:
+                    await callback.answer(f"Ошибка API: {data.get('message', 'неизвестно')}", show_alert=True)
+            else:
+                await callback.answer(f"Ошибка сервера: {resp.status}", show_alert=True)
+        except Exception as e:
+            await callback.answer(f"Ошибка запроса к API: {e}", show_alert=True)
+@dp.callback_query(lambda c: c.data == "back_to_tasks")
+async def back_to_tasks_handler(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    tasks = await get_user_tasks(user_id)
+    if not tasks:
+        await callback.message.edit_text("<b>Подписывайтесь на каналы наших партнёров и получайте Скрытия!</b> \n\n<i>Сейчас заданий нет — загляните позже.</i>", reply_markup=None, parse_mode="HTML")
+        await callback.answer()
+        return
+
+    kb = InlineKeyboardBuilder()
+    for task in tasks:
+        kb.add(
+            types.InlineKeyboardButton(
+                text=task.get("description", "Задание"),
+                callback_data=f"show_task:{task['id']}"
+            )
+        )
+    await callback.message.edit_text("<b>Подписывайтесь на каналы наших партнёров и получайте Скрытия! </b>\n\nДоступные задания:", reply_markup=kb.as_markup(), parse_mode="HTML")
+    await callback.answer()
 
 # Состояния
 class BroadcastStates(StatesGroup):
@@ -133,6 +266,12 @@ def create_main_menu(user_id: int) -> types.InlineKeyboardMarkup:
         types.InlineKeyboardButton(
             text=f"{EMOJI['feedback']} Оценить бота",
             callback_data="leave_feedback"
+        )
+    )
+    builder.row(
+        types.InlineKeyboardButton(
+            text=f"{EMOJI['star']} Задания",
+            callback_data="back_to_tasks"
         )
     )
 

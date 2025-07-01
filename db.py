@@ -305,3 +305,38 @@ class ActionLog(db.Model):
             },
             "timestamp": self.timestamp.isoformat()
         }
+
+
+class Task(db.Model):
+    __tablename__ = 'tasks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    advertiser_id = db.Column(BIGINT, nullable=False)  # ID рекламодателя
+    title = db.Column(db.String(255), nullable=False)      # Название задания
+    description = db.Column(db.Text, nullable=True)        # Описание задания
+    url = db.Column(db.String(500), nullable=False)        # Ссылка
+    url_id = db.Column(BIGINT, nullable=False) # id тг канала для проверки
+    reward = db.Column(db.Integer, nullable=False, default=1)  # Сколько скрытий выдаётся
+    target_completions = db.Column(db.Integer, nullable=False, default=10)  # Сколько выполнений нужно
+    completions = db.Column(db.Integer, nullable=False, default=0)          # Сколько уже выполнено
+    is_active = db.Column(db.Boolean, default=True)        # Активно ли задание
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)            # Когда создано
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)  # Когда обновлено
+
+    def __repr__(self):
+        return f"<Task {self.title} ({self.completions}/{self.target_completions})>"
+
+class TaskCompletion(db.Model):
+    __tablename__ = 'task_completions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
+    user_id = db.Column(BIGINT, nullable=False)  # ID пользователя в твоём боте
+    completed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Связь с заданием (можешь удобно обращаться completion.task)
+    task = db.relationship('Task', backref=db.backref('completions_list', lazy=True))
+
+    def __repr__(self):
+        return f"<TaskCompletion user_id={self.user_id} task_id={self.task_id}>"
+

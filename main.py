@@ -17,7 +17,7 @@ import json
 from yoomoney import Quickpay, Client
 
 from db import db, User, AuthUrl, Profile, Payment, Promocode, UserPromocode, ConsentLog, FakeMessageClose, \
-    DocumentScan, ActionLog
+    DocumentScan, ActionLog, TaskCompletion, Task
 
 # Игнорируем специфические предупреждения SQLAlchemy
 warnings.filterwarnings('ignore', category=SAWarning, message='.*fully NULL primary key.*')
@@ -28,9 +28,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://gen_user:ovLX1T)Hpg-5%3E_@
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 app.permanent_session_lifetime = timedelta(days=7)
+app.config['JSON_AS_ASCII'] = False
 app.secret_key = 'GU_GEPOLIS_GUAPPSUPPORT_ADMIN_SECRET_KEY_2'
 db.init_app(app)
-LAST_UA_DATE = "26-05-2025"
+LAST_UA_DATE = "01-07-2025"
 
 # Конфигурация Telegram
 TELEGRAM_TOKEN = "7705002195:AAE_9eNFFfaRxhwV54OT-mtm01L5BgXh7V4"
@@ -1814,6 +1815,105 @@ def get_document_scans():
             'scan_data': scan.scan_data
         } for scan in scans]
     })
+
+
+@app.route('/api/tasks/<int:user_id>', methods=['GET'])
+def get_available_tasks(user_id):
+    # Все активные задания
+    active_tasks = Task.query.filter_by(is_active=True).all()
+
+    # ID выполненных заданий
+    completed_task_ids = db.session.query(
+        TaskCompletion.task_id
+    ).filter_by(
+        user_id=user_id
+    ).all()
+
+    # Превращаем [(1,), (2,)] в [1, 2]
+    completed_ids = [task_id for (task_id,) in completed_task_ids]
+
+    # Оставляем только невыполненные
+    available_tasks = [
+        {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "url": task.url,
+            "url_id": task.url_id,
+            "reward": task.reward,
+            "completions": task.completions,
+            "target_completions": task.target_completions
+        }
+        for task in active_tasks
+        if task.id not in completed_ids
+    ]
+
+    return jsonify(available_tasks)
+
+@app.route('/api/tasks/complete', methods=['POST'])
+def complete_task():
+    data = request.get_json()
+    print(data)
+
+    user_id = data.get("user_id")
+    task_id = data.get("task_id")
+
+    if not user_id or not task_id:
+        return jsonify({"status": "error", "message": "Missing user_id or task_id"}), 400
+
+    # Проверяем, есть ли задание
+    task = Task.query.get(task_id)
+    if not task:
+        return jsonify({"status": "error", "message": "Task not found"}), 404
+
+    # Проверяем, активно ли задание
+    if not task.is_active:
+        return jsonify({"status": "error", "message": "Task is not active"}), 400
+
+    # Проверяем лимит выполнений
+    if task.completions >= task.target_completions:
+        return jsonify({"status": "error", "message": "Task completions limit reached"}), 400
+
+    # Проверяем, выполнял ли уже пользователь
+    existing = TaskCompletion.query.filter_by(task_id=task_id, user_id=user_id).first()
+    if existing:
+        return jsonify({"status": "error", "message": "Task already completed by this user"}), 400
+
+    if user_id == task.advertiser_id:
+        return jsonify({"status": "error", "message": "Advertisers cannot complete their own tasks."}), 400
+
+    user = User.query.filter_by(user_id=user_id).first()
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+    user.free_closes = user.free_closes + task.reward
+    db.session.add(user)
+    db.session.commit()
+    # Создаем выполнение
+    completion = TaskCompletion(
+        task_id=task_id,
+        user_id=user_id
+    )
+    db.session.add(completion)
+
+    # Увеличиваем счетчик
+    task.completions += 1
+
+    # Если достигнут лимит, отключаем задание
+    if task.completions >= task.target_completions:
+        task.is_active = False
+
+    db.session.commit()
+    log_action_async(
+        request=request,
+        user_id=user.id,
+        action_type="task_complete",
+        description=f"Выполнение задания - {task.id}",
+        mdata={"task_id": task_id, "user_id": user.id, "complete_id": completion.id}
+    )
+
+
+    return jsonify({"status": "success", "message": "Task completion recorded"})
+
 # Запуск приложения
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
