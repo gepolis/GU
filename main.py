@@ -27,6 +27,10 @@ warnings.filterwarnings('ignore', category=DeprecationWarning, message='.*dateti
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://gen_user:ovLX1T)Hpg-5%3E_@94.198.216.178:5432/default_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,      # Проверять соединение перед использованием
+    "pool_recycle": 1800        # Пересоздавать каждые 30 минут
+}
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 app.permanent_session_lifetime = timedelta(days=7)
 app.config['JSON_AS_ASCII'] = False
