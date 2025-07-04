@@ -10,7 +10,7 @@ from threading import Thread
 
 import requests
 from flask import Flask, render_template, send_from_directory, request, jsonify, session, redirect, send_file, \
-    make_response, g
+    make_response, g, copy_current_request_context
 from sqlalchemy import and_, desc
 from sqlalchemy.exc import SAWarning
 from user_agents import parse
@@ -393,121 +393,99 @@ def before_request():
     session.permanent = True
     ip = request.headers.get('X-Real-IP', request.remote_addr)
     user = session.get('user_id')
-    with open("data.txt", "a+") as f:
-        f.write(ip+"\n")
-    send_to_telegram(ip)
-    for i in ["85.193.85.162", "127.0.0.1"]:
-        if i in ip:
+    if ',' in ip:
+        ip = ip.split(',')[0].strip()
+
+    # Кешируем результат проверки IP в g
+    g.blocked = False
+    g.is_admin = False
+
+    # 1. Проверка черного списка (асинхронно)
+    @copy_current_request_context
+    def check_blacklist():
+        try:
+            entry = BlackListIP.query.filter_by(ip=ip).first()
+            if entry:
+                g.blocked = True
+                return True
+            return False
+        except Exception as e:
+            app.logger.error(f"Blacklist check error: {e}")
+            return False
+
+    # 2. Проверка админки (если есть user_id в сессии)
+    user_id = session.get('user_id')
+    if user_id:
+        @copy_current_request_context
+        def check_admin():
+            try:
+                user = User.query.filter_by(id=user_id).first()
+                if user and user.is_admin:
+                    g.is_admin = True
+                    return True
+                return False
+            except Exception as e:
+                app.logger.error(f"Admin check error: {e}")
+                return False
+
+        if check_admin():
             return None
 
+    # Если IP в черном списке - возвращаем ошибку
+    if check_blacklist():
+        return render_template(
+            'blocked.html',
+            ip=ip,
+            reason=entry.reason or "Не указана"
+        ), 403
 
-
-    entry = BlackListIP.query.filter_by(ip=ip).first()
-    if entry:
-        g.blocked = True
-        html = f"""
-            <!DOCTYPE html>
-            <html lang="ru">
-            <head>
-                <meta charset="UTF-8">
-                <title>Доступ запрещен</title>
-                <style>
-                    body {{
-                        font-family: Arial, sans-serif;
-                        background: #f8f8f8;
-                        color: #333;
-                        padding: 30px;
-                        text-align: center;
-                    }}
-                    a {{
-                        color: #007bff;
-                        text-decoration: none;
-                    }}
-                    a:hover {{
-                        text-decoration: underline;
-                    }}
-                </style>
-            </head>
-            <body>
-                <h2>Доступ запрещен</h2>
-                <p>Ваш IP <strong>{ip}</strong> находится в черном списке.</p>
-                <p>Причина блокировки: <em>{entry.reason or "Не указана"}</em></p>
-                <p>Если вы не согласны с этим, напишите в
-                <a href="https://t.me/GU_AppSupport" target="_blank">техническую поддержку</a>.</p>
-            </body>
-            </html>
-            """
-        return make_response(html, 403)
-
-    if user:
-        user = User.query.filter_by(id=user).first()
-        if user:
-            if user.is_admin:
-                print("admin")
-                return None
-
+    # 3. Проверка запрещенных путей (оптимизированная)
     path = request.path.lower()
-    for blocked in BLOCKED_PATHS:
-        if blocked in path:
-            g.blocked = True
+    if any(blocked in path for blocked in BLOCKED_PATHS):
+        try:
+            # Асинхронная блокировка IP
+            Thread(target=block_ip_async, args=(ip, path, user_id)).start()
+
+            return render_template(
+                'blocked.html',
+                ip=ip,
+                reason=f"Попытка доступа к запрещённому пути: {path}"
+            ), 403
+        except Exception as e:
+            app.logger.error(f"IP blocking error: {e}")
+
+    return None
+
+
+def block_ip_async(ip, path, user_id):
+    """Асинхронная обработка блокировки IP"""
+    with app.app_context():
+        try:
             new_entry = BlackListIP(
                 ip=ip,
-                reason=f"Попытка доступа к запрещённому пути: {blocked}",
+                reason=f"Попытка доступа к запрещённому пути: {path}",
                 source="Автоблокировка"
             )
             db.session.add(new_entry)
             db.session.commit()
-            html = f"""
-            <!DOCTYPE html>
-            <html lang="ru">
-            <head>
-                <meta charset="UTF-8">
-                <title>Доступ запрещен</title>
-                <style>
-                    body {{
-                        font-family: Arial, sans-serif;
-                        background: #f8f8f8;
-                        color: #333;
-                        padding: 30px;
-                        text-align: center;
-                    }}
-                    a {{
-                        color: #007bff;
-                        text-decoration: none;
-                    }}
-                    a:hover {{
-                        text-decoration: underline;
-                    }}
-                </style>
-            </head>
-            <body>
-                <h2>Доступ запрещен</h2>
-                <p>Ваш IP <strong>{ip}</strong> добавлен в черном списке.</p>
-                <p>Причина блокировки: <em>Попытка доступа к запрещённому пути: {blocked}</em></p>
-                <p>Если вы не согласны с этим, напишите в
-                <a href="https://t.me/GU_AppSupport" target="_blank">техническую поддержку</a>.</p>
-            </body>
-            </html>
-            """
-            log_action_async(
-                request,
-                user_id=user,
-                action_type="auto_ip_block",
-                description=f"Попытка доступа к запрещённому пути: {blocked}",
-                mdata={
-                    "ip": ip,
-                    "auto": True
-                }
 
+            log_action_async(
+                request=request,
+                user_id=user_id,
+                action_type="auto_ip_block",
+                description=f"Попытка доступа к запрещённому пути: {path}",
+                mdata={"ip": ip, "auto": True}
             )
+
             send_to_telegram(
                 message=f"<b>🚨 Уведомление о блокировке IP</b>\n\n"
-                        f"<b>IP:</b> <code>{ip}</code> \n"
-                        f"<b>Причина:</b> Попытка доступа к запрещённому пути {blocked}\n"
-                        f"<b>Авторизован:</b> {f"Да\n<b>Пользователь:</b> <code>{user.id}</code>" if user else "Нет"} \n"
+                        f"<b>IP:</b> <code>{ip}</code>\n"
+                        f"<b>Причина:</b> Попытка доступа к запрещённому пути {path}\n"
+                        f"<b>Авторизован:</b> {'Да' if user_id else 'Нет'}"
             )
-            return make_response(html, 403)
-    return None
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Async IP block failed: {e}")
 
 @app.route('/set')
 def set_session():
