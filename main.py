@@ -1,23 +1,24 @@
-import hashlib
-import os
+import json
 import random
 import time
 import uuid
-import zipfile
 import warnings
+import zipfile
 from datetime import timedelta, datetime, timezone
 from io import BytesIO
+from threading import Thread
+
 import requests
-from flask import Flask, render_template, send_from_directory, request, jsonify, session, redirect, send_file
-from sqlalchemy import and_, true
+import yoomoney
+from flask import Flask, render_template, send_from_directory, request, jsonify, session, redirect, send_file, \
+    make_response, g
+from sqlalchemy import and_, desc
 from sqlalchemy.exc import SAWarning
 from user_agents import parse
-from threading import Thread
-import json
 from yoomoney import Quickpay, Client
 
 from db import db, User, AuthUrl, Profile, Payment, Promocode, UserPromocode, ConsentLog, FakeMessageClose, \
-    DocumentScan, ActionLog, TaskCompletion, Task
+    DocumentScan, ActionLog, TaskCompletion, Task, BlackListIP
 
 # Игнорируем специфические предупреждения SQLAlchemy
 warnings.filterwarnings('ignore', category=SAWarning, message='.*fully NULL primary key.*')
@@ -41,7 +42,110 @@ CALLBACK_URL = "https://gepolis-gu-7624.twc1.net/callback"
 SUPPORT_ACCESS_KEY = "a7Fk3pR9qW2zYb6LmN8cX4vT5sJ1dG0hU7iO"
 WALLET_NUMBER = "4100118081125029"
 YOOMONEY_TOKEN = "4100118081125029.B5C5190A0515584D546589668EC04D03BC6680B00269B70913A64220E6657D73ED166EE15820FC4DAA5A15A0A3800E17A9C872A52D07A2D2D43ABDE200C217FE881563B8DC1CC3BE7484958B3FF0EE10B6E5763DDEE322D9D6F45825DA8BA923AE111928DBFE686683BF6C10DC1D4326C0640258434C8D2C89BF885A319CD650"
+BLOCKED_PATHS = [
+    ".git",
+    "restore.php",
+    "phpunit.xml",
 
+    # Все .env и похожие файлы с расширениями или без
+    ".env",         # основной .env файл
+    ".envfile",
+    ".env-vars",
+    ".app-env",
+    ".system-env",
+    ".prod-env",
+    ".env.yml",
+    ".env.yaml",
+    ".env.json",
+    ".env.txt",
+
+    # Общее для сервисов и облаков
+    "github",
+    "azure",
+    "gcp",
+    "k8s",
+    "terraform",
+
+    # Docker и оркестрация
+    "docker-compose",
+    "docker",
+
+    # Конфигурации
+    "config",
+    "config.php",
+    "config.json",
+    "config.yaml",
+    "config.yml",
+
+    # Фреймворки и платформы
+    "django",
+    "laravel",
+    "wp-admin",
+    "wp-login",
+    "wp-config.php",
+    "wordpress",
+    "joomla",
+    "drupal",
+
+    # Веб-серверы и публичные папки
+    "htdocs",
+    "public_html",
+    "server-status",
+    "server-info",
+
+    # Системные и служебные папки/файлы
+    "old",
+    "backups",
+    "temp",
+    "tmp",
+    "server",
+    "error_log",
+
+    # Часто атакуемые скрипты и файлы
+    "phpmyadmin",
+    "pma",
+    "sql",
+    "sql.php",
+    "dbadmin",
+    "adminer.php",
+    "webdav",
+    "shell",
+    "cmd.php",
+    "exec.php",
+    "upload.php",
+    "readme.html",
+    "install.php",
+    "update.php",
+    "license.txt",
+
+    # Осторожно, могут быть обычные папки в проектах
+    # "src",
+    # "var",
+
+    # Распространённые попытки доступа к бэкапам и дампам
+    "dump.sql",
+    "backup.sql",
+    "backup.zip",
+    "backup.tar.gz",
+
+    # Попытки доступа к конфиденциальным данным
+    ".htaccess",
+    ".htpasswd",
+    ".ssh",
+    "id_rsa",
+    "id_rsa.pub",
+
+    # Популярные пути для атак на уязвимости
+    "xmlrpc.php",
+    "wp-json",
+    "autodiscover",
+    "owa",
+    "owa/auth",
+    "owa/auth/x.js",
+    "actuator",
+    "solr",
+]
+client = Client(YOOMONEY_TOKEN)
 
 # Вспомогательные функции
 def safe_json(data):
@@ -280,6 +384,117 @@ with app.app_context():
 @app.before_request
 def before_request():
     session.permanent = True
+    ip = request.headers.get('X-Real-IP', request.remote_addr)
+    user = session.get('user_id')
+
+
+
+    entry = BlackListIP.query.filter_by(ip=ip).first()
+    if entry:
+        g.blocked = True
+        html = f"""
+            <!DOCTYPE html>
+            <html lang="ru">
+            <head>
+                <meta charset="UTF-8">
+                <title>Доступ запрещен</title>
+                <style>
+                    body {{
+                        font-family: Arial, sans-serif;
+                        background: #f8f8f8;
+                        color: #333;
+                        padding: 30px;
+                        text-align: center;
+                    }}
+                    a {{
+                        color: #007bff;
+                        text-decoration: none;
+                    }}
+                    a:hover {{
+                        text-decoration: underline;
+                    }}
+                </style>
+            </head>
+            <body>
+                <h2>Доступ запрещен</h2>
+                <p>Ваш IP <strong>{ip}</strong> находится в черном списке.</p>
+                <p>Причина блокировки: <em>{entry.reason or "Не указана"}</em></p>
+                <p>Если вы не согласны с этим, напишите в 
+                <a href="https://t.me/GU_AppSupport" target="_blank">техническую поддержку</a>.</p>
+            </body>
+            </html>
+            """
+        return make_response(html, 403)
+
+    if user:
+        user = User.query.filter_by(id=user).first()
+        if user:
+            if user.is_admin:
+                print("admin")
+                return None
+
+    path = request.path.lower()
+    for blocked in BLOCKED_PATHS:
+        if blocked in path:
+            g.blocked = True
+            new_entry = BlackListIP(
+                ip=ip,
+                reason=f"Попытка доступа к запрещённому пути: {blocked}",
+                source="Автоблокировка"
+            )
+            db.session.add(new_entry)
+            db.session.commit()
+            html = f"""
+            <!DOCTYPE html>
+            <html lang="ru">
+            <head>
+                <meta charset="UTF-8">
+                <title>Доступ запрещен</title>
+                <style>
+                    body {{
+                        font-family: Arial, sans-serif;
+                        background: #f8f8f8;
+                        color: #333;
+                        padding: 30px;
+                        text-align: center;
+                    }}
+                    a {{
+                        color: #007bff;
+                        text-decoration: none;
+                    }}
+                    a:hover {{
+                        text-decoration: underline;
+                    }}
+                </style>
+            </head>
+            <body>
+                <h2>Доступ запрещен</h2>
+                <p>Ваш IP <strong>{ip}</strong> добавлен в черном списке.</p>
+                <p>Причина блокировки: <em>Попытка доступа к запрещённому пути: {blocked}</em></p>
+                <p>Если вы не согласны с этим, напишите в 
+                <a href="https://t.me/GU_AppSupport" target="_blank">техническую поддержку</a>.</p>
+            </body>
+            </html>
+            """
+            log_action_async(
+                request,
+                user_id=user,
+                action_type="auto_ip_block",
+                description=f"Попытка доступа к запрещённому пути: {blocked}",
+                mdata={
+                    "ip": ip,
+                    "auto": True
+                }
+
+            )
+            send_to_telegram(
+                message=f"<b>🚨 Уведомление о блокировке IP</b>\n\n"
+                        f"<b>IP:</b> <code>{ip}</code> \n"
+                        f"<b>Причина:</b> Попытка доступа к запрещённому пути {blocked}\n"
+                        f"<b>Авторизован:</b> {f"Да\n<b>Пользователь:</b> <code>{user.id}</code>" if user else "Нет"} \n"
+            )
+            return make_response(html, 403)
+    return None
 
 @app.route('/set')
 def set_session():
@@ -292,6 +507,9 @@ def get_session():
 # Middleware для отслеживания посещений
 @app.after_request
 def track_visits(response):
+    if getattr(g, 'blocked', False):
+        # Пропускаем любую обработку, сразу возвращаем ответ
+        return response
     if all(x not in request.path for x in ["favicon.ico", "static"]):
         uid = session.get('user_id')
         log_action_async(
@@ -302,7 +520,6 @@ def track_visits(response):
             mdata={"page": request.path},
             detail_url=request.path,
         )
-
     if all(x not in request.path for x in ['api', '6329', 'static']):
         client_info = get_client_info(request)
         message = format_visit_message(client_info, request.path)
@@ -364,10 +581,16 @@ def gen_auth(user_id, username):
 
 @app.route('/check_auth/<int:otp_code>')
 def check_auth(otp_code):
+    admin = False
+    if request.args.get('admin'):
+        admin = True
     try:
         auth_url = AuthUrl.query.filter(AuthUrl.code == otp_code, AuthUrl.is_active == True).first()
         if auth_url:
             user = User.query.filter(User.user_id == auth_url.user_id).first()
+            if user.is_admin:
+                if not admin:
+                    return jsonify({'status': 'error', "message": "Этот способ входа недоступен"})
 
             auth_url.is_active = False
             db.session.commit()
@@ -410,7 +633,9 @@ def check_auth(otp_code):
 @app.route('/auth')
 def auth():
     return render_template('auth_new.html')
-
+@app.route('/admin-login-9f7a2b4c3d1e')
+def admin_login():
+    return render_template('admin_auth.html')
 
 @app.route('/api/user', methods=['GET'])
 def get_or_create_user():
@@ -621,38 +846,6 @@ def admin_photos():
     return html
 
 
-@app.route('/migDomin', methods=['GET'])
-def migDomin():
-    user_id = session.get('user_id')
-    current_active = request.args.get('cap')
-    if not user_id or not current_active:
-        return jsonify({'error': 'Missing parameters'}), 400
-
-    user = db.session.get(User, user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    data = f"{user_id}-{current_active}"
-    hash_val = hashlib.md5(data.encode('utf-8')).hexdigest()
-    return redirect(f'https://gosuslugi.ru.com/miDominAuth?cap={current_active}&user_id={user_id}&hash={hash_val}')
-
-
-@app.route('/miDominAuth', methods=['GET'])
-def migDominAuth():
-    user_id = request.args.get('user_id')
-    current_active = request.args.get('cap')
-    hash_val = request.args.get('hash')
-    if not all([user_id, current_active, hash_val]):
-        return jsonify({'error': 'Missing parameters'}), 400
-
-    data = f"{user_id}-{current_active}"
-    calculated_hash = hashlib.md5(data.encode('utf-8')).hexdigest()
-    if hash_val == calculated_hash:
-        return render_template("migrate_data.html", user_id=user_id, current_active=current_active)
-    else:
-        return jsonify({'error': 'Invalid hash'}), 403
-
-
 @app.route('/admin/json/users', methods=['POST'])
 def admin_json_users():
     users = User.query.all()
@@ -667,12 +860,6 @@ def admin_json_users():
 @app.route('/static/&lt;path:path&gt;')
 def send_static(path):
     return send_from_directory('static', path)
-
-
-@app.route('/api/verify-pin', methods=['POST'])
-def verify_pin():
-    pin = request.json.get('pin')
-    return jsonify({'success': pin == '1234'})
 
 
 @app.route("/premium")
@@ -951,7 +1138,7 @@ def check_payment(uuid):
 
 
 @app.route("/pay/<uuid>")
-def pay(uuid):
+def pay_check(uuid):
     user_id = session.get("user_id")
     action_description = f"Проверка оплаты: UUID={uuid}"
 
@@ -1724,14 +1911,6 @@ def get_logs_async():
     return render_template("logs.html")
 
 
-@app.route("/roadmap")
-def roadmap():
-    return render_template("roadmap.html")
-
-
-@app.route("/teams")
-def teams():
-    return render_template("useragree.html")
 
 
 @app.route("/mobile")
@@ -1913,6 +2092,250 @@ def complete_task():
 
 
     return jsonify({"status": "success", "message": "Task completion recorded"})
+
+# -------------------- BLACKLIST ADMIN --------------------
+@app.route('/api/blacklist', methods=['GET', 'POST'])
+def manage_blacklist():
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({"error": "Access denied"}), 403
+    user = User.query.get(user_id)
+    if user_id != 1:
+        return jsonify({"error": "Access denied"}), 403
+    if request.method == 'GET':
+        ips = BlackListIP.query.all()
+        return jsonify([ip.to_dict() for ip in ips])
+
+    elif request.method == 'POST':
+        data = request.get_json()
+
+        if not data or 'ip' not in data:
+            return jsonify({'message': 'IP address is required'}), 400
+
+        if BlackListIP.query.filter_by(ip=data['ip']).first():
+            return jsonify({'message': 'IP адрес уже заблокирован'}), 400
+        user_ip = request.headers.get('X-Real-IP', request.remote_addr)
+        if user_ip == data['ip']:
+            return jsonify({'message': 'Данный IP невозможно заблокировать'}), 400
+
+        new_ip = BlackListIP(
+            ip=data['ip'],
+            reason=data.get('reason'),
+            source="Администратор",
+        )
+
+        db.session.add(new_ip)
+        db.session.commit()
+
+        return jsonify(new_ip.to_dict()), 201
+    return None
+
+
+@app.route('/api/blacklist/<int:ip_id>', methods=['GET', 'PUT', 'DELETE'])
+def manage_ip(ip_id):
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({"error": "Access denied"}), 403
+    user = User.query.get(user_id)
+    if user_id != 1:
+        return jsonify({"error": "Access denied"}), 403
+    ip = BlackListIP.query.get_or_404(ip_id)
+
+    if request.method == 'GET':
+        return jsonify(ip.to_dict())
+
+    elif request.method == 'PUT':
+        data = request.get_json()
+
+        if not data:
+            return jsonify({'message': 'No data provided'}), 400
+
+        if 'ip' in data:
+            # Проверяем, не существует ли уже такого IP
+            existing_ip = BlackListIP.query.filter_by(ip=data['ip']).first()
+            if existing_ip and existing_ip.id != ip.id:
+                return jsonify({'message': 'IP address already exists in blacklist'}), 400
+            ip.ip = data['ip']
+
+        if 'reason' in data:
+            ip.reason = data['reason']
+
+        db.session.commit()
+        return jsonify(ip.to_dict())
+
+    elif request.method == 'DELETE':
+        db.session.delete(ip)
+        db.session.commit()
+        return jsonify({'message': 'IP address removed from blacklist'})
+    return None
+
+
+@app.route('/admin/blacklist')
+def blacklist():
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({"error": "Access denied"}), 403
+    user = User.query.get(user_id)
+    if user_id != 1:
+        return jsonify({"error": "Access denied"}), 403
+    return render_template("admin_blacklist.html")
+
+
+# --------------------- admin payments -------------------------
+
+@app.route('/api/payments', methods=['GET', 'POST'])
+def manage_payments():
+    if request.method == 'GET':
+        payments = Payment.query.order_by(desc(Payment.id)).all()
+        return jsonify([payment.to_dict() for payment in payments])
+
+    elif request.method == 'POST':
+        data = request.get_json()
+
+        if not data or 'amount' not in data:
+            return jsonify({'message': 'Amount is required'}), 400
+
+        try:
+            payment_uuid = str(uuid.uuid4())
+
+            # Определяем параметры платежа
+            is_admin = data.get('is_admin', False)
+            comment = data.get('comment', 'Платеж')
+            # Создаем ссылку для оплаты в YooMoney
+            quick = Quickpay(
+                receiver=WALLET_NUMBER,
+                quickpay_form="shop",
+                targets="Sponsor this project",
+                paymentType="SB",
+                sum=100,
+                label=payment_uuid,
+                successURL="https://gosuslugi.com.ru/pay/" + payment_uuid,
+            )
+            print(quick.redirected_url)
+
+
+            # Создаем запись в базе данных
+            new_payment = Payment(
+                user_id=0,
+                amount=data['amount'],
+                plan="admin",
+                time=0,
+                uuid=payment_uuid,
+                status="pending"
+            )
+
+            db.session.add(new_payment)
+            db.session.commit()
+
+            return jsonify({
+                'message': 'Payment created successfully',
+                'payment': new_payment.to_dict(),
+                'payment_url': quick.redirected_url
+            }), 201
+
+        except Exception as e:
+            print(e)
+            return jsonify({'message': f'Error creating payment: {str(e)}'}), 500
+    return None
+
+
+@app.route('/api/payments/<int:payment_id>', methods=['DELETE'])
+def delete_payment(payment_id):
+    payment = Payment.query.get_or_404(payment_id)
+
+    db.session.delete(payment)
+    db.session.commit()
+
+    return jsonify({'message': 'Payment deleted successfully'})
+
+
+@app.route('/api/payments/<int:payment_id>/check', methods=['POST'])
+def check_payment_status(payment_id):
+    payment = Payment.query.get_or_404(payment_id)
+
+    if payment.status != 'pending':
+        return jsonify({'message': 'Payment is already processed'}), 400
+
+    try:
+        # Проверяем историю операций в YooMoney
+        history = client.operation_history(label=payment.uuid)
+
+        for operation in history.operations:
+            print(operation.label)
+            if operation.status == 'success':
+                payment.status = 'success'
+                db.session.commit()
+                return jsonify({
+                    'message': 'Оплачено',
+                    'payment': payment.to_dict()
+                })
+            else:
+                return jsonify({'message': 'Не оплачено'}), 404
+        return jsonify({'message': 'Не оплачено'}), 404
+
+    except Exception as e:
+        return jsonify({'message': f'Error checking payment status: {str(e)}'}), 500
+
+
+@app.route('/api/payments/check-pending', methods=['POST'])
+def check_pending_payments():
+    try:
+        pending_payments = Payment.query.filter_by(status='pending').all()
+        updated_count = 0
+        history = client.operation_history()
+        for operation in history.operations:
+            if operation.status == 'success':
+                u = operation.label
+                print(u)
+                paym = Payment.query.filter_by(uuid=u).first()
+                if not paym or paym.status == "success":
+                    continue
+                updated_count+=1
+                paym.status = "success"
+                user = paym.user_id
+                user = User.query.filter_by(id=user).first()
+
+                if not user:
+                    continue
+
+                if paym.plan == "hides":
+                    user.free_closes += int(paym.time)
+                else:
+                    current_time = int(time.time())
+                    if user.subscription_expiration > current_time:
+                        user.subscription_expiration += paym.time
+                    else:
+                        user.subscription_expiration = current_time + paym.time
+                    user.subscription_type = paym.plan
+
+                db.session.commit()
+
+        return jsonify({
+            'message': 'Pending payments checked',
+            'checked': len(pending_payments),
+            'updated': updated_count
+        })
+    except Exception as e:
+        return jsonify({'message': f'Error checking payments: {str(e)}'}), 500
+
+
+@app.route('/api/yoomoney/balance', methods=['GET'])
+def get_balance():
+    try:
+        # Получаем баланс кошелька
+        user = client.account_info()
+        balance = round(float(user.balance), 2)
+
+        return jsonify({
+            'balance': balance,
+            'currency': 'RUB'
+        })
+    except Exception as e:
+        return jsonify({'message': f'Error getting balance: {str(e)}'}), 500
+
+@app.route('/admin/payments')
+def admin_payments():
+    return render_template("admin_pay.html")
 
 # Запуск приложения
 if __name__ == '__main__':

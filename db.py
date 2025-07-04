@@ -340,3 +340,19 @@ class TaskCompletion(db.Model):
     def __repr__(self):
         return f"<TaskCompletion user_id={self.user_id} task_id={self.task_id}>"
 
+class BlackListIP(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ip = db.Column(db.String(45), unique=True, nullable=False)
+    reason = db.Column(db.String(255), nullable=True)
+    source = db.Column(db.String(255), nullable=True)
+
+    def __repr__(self):
+        return f"<BlackListIP {self.ip}>"
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'ip': self.ip,
+            'reason': self.reason,
+            'source': self.source,
+        }

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление черным списком IP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2a5885;
+            --primary-light: #3a7cb9;
+            --secondary: #4CAF50;
+            --error: #f44336;
+            --warning: #ff9800;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --background: #f5f7fa;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2:before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background-color: var(--primary);
+            border-radius: 2px;
+            margin-right: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background-color: var(--card-bg);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(58, 124, 185, 0.2);
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #f0f7ff;
+        }
+
+        .btn-success {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--error);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* Таблицы */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .table th, .table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+        }
+
+        .table tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .badge-ip {
+            background-color: #607d8b;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .edit-btn {
+            color: var(--primary);
+        }
+
+        .delete-btn {
+            color: var(--error);
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1000;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .notification-success {
+            background-color: var(--secondary);
+        }
+
+        .notification-error {
+            background-color: var(--error);
+        }
+
+        .notification-warning {
+            background-color: var(--warning);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .container {
+                padding: 5px;
+            }
+
+            .section {
+                padding: 12px 10px;
+            }
+
+            .table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Управление черным списком IP</h1>
+        </header>
+
+        <div class="section">
+            <div class="btn-container">
+                <button class="btn btn-primary" onclick="openCreateModal()">
+                    <i class="fas fa-plus"></i> Добавить IP
+                </button>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="searchInput" placeholder="Поиск по IP или причине..." oninput="filterIPs()">
+            </div>
+
+            <table class="table" id="ipTable">
+                <thead>
+                    <tr>
+                        <th>IP-адрес</th>
+                        <th>Причина блокировки</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="ipTableBody">
+                    <!-- IP-адреса будут загружены здесь -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания -->
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Добавить IP в черный список</h3>
+                <button class="close-btn" onclick="closeModal('createModal')">&times;</button>
+            </div>
+            <form id="ipForm">
+                <div class="form-group">
+                    <label for="ipAddress">IP-адрес</label>
+                    <input type="text" id="ipAddress" placeholder="192.168.1.1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reason">Причина блокировки</label>
+                    <textarea id="reason" placeholder="Описание причины блокировки (необязательно)"></textarea>
+                </div>
+
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('createModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Редактировать запись</h3>
+                <button class="close-btn" onclick="closeModal('editModal')">&times;</button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label for="editIpAddress">IP-адрес</label>
+                    <input type="text" id="editIpAddress" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editReason">Причина блокировки</label>
+                    <textarea id="editReason"></textarea>
+                </div>
+
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIPs();
+        });
+
+        // Загрузка IP-адресов
+        async function loadIPs() {
+            try {
+                const response = await fetch('/api/blacklist');
+                const ips = await response.json();
+                renderIPs(ips);
+            } catch (error) {
+                showNotification('Ошибка при загрузке IP-адресов', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Отображение IP-адресов в таблице
+        function renderIPs(ips) {
+            const tableBody = document.getElementById('ipTableBody');
+            tableBody.innerHTML = '';
+
+            ips.forEach(ip => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td><span class="badge badge-ip">${ip.ip}</span></td>
+                    <td>${ip.reason || 'Не указана'}</td>
+                    <td class="actions">
+                        <button class="action-btn edit-btn btn-sm" onclick="openEditModal(${ip.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn btn-sm" onclick="deleteIP(${ip.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Фильтрация IP-адресов
+        function filterIPs() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#ipTableBody tr');
+
+            rows.forEach(row => {
+                const ip = row.cells[0].textContent.toLowerCase();
+                const reason = row.cells[1].textContent.toLowerCase();
+
+                if (ip.includes(searchTerm) || reason.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Открытие модального окна создания
+        function openCreateModal() {
+            document.getElementById('ipForm').reset();
+            document.getElementById('createModal').style.display = 'flex';
+        }
+
+        // Создание новой записи
+        document.getElementById('ipForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const ipData = {
+                ip: document.getElementById('ipAddress').value,
+                reason: document.getElementById('reason').value || null
+            };
+
+            try {
+                const response = await fetch('/api/blacklist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(ipData)
+                });
+
+                if (response.ok) {
+                    showNotification('IP-адрес успешно добавлен в черный список', 'success');
+                    loadIPs();
+                    closeModal('createModal');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.message || 'Ошибка при добавлении IP', 'error');
+                }
+            } catch (error) {
+                showNotification('Ошибка при добавлении IP', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Открытие модального окна редактирования
+        async function openEditModal(ipId) {
+            try {
+                const response = await fetch(`/api/blacklist/${ipId}`);
+                const ip = await response.json();
+
+                document.getElementById('editId').value = ip.id;
+                document.getElementById('editIpAddress').value = ip.ip;
+                document.getElementById('editReason').value = ip.reason || '';
+
+                document.getElementById('editModal').style.display = 'flex';
+            } catch (error) {
+                showNotification('Ошибка при загрузке данных IP', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Закрытие модального окна
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Сохранение изменений записи
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const ipData = {
+                ip: document.getElementById('editIpAddress').value,
+                reason: document.getElementById('editReason').value || null
+            };
+
+            const ipId = document.getElementById('editId').value;
+
+            try {
+                const response = await fetch(`/api/blacklist/${ipId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(ipData)
+                });
+
+                if (response.ok) {
+                    showNotification('Запись успешно обновлена', 'success');
+                    loadIPs();
+                    closeModal('editModal');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.message || 'Ошибка при обновлении записи', 'error');
+                }
+            } catch (error) {
+                showNotification('Ошибка при обновлении записи', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Удаление записи
+        async function deleteIP(ipId) {
+            if (!confirm('Вы уверены, что хотите удалить этот IP-адрес из черного списка?')) return;
+
+            try {
+                const response = await fetch(`/api/blacklist/${ipId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showNotification('IP-адрес успешно удален из черного списка', 'success');
+                    loadIPs();
+                } else {
+                    const error = await response.json();
+                    showNotification(error.message || 'Ошибка при удалении IP', 'error');
+                }
+            } catch (error) {
+                showNotification('Ошибка при удалении IP', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Показать уведомление
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-exclamation-triangle'}"></i>
+                ${message}
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
