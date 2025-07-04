@@ -385,6 +385,7 @@ def log_user_consent(req, user_id=None, comment="-"):
 with app.app_context():
     db.create_all()
 
+
 @app.before_request
 def before_request():
     session.permanent = True
@@ -392,9 +393,10 @@ def before_request():
     if ',' in ip:
         ip = ip.split(',')[0].strip()
 
-    # Проверка черного списка
-    if is_ip_blocked(ip):
-        return render_blocked_page(ip)
+    # Проверка черного списка с получением причины
+    blocked_entry = get_blocked_entry(ip)
+    if blocked_entry:
+        return render_blocked_page(ip, blocked_entry.reason or "Доступ ограничен администратором")
 
     # Проверка админки
     user_id = session.get('user_id')
@@ -403,73 +405,71 @@ def before_request():
 
     # Проверка запрещенных путей
     path = request.path.lower()
-    if any(blocked in path for blocked in BLOCKED_PATHS):
-        # Собираем все необходимые данные для асинхронной обработки
-        user_agent = request.headers.get('User-Agent')
-        Thread(target=block_ip_background, args=(ip, path, user_id, user_agent)).start()
-        return render_blocked_page(ip, f"Попытка доступа к запрещённому пути: {path}")
+    for blocked_path in BLOCKED_PATHS:
+        if blocked_path in path:
+            reason = f"Попытка доступа к запрещённому пути: {blocked_path}"
+            Thread(target=block_ip_background,
+                   args=(ip, path, user_id, request.headers.get('User-Agent'), reason)).start()
+            return render_blocked_page(ip, reason)
 
     return None
 
-def block_ip_background(ip, path, user_id, user_agent):
-    """Фоновая задача для блокировки IP (без зависимости от контекста запроса)"""
+
+def get_blocked_entry(ip):
+    try:
+        return BlackListIP.query.filter_by(ip=ip).first()
+    except Exception as e:
+        app.logger.error(f"IP block check failed: {e}")
+        return None
+
+
+def block_ip_background(ip, path, user_id, user_agent, reason):
+    """Фоновая задача для блокировки IP"""
     with app.app_context():
         try:
-            # 1. Добавляем IP в черный список
             new_entry = BlackListIP(
                 ip=ip,
-                reason=f"Попытка доступа к запрещённому пути: {path}",
+                reason=reason,
                 source="Автоблокировка"
             )
             db.session.add(new_entry)
-            db.session.commit()
 
-            # 2. Логируем действие
             log = ActionLog(
                 user_id=user_id,
                 action_type="auto_ip_block",
-                description=f"Попытка доступа к запрещённому пути: {path}",
+                description=reason,
                 ip=ip,
                 user_agent=user_agent,
                 timestamp=datetime.now(timezone.utc)
             )
             db.session.add(log)
+
             db.session.commit()
 
-            # 3. Отправляем уведомление в Telegram
-            send_to_telegram(
-                message=f"<b>🚨 Уведомление о блокировке IP</b>\n\n"
-                        f"<b>IP:</b> <code>{ip}</code>\n"
-                        f"<b>Причина:</b> Попытка доступа к {path}\n"
-                        f"<b>Пользователь:</b> {user_id if user_id else 'Не авторизован'}"
-            )
+            send_telegram_notification(ip, reason, user_id)
+
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Background IP block failed: {e}")
 
-def is_ip_blocked(ip):
-    try:
-        return BlackListIP.query.filter_by(ip=ip).first() is not None
-    except Exception as e:
-        app.logger.error(f"IP block check failed: {e}")
-        return False
 
-def is_admin(user_id):
-    try:
-        user = User.query.filter_by(id=user_id).first()
-        return user and user.is_admin
-    except Exception as e:
-        app.logger.error(f"Admin check failed: {e}")
-        return False
+def send_telegram_notification(ip, reason, user_id):
+    message = (
+        f"<b>🚨 Уведомление о блокировке IP</b>\n\n"
+        f"<b>IP:</b> <code>{ip}</code>\n"
+        f"<b>Причина:</b> {reason}\n"
+        f"<b>Пользователь:</b> {user_id if user_id else 'Не авторизован'}"
+    )
+    send_to_telegram(message)
 
-def render_blocked_page(ip, reason="Не указана"):
+
+def render_blocked_page(ip, reason):
     return render_template(
         'blocked.html',
         ip=ip,
         reason=reason,
-        now=datetime.now()
+        now=datetime.now().year
     ), 403
-
 @app.route('/set')
 def set_session():
     session['data'] = 'привет'
