@@ -9,7 +9,6 @@ from io import BytesIO
 from threading import Thread
 
 import requests
-import yoomoney
 from flask import Flask, render_template, send_from_directory, request, jsonify, session, redirect, send_file, \
     make_response, g
 from sqlalchemy import and_, desc
@@ -150,7 +149,10 @@ BLOCKED_PATHS = [
     "solr",
 ]
 client = Client(YOOMONEY_TOKEN)
-
+@app.teardown_request
+def teardown(exception):
+    print("Tearing down request, clearing g...")
+    g.clear()
 # Вспомогательные функции
 def safe_json(data):
     def default(o):
