@@ -389,87 +389,6 @@ with app.app_context():
 @app.before_request
 def before_request():
     session.permanent = True
-    ip = request.headers.get('X-Real-IP', request.remote_addr)
-    if ',' in ip:
-        ip = ip.split(',')[0].strip()
-
-    # Проверка черного списка с получением причины
-    blocked_entry = get_blocked_entry(ip)
-    if blocked_entry:
-        return render_blocked_page(ip, blocked_entry.reason or "Доступ ограничен администратором")
-
-    # Проверка админки
-    user_id = session.get('user_id')
-    if user_id and is_admin(user_id):
-        return None
-
-    # Проверка запрещенных путей
-    path = request.path.lower()
-    for blocked_path in BLOCKED_PATHS:
-        if blocked_path in path:
-            reason = f"Попытка доступа к запрещённому пути: {blocked_path}"
-            Thread(target=block_ip_background,
-                   args=(ip, path, user_id, request.headers.get('User-Agent'), reason)).start()
-            return render_blocked_page(ip, reason)
-
-    return None
-
-
-def get_blocked_entry(ip):
-    try:
-        return BlackListIP.query.filter_by(ip=ip).first()
-    except Exception as e:
-        app.logger.error(f"IP block check failed: {e}")
-        return None
-
-
-def block_ip_background(ip, path, user_id, user_agent, reason):
-    """Фоновая задача для блокировки IP"""
-    with app.app_context():
-        try:
-            new_entry = BlackListIP(
-                ip=ip,
-                reason=reason,
-                source="Автоблокировка"
-            )
-            db.session.add(new_entry)
-
-            log = ActionLog(
-                user_id=user_id,
-                action_type="auto_ip_block",
-                description=reason,
-                ip=ip,
-                user_agent=user_agent,
-                timestamp=datetime.now(timezone.utc)
-            )
-            db.session.add(log)
-
-            db.session.commit()
-
-            send_telegram_notification(ip, reason, user_id)
-
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Background IP block failed: {e}")
-
-
-def send_telegram_notification(ip, reason, user_id):
-    message = (
-        f"<b>🚨 Уведомление о блокировке IP</b>\n\n"
-        f"<b>IP:</b> <code>{ip}</code>\n"
-        f"<b>Причина:</b> {reason}\n"
-        f"<b>Пользователь:</b> {user_id if user_id else 'Не авторизован'}"
-    )
-    send_to_telegram(message)
-
-
-def render_blocked_page(ip, reason):
-    return render_template(
-        'blocked.html',
-        ip=ip,
-        reason=reason,
-        now=datetime.now().year
-    ), 403
 @app.route('/set')
 def set_session():
     session['data'] = 'привет'
@@ -555,16 +474,10 @@ def gen_auth(user_id, username):
 
 @app.route('/check_auth/<int:otp_code>')
 def check_auth(otp_code):
-    admin = False
-    if request.args.get('admin'):
-        admin = True
     try:
         auth_url = AuthUrl.query.filter(AuthUrl.code == otp_code, AuthUrl.is_active == True).first()
         if auth_url:
             user = User.query.filter(User.user_id == auth_url.user_id).first()
-            if user.is_admin:
-                if not admin:
-                    return jsonify({'status': 'error', "message": "Этот способ входа недоступен"})
 
             auth_url.is_active = False
             db.session.commit()
