@@ -395,13 +395,14 @@ def before_request():
     user = session.get('user_id')
     with open("data.txt", "a+") as f:
         f.write(ip+"\n")
+    send_to_telegram(ip)
     for i in ["85.193.85.162", "127.0.0.1"]:
         if i in ip:
             return None
 
 
 
-    #entry = BlackListIP.query.filter_by(ip=ip).first()
+    entry = BlackListIP.query.filter_by(ip=ip).first()
     if entry:
         g.blocked = True
         html = f"""
