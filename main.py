@@ -396,112 +396,112 @@ def before_request():
 
 
 
-    entry = BlackListIP.query.filter_by(ip=ip).first()
-    if entry:
-        g.blocked = True
-        html = f"""
-            <!DOCTYPE html>
-            <html lang="ru">
-            <head>
-                <meta charset="UTF-8">
-                <title>Доступ запрещен</title>
-                <style>
-                    body {{
-                        font-family: Arial, sans-serif;
-                        background: #f8f8f8;
-                        color: #333;
-                        padding: 30px;
-                        text-align: center;
-                    }}
-                    a {{
-                        color: #007bff;
-                        text-decoration: none;
-                    }}
-                    a:hover {{
-                        text-decoration: underline;
-                    }}
-                </style>
-            </head>
-            <body>
-                <h2>Доступ запрещен</h2>
-                <p>Ваш IP <strong>{ip}</strong> находится в черном списке.</p>
-                <p>Причина блокировки: <em>{entry.reason or "Не указана"}</em></p>
-                <p>Если вы не согласны с этим, напишите в 
-                <a href="https://t.me/GU_AppSupport" target="_blank">техническую поддержку</a>.</p>
-            </body>
-            </html>
-            """
-        return make_response(html, 403)
-
-    if user:
-        user = User.query.filter_by(id=user).first()
-        if user:
-            if user.is_admin:
-                print("admin")
-                return None
-
-    path = request.path.lower()
-    for blocked in BLOCKED_PATHS:
-        if blocked in path:
-            g.blocked = True
-            new_entry = BlackListIP(
-                ip=ip,
-                reason=f"Попытка доступа к запрещённому пути: {blocked}",
-                source="Автоблокировка"
-            )
-            db.session.add(new_entry)
-            db.session.commit()
-            html = f"""
-            <!DOCTYPE html>
-            <html lang="ru">
-            <head>
-                <meta charset="UTF-8">
-                <title>Доступ запрещен</title>
-                <style>
-                    body {{
-                        font-family: Arial, sans-serif;
-                        background: #f8f8f8;
-                        color: #333;
-                        padding: 30px;
-                        text-align: center;
-                    }}
-                    a {{
-                        color: #007bff;
-                        text-decoration: none;
-                    }}
-                    a:hover {{
-                        text-decoration: underline;
-                    }}
-                </style>
-            </head>
-            <body>
-                <h2>Доступ запрещен</h2>
-                <p>Ваш IP <strong>{ip}</strong> добавлен в черном списке.</p>
-                <p>Причина блокировки: <em>Попытка доступа к запрещённому пути: {blocked}</em></p>
-                <p>Если вы не согласны с этим, напишите в 
-                <a href="https://t.me/GU_AppSupport" target="_blank">техническую поддержку</a>.</p>
-            </body>
-            </html>
-            """
-            log_action_async(
-                request,
-                user_id=user,
-                action_type="auto_ip_block",
-                description=f"Попытка доступа к запрещённому пути: {blocked}",
-                mdata={
-                    "ip": ip,
-                    "auto": True
-                }
-
-            )
-            send_to_telegram(
-                message=f"<b>🚨 Уведомление о блокировке IP</b>\n\n"
-                        f"<b>IP:</b> <code>{ip}</code> \n"
-                        f"<b>Причина:</b> Попытка доступа к запрещённому пути {blocked}\n"
-                        f"<b>Авторизован:</b> {f"Да\n<b>Пользователь:</b> <code>{user.id}</code>" if user else "Нет"} \n"
-            )
-            return make_response(html, 403)
-    return None
+    #entry = BlackListIP.query.filter_by(ip=ip).first()
+    #if entry:
+    #    g.blocked = True
+    #    html = f"""
+    #        <!DOCTYPE html>
+    #        <html lang="ru">
+    #        <head>
+    #            <meta charset="UTF-8">
+    #            <title>Доступ запрещен</title>
+    #            <style>
+    #                body {{
+    #                    font-family: Arial, sans-serif;
+    #                    background: #f8f8f8;
+    #                    color: #333;
+    #                    padding: 30px;
+    #                    text-align: center;
+    #                }}
+    #                a {{
+    #                    color: #007bff;
+    #                    text-decoration: none;
+    #                }}
+    #                a:hover {{
+    #                    text-decoration: underline;
+    #                }}
+    #            </style>
+    #        </head>
+    #        <body>
+    #            <h2>Доступ запрещен</h2>
+    #            <p>Ваш IP <strong>{ip}</strong> находится в черном списке.</p>
+    #            <p>Причина блокировки: <em>{entry.reason or "Не указана"}</em></p>
+    #            <p>Если вы не согласны с этим, напишите в
+    #            <a href="https://t.me/GU_AppSupport" target="_blank">техническую поддержку</a>.</p>
+    #        </body>
+    #        </html>
+    #        """
+    #    return make_response(html, 403)
+#
+    #if user:
+    #    user = User.query.filter_by(id=user).first()
+    #    if user:
+    #        if user.is_admin:
+    #            print("admin")
+    #            return None
+#
+    #path = request.path.lower()
+    #for blocked in BLOCKED_PATHS:
+    #    if blocked in path:
+    #        g.blocked = True
+    #        new_entry = BlackListIP(
+    #            ip=ip,
+    #            reason=f"Попытка доступа к запрещённому пути: {blocked}",
+    #            source="Автоблокировка"
+    #        )
+    #        db.session.add(new_entry)
+    #        db.session.commit()
+    #        html = f"""
+    #        <!DOCTYPE html>
+    #        <html lang="ru">
+    #        <head>
+    #            <meta charset="UTF-8">
+    #            <title>Доступ запрещен</title>
+    #            <style>
+    #                body {{
+    #                    font-family: Arial, sans-serif;
+    #                    background: #f8f8f8;
+    #                    color: #333;
+    #                    padding: 30px;
+    #                    text-align: center;
+    #                }}
+    #                a {{
+    #                    color: #007bff;
+    #                    text-decoration: none;
+    #                }}
+    #                a:hover {{
+    #                    text-decoration: underline;
+    #                }}
+    #            </style>
+    #        </head>
+    #        <body>
+    #            <h2>Доступ запрещен</h2>
+    #            <p>Ваш IP <strong>{ip}</strong> добавлен в черном списке.</p>
+    #            <p>Причина блокировки: <em>Попытка доступа к запрещённому пути: {blocked}</em></p>
+    #            <p>Если вы не согласны с этим, напишите в
+    #            <a href="https://t.me/GU_AppSupport" target="_blank">техническую поддержку</a>.</p>
+    #        </body>
+    #        </html>
+    #        """
+    #        log_action_async(
+    #            request,
+    #            user_id=user,
+    #            action_type="auto_ip_block",
+    #            description=f"Попытка доступа к запрещённому пути: {blocked}",
+    #            mdata={
+    #                "ip": ip,
+    #                "auto": True
+    #            }
+#
+    #        )
+    #        send_to_telegram(
+    #            message=f"<b>🚨 Уведомление о блокировке IP</b>\n\n"
+    #                    f"<b>IP:</b> <code>{ip}</code> \n"
+    #                    f"<b>Причина:</b> Попытка доступа к запрещённому пути {blocked}\n"
+    #                    f"<b>Авторизован:</b> {f"Да\n<b>Пользователь:</b> <code>{user.id}</code>" if user else "Нет"} \n"
+    #        )
+    #        return make_response(html, 403)
+    #return None
 
 @app.route('/set')
 def set_session():
