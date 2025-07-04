@@ -6,86 +6,45 @@
     <title>Доступ запрещен</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background: #f5f5f5;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f8f8f8;
             color: #333;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             text-align: center;
-            line-height: 1.6;
+            line-height: 1.5;
         }
-        .block-container {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            max-width: 600px;
-            width: 90%;
-            margin: 2rem auto;
+        .block-message {
+            max-width: 400px;
+            padding: 20px;
         }
-        h1 {
-            color: #d32f2f;
-            margin-top: 0;
-        }
-        .ip-address {
+        .ip {
             font-family: monospace;
-            background: #f0f0f0;
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
         }
-        .reason {
-            font-style: italic;
+        .contact {
+            margin-top: 20px;
+            font-size: 0.9em;
             color: #666;
-            margin: 1rem 0;
-        }
-        .support-link {
-            display: inline-block;
-            margin-top: 1.5rem;
-            color: #1976d2;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.2s;
-        }
-        .support-link:hover {
-            color: #0d47a1;
-            text-decoration: underline;
-        }
-        .logo {
-            max-width: 150px;
-            margin-bottom: 1.5rem;
-        }
-        .footer {
-            margin-top: 2rem;
-            font-size: 0.9rem;
-            color: #777;
         }
     </style>
 </head>
 <body>
-    <div class="block-container">
-        <!-- Можно добавить логотип -->
-        <!-- <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo"> -->
-
-        <h1>Доступ ограничен</h1>
-
-        <p>Ваш IP-адрес <span class="ip-address">{{ ip }}</span> был заблокирован.</p>
-
+    <div class="block-message">
+        <h2>Доступ ограничен</h2>
+        <p>Ваш IP <span class="ip">{{ ip }}</span> заблокирован.</p>
         {% if reason %}
-        <p class="reason">Причина: {{ reason }}</p>
+        <p>Причина: {{ reason }}</p>
         {% endif %}
-
-        <p>Если вы считаете, что это ошибка, пожалуйста, свяжитесь с нашей службой поддержки.</p>
-
-        <a href="https://t.me/GU_AppSupport" target="_blank" class="support-link">
-            Связаться с поддержкой
-        </a>
-
-        <div class="footer">
-            <p>© {{ now.year }} Название вашего сервиса. Все права защищены.</p>
+        <div class="contact">
+            По вопросам разблокировки:<br>
+            <a href="https://t.me/GU_AppSupport">@GU_AppSupport</a>
         </div>
     </div>
 </body>
