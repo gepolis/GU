@@ -2185,6 +2185,13 @@ def blacklist():
 
 @app.route('/api/payments', methods=['GET', 'POST'])
 def manage_payments():
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({"error": "Access denied"}), 403
+
+    user = db.session.get(User, user_id)
+    if not user or not user.is_admin:
+        return jsonify({"error": "Access denied"}), 403
     if request.method == 'GET':
         payments = Payment.query.order_by(desc(Payment.id)).all()
         return jsonify([payment.to_dict() for payment in payments])
@@ -2241,6 +2248,13 @@ def manage_payments():
 
 @app.route('/api/payments/<int:payment_id>', methods=['DELETE'])
 def delete_payment(payment_id):
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({"error": "Access denied"}), 403
+
+    user = db.session.get(User, user_id)
+    if not user or not user.is_admin:
+        return jsonify({"error": "Access denied"}), 403
     payment = Payment.query.get_or_404(payment_id)
 
     db.session.delete(payment)
@@ -2251,6 +2265,13 @@ def delete_payment(payment_id):
 
 @app.route('/api/payments/<int:payment_id>/check', methods=['POST'])
 def check_payment_status(payment_id):
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({"error": "Access denied"}), 403
+
+    user = db.session.get(User, user_id)
+    if not user or not user.is_admin:
+        return jsonify({"error": "Access denied"}), 403
     payment = Payment.query.get_or_404(payment_id)
 
     if payment.status != 'pending':
@@ -2279,6 +2300,13 @@ def check_payment_status(payment_id):
 
 @app.route('/api/payments/check-pending', methods=['POST'])
 def check_pending_payments():
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({"error": "Access denied"}), 403
+
+    user = db.session.get(User, user_id)
+    if not user or not user.is_admin:
+        return jsonify({"error": "Access denied"}), 403
     try:
         pending_payments = Payment.query.filter_by(status='pending').all()
         updated_count = 0
@@ -2321,6 +2349,13 @@ def check_pending_payments():
 
 @app.route('/api/yoomoney/balance', methods=['GET'])
 def get_balance():
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({"error": "Access denied"}), 403
+
+    user = db.session.get(User, user_id)
+    if not user or not user.is_admin:
+        return jsonify({"error": "Access denied"}), 403
     try:
         # Получаем баланс кошелька
         user = client.account_info()
@@ -2335,6 +2370,13 @@ def get_balance():
 
 @app.route('/admin/payments')
 def admin_payments():
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify({"error": "Access denied"}), 403
+
+    user = db.session.get(User, user_id)
+    if not user or not user.is_admin:
+        return jsonify({"error": "Access denied"}), 403
     return render_template("admin_pay.html")
 
 # Запуск приложения
