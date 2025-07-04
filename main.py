@@ -18,7 +18,8 @@ from yoomoney import Quickpay, Client
 
 from db import db, User, AuthUrl, Profile, Payment, Promocode, UserPromocode, ConsentLog, FakeMessageClose, \
     DocumentScan, ActionLog, TaskCompletion, Task, BlackListIP
-
+import logging
+logging.basicConfig(level=logging.DEBUG)
 # Игнорируем специфические предупреждения SQLAlchemy
 warnings.filterwarnings('ignore', category=SAWarning, message='.*fully NULL primary key.*')
 warnings.filterwarnings('ignore', category=DeprecationWarning, message='.*datetime.utcnow().*')
